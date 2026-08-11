@@ -525,8 +525,7 @@ function route() {
     else a.removeAttribute('aria-current');
   });
 
-  const drop = document.getElementById('dropAbout');
-  if (drop) drop.open = false;
+  if (drop) { drop.open = false; dropByHover = false; }
 
   window.scrollTo({ top: 0, behavior: 'instant' });
   observeReveals();
@@ -652,6 +651,7 @@ document.addEventListener('click', e => {
   const fabMain = e.target.closest('#fabMain');
   if (fabMain) {
     const list = document.getElementById('fabList');
+    if (!list.hidden && fabByHover) { fabByHover = false; return; }  // закрепляем раскрытое наведением
     const open = list.hidden;
     list.hidden = !open;
     fabMain.setAttribute('aria-expanded', String(open));
@@ -742,6 +742,48 @@ document.addEventListener('submit', e => {
   form.reset();
   setTimeout(() => { btn.textContent = was; delete btn.dataset.state; btn.disabled = false; }, 2600);
 });
+
+/* ═══════════ раскрытие по наведению ═══════════
+   Тип устройства не угадываем: медиазапрос про мышь врёт на гибридах.
+   Помним, чем именно раскрыли. Раскрытое наведением закрывается уходом мыши,
+   раскрытое кликом держится до следующего клика. */
+
+let dropByHover = false;
+const drop = document.getElementById('dropAbout');
+if (drop) {
+  let timer;
+  drop.addEventListener('mouseenter', () => {
+    clearTimeout(timer);
+    if (!drop.open) { drop.open = true; dropByHover = true; }
+  });
+  drop.addEventListener('mouseleave', () => {
+    timer = setTimeout(() => { if (dropByHover) { drop.open = false; dropByHover = false; } }, 220);
+  });
+  drop.addEventListener('focusin', () => { clearTimeout(timer); drop.open = true; });
+  drop.addEventListener('focusout', e => {
+    if (!drop.contains(e.relatedTarget)) { drop.open = false; dropByHover = false; }
+  });
+  // клик по уже раскрытому наведением не схлопывает его, а закрепляет
+  drop.querySelector('summary').addEventListener('click', e => {
+    if (drop.open && dropByHover) { e.preventDefault(); dropByHover = false; }
+  });
+}
+
+let fabByHover = false;
+const fab = document.getElementById('fab');
+if (fab) {
+  let timer;
+  const list = document.getElementById('fabList');
+  const main = document.getElementById('fabMain');
+  const setOpen = on => { list.hidden = !on; main.setAttribute('aria-expanded', String(on)); };
+  fab.addEventListener('mouseenter', () => {
+    clearTimeout(timer);
+    if (list.hidden) { setOpen(true); fabByHover = true; }
+  });
+  fab.addEventListener('mouseleave', () => {
+    timer = setTimeout(() => { if (fabByHover) { setOpen(false); fabByHover = false; } }, 260);
+  });
+}
 
 /* ═══════════ шапка: компактный режим при скролле ═══════════ */
 

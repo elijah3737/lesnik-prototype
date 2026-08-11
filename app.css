@@ -146,7 +146,17 @@ a:hover { color: var(--color-accent-ink); }
   background: var(--color-paper); border: 1px solid var(--color-rule);
   border-radius: var(--radius-card); box-shadow: var(--shadow-2); z-index: 6;
 }
+/* невидимый мост: мышь идёт от кнопки к меню через зазор и не теряет наведение */
+.drop__menu::before { content: ""; position: absolute; left: 0; right: 0; top: -10px; height: 10px; }
 .drop__menu[hidden] { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .drop[open] .drop__menu { animation: dropIn var(--dur-micro) var(--ease-out); }
+}
+@keyframes dropIn { from { opacity: 0; transform: translateX(-50%) translateY(-4px); } to { opacity: 1; transform: translateX(-50%); } }
+
+/* мост для мультикнопки: список и кнопка разделены отступом */
+.fab__list::after { content: ""; position: absolute; left: 0; right: 0; bottom: -14px; height: 14px; }
+.fab__list { position: relative; }
 .drop__menu a {
   display: block; padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-input); text-decoration: none;
