@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
+<script src="seed.js"></script>
+<script src="store.js"></script>
 </head>
 <body>
 
@@ -78,8 +80,8 @@
           <img src="img/hero.jpg" alt="Корзина со свежесобранными лесными грибами" fetchpriority="high">
           <div class="hero__veil"></div>
           <div class="hero__copy">
-            <span class="hero__promo">Доставка по Москве бесплатно от 300 кг</span>
-            <h1>Грибы и ягоды с Урала, прямо от заготовителя</h1>
+            <span class="hero__promo" data-text="heroPromo">Доставка по Москве бесплатно от 300 кг</span>
+            <h1 data-text="heroTitle">Грибы и ягоды с Урала, прямо от заготовителя</h1>
             <p>Собираем, сушим, солим и морозим сами. Продаём партиями оптом и в розницу, с открытой ценой и остатком.</p>
             <ul class="hero__facts">
               <li>Опт от 20 кг</li>
@@ -941,9 +943,9 @@
           <dt>MAX</dt><dd>подключим, когда клиент даст профиль</dd>
           <dt>Instagram</dt><dd>lesnik_rf</dd>
           <dt>Склад и самовывоз</dt><dd>Москва, адрес уточняется</dd>
-          <dt>ИНН</dt><dd>подставим</dd>
-          <dt>ОГРНИП</dt><dd>подставим</dd>
-          <dt>Расчётный счёт</dt><dd>подставим</dd>
+          <dt>ИНН</dt><dd data-text="inn">подставим</dd>
+          <dt>ОГРНИП</dt><dd data-text="ogrnip">подставим</dd>
+          <dt>Расчётный счёт</dt><dd data-text="account">подставим</dd>
         </dl>
         <p style="font-size:var(--text-sm);color:var(--color-muted)">Реквизиты и адрес склада заполним данными клиента: в прототипе они намеренно пустые. Для юрлиц по этим данным выставляем счёт.</p>
       </div>
@@ -972,33 +974,20 @@
         <p>Прайс на дикоросы живёт неделю. Если правка цены требует ноутбука и логина в панель, цена не поправится никогда, карточки протухнут, и сайт умрёт за месяц. Поэтому админка сделана под одну руку, стоя у машины.</p>
         <p>Меняете цену и остаток, и они меняются сразу в карточке партии, в общем прайсе, в PDF и в выгрузке для маркетплейсов. Один источник данных, никакого дублирования.</p>
         <p>Партия кончилась: одна кнопка. Карточка уходит в архив, но остаётся в поиске и продолжает приводить закупщиков на следующий сезон.</p>
-        <p><a class="tlink" href="#/lot">Посмотреть, как это видит покупатель →</a></p>
+        <p><a class="tlink" href="#/lot/lisichka-dry">Посмотреть, как это видит покупатель →</a></p>
       </div>
 
       <div class="phone">
-        <p class="phone__label">Партия: лисичка сушёная</p>
-        <div class="phone__row">
-          <span>Цена за кг</span>
-          <span class="stepper">
-            <button type="button" data-step="-50" aria-label="Уменьшить цену">−</button>
-            <output id="admPrice" class="num">1 400 ₽</output>
-            <button type="button" data-step="50" aria-label="Увеличить цену">+</button>
-          </span>
-        </div>
-        <div class="phone__row">
-          <span>Остаток, кг</span>
-          <span class="stepper">
-            <button type="button" data-stock="-10" aria-label="Уменьшить остаток">−</button>
-            <output id="admStock" class="num">240</output>
-            <button type="button" data-stock="10" aria-label="Увеличить остаток">+</button>
-          </span>
-        </div>
-        <div class="phone__row"><span>Статус</span><span class="tag tag--live">открыта</span></div>
+        <p class="phone__label">Что внутри</p>
+        <div class="phone__row"><span>Партии</span><span>цена, остаток, статус, фото</span></div>
+        <div class="phone__row"><span>Категории</span><span>виды и состояния</span></div>
+        <div class="phone__row"><span>Фото</span><span>снял на телефон и загрузил</span></div>
+        <div class="phone__row"><span>Заявки</span><span>кто написал с сайта</span></div>
+        <div class="phone__row"><span>История</span><span>откат любой правки</span></div>
         <div class="phone__row" style="gap:var(--space-xs)">
-          <button class="btn btn--solid" type="button" data-demo="Цена сохранена и разъехалась по сайту">Сохранить</button>
-          <button class="btn" type="button" data-demo="Партия закрыта и ушла в архив">Закрыть партию</button>
+          <a class="btn btn--solid" href="admin/">Открыть админку</a>
         </div>
-        <p style="font-size:var(--text-xs);color:var(--color-muted);margin:var(--space-sm) 0 0">Кнопки живые, попробуйте.</p>
+        <p style="font-size:var(--text-xs);color:var(--color-muted);margin:var(--space-sm) 0 0">Она рабочая: поменяйте цену и вернитесь на сайт.</p>
       </div>
     </div>
   </div>
@@ -1071,7 +1060,7 @@
   <div class="protobar">
     <div class="wrap">
       <span>Прототип для согласования</span>
-      <a href="#/admin">админка</a>
+      <a href="admin/">админка</a>
       <a href="#/lot">карточка партии</a>
       <span>фото временные, из открытых источников</span>
     </div>
