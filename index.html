@@ -7,38 +7,50 @@
 <meta name="description" content="Прототип интернет-магазина дикоросов: витрина партий, живой прайс, опт и розница.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Golos+Text:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
 
 <a class="sr-only" href="#main">К содержимому</a>
 
+<!-- ══════════════════ ШАПКА ══════════════════ -->
 <header class="mast">
-  <div class="mast__top">
-    <div class="wrap mast__topin">
-      <p class="mast__issue">Лесной супермаркет дикоросов. Сводка от 11 августа 2026, сезон открыт</p>
+  <div class="wrap mast__in">
+    <a class="mast__word" href="#/">ЛЕСНИК</a>
+    <a class="catbtn" href="#/catalog">Каталог</a>
+
+    <div class="search" id="search">
+      <span class="search__ico" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </span>
+      <input type="search" id="searchInput" placeholder="Найти: лисичка, морошка, сушёные" aria-label="Поиск по каталогу" autocomplete="off">
+      <div class="search__drop" id="searchDrop" hidden></div>
+    </div>
+
+    <nav class="mast__nav" aria-label="Основная навигация">
+      <a href="#/">Наличие</a>
+      <a href="#/price">Прайс</a>
+      <a href="#/opt">Опт</a>
+      <details class="drop" id="dropAbout">
+        <summary class="drop__btn">О нас</summary>
+        <div class="drop__menu">
+          <a href="#/about">О компании<small>Кто мы и как заготавливаем</small></a>
+          <a href="#/mission">Миссия и концепция<small>Во что мы верим</small></a>
+          <a href="#/pickers">Сборщикам<small>Заработок от 120 000 ₽ в месяц</small></a>
+        </div>
+      </details>
+      <a href="#/blog">Блог</a>
+      <a href="#/contacts">Контакты</a>
+    </nav>
+
+    <div class="mast__tools">
       <div class="modeswitch" role="group" aria-label="Режим цен">
         <button type="button" data-mode="opt" aria-pressed="true">Опт</button>
         <button type="button" data-mode="retail" aria-pressed="false">Розница</button>
       </div>
       <a class="mast__phone" href="tel:+79324748383">8 932 474-83-83</a>
-    </div>
-  </div>
-
-  <div class="mast__bar">
-    <div class="wrap mast__barin">
-      <a class="mast__word" href="#/">ЛЕСНИК</a>
-      <a class="catbtn" href="#/catalog">Каталог</a>
-      <nav class="mast__nav" aria-label="Основная навигация">
-        <a href="#/">Наличие</a>
-        <a href="#/price">Прайс</a>
-        <a href="#/opt">Опт</a>
-        <a href="#/docs">Документы</a>
-        <a href="#/blog">Блог</a>
-        <a href="#/contacts">Контакты</a>
-        <a href="#/cart" class="cartlink" id="cartlink" hidden>Корзина: <span id="cartcount" class="num">0</span></a>
-      </nav>
+      <a href="#/cart" class="cartlink" id="cartlink" hidden>Корзина <span id="cartcount" class="num">0</span></a>
     </div>
   </div>
 </header>
@@ -70,12 +82,12 @@
           </div>
         </div>
         <div class="hero__slide" data-slide="2">
-          <img src="img/sushenye.jpg" alt="Сушёные лесные грибы" loading="lazy">
+          <img src="img/sborshiki.jpg" alt="Сборщики дикоросов в лесу" loading="lazy">
           <div class="hero__veil"></div>
           <div class="hero__copy">
-            <h2>Сушёный гриб круглый год</h2>
-            <p>Лисичка и белый из сушки едут транспортной компанией в любой регион без рефрижератора.</p>
-            <a class="btn btn--solid" href="#/price">Прайс-лист</a>
+            <h2>Ищем сборщиков в команду</h2>
+            <p>Оплачиваем проезд и проживание, платим зарплату. Заработок от 120 000 ₽ в месяц в сезон.</p>
+            <a class="btn btn--solid" href="#/pickers">Стать сборщиком</a>
           </div>
         </div>
       </div>
@@ -90,10 +102,11 @@
       <h2>В наличии сейчас</h2>
       <a class="tlink" href="#/catalog">Весь каталог →</a>
     </div>
-    <div class="rail" data-reveal>
+    <div class="rail" data-rail-box data-reveal>
       <ul class="rail__track" id="homeLive"></ul>
       <button class="rail__nav rail__nav--prev" type="button" data-rail="-1" aria-label="Назад">‹</button>
       <button class="rail__nav rail__nav--next" type="button" data-rail="1" aria-label="Вперёд">›</button>
+      <div class="rail__dots" role="group" aria-label="Страницы"></div>
     </div>
   </div>
 
@@ -103,7 +116,7 @@
         <p class="eyebrow">О заготовителе</p>
         <h2>Гриб сюда привозит тот, кто сам его собирал</h2>
         <p>Меня зовут Илья. Я заготавливаю дикоросы на Урале и показываю эту работу как есть: цены, ошибки, объёмы. Здесь нет отдела продаж, вы говорите с тем, кто вчера принимал этот гриб с делянки.</p>
-        <p><a class="btn" href="#/blog">Читать блог</a></p>
+        <p><a class="btn" href="#/about">О компании</a></p>
       </div>
       <div class="statement__shot" data-reveal>
         <img src="img/les.jpg" alt="Уральский лес, место заготовки" loading="lazy">
@@ -116,22 +129,72 @@
       <h2>Цифры сезона 2026</h2>
       <p>Считаем по реальным партиям из нашего канала, а не по обещаниям.</p>
     </div>
-    <div class="counters" data-reveal>
-      <div><b><span data-count="7000">0</span>+</b><span class="cap">килограммов отгружено партиями за июнь и июль</span></div>
-      <div><b><span data-count="6">0</span></b><span class="cap">видов дикоросов в работе этого сезона</span></div>
-      <div><b><span data-count="20">0</span> кг</b><span class="cap">минимальная партия: пробуете, потом берёте объём</span></div>
+
+    <div class="figures" data-reveal>
+      <div class="figures__grid">
+        <div class="fig">
+          <div class="fig__ring" data-ring="0.82">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="track" cx="60" cy="60" r="56"/>
+              <circle class="bar" cx="60" cy="60" r="56"/>
+            </svg>
+            <span class="fig__ring__in" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l3-4h10l3 4"/><path d="M9 12h6"/></svg>
+            </span>
+          </div>
+          <span class="fig__val"><span data-count="7000">0</span>+ кг</span>
+          <p class="fig__cap">отгружено партиями за июнь и июль</p>
+        </div>
+
+        <div class="fig">
+          <div class="fig__dots" data-dots="6">
+            <span class="on"></span><span class="on"></span><span class="on"></span>
+            <span class="on"></span><span class="on"></span><span class="on"></span>
+          </div>
+          <span class="fig__val"><span data-count="6">0</span></span>
+          <p class="fig__cap">видов дикоросов в работе этого сезона</p>
+        </div>
+
+        <div class="fig">
+          <div class="fig__scale">
+            <div class="fig__bar" data-bar="18"><i></i></div>
+            <div class="fig__marks"><span>20 кг</span><span>500 кг и больше</span></div>
+          </div>
+          <span class="fig__val"><span data-count="20">0</span> кг</span>
+          <p class="fig__cap">минимальная партия: пробуете, потом берёте объём</p>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="darkpanel">
     <div class="wrap darkpanel__in">
-      <h2>Почему закупщики возвращаются</h2>
-      <ul data-reveal>
-        <li><p><b>Своя заготовка.</b> Мы не посредники между вами и другим посредником. Гриб приходит с делянки к нам, от нас к вам.</p></li>
-        <li><p><b>Объём и цена открыты.</b> Сколько есть, написано в карточке партии. Если партия кончилась, вы увидите это до звонка.</p></li>
-        <li><p><b>Документы на месте.</b> Декларации, протоколы лаборатории и программа ХАССП скачиваются прямо со страницы партии.</p></li>
-        <li><p><b>Один разговор.</b> Отвечает тот, кто заготавливал. Без менеджера, без «уточню у поставщика», без трёх дней на ответ.</p></li>
-      </ul>
+      <div class="darkpanel__head" data-reveal>
+        <h2>Почему закупщики возвращаются</h2>
+        <p>Четыре вещи, которые оптовик проверяет до того, как назовёт объём.</p>
+      </div>
+      <div class="tiles" data-reveal>
+        <div class="tile">
+          <span class="tile__ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 10c0-4 3-7 7-7M19 10c0-4-3-7-7-7"/><path d="M5 10c0 4 3 7 7 7s7-3 7-7"/></svg></span>
+          <h3>Своя заготовка</h3>
+          <p>Не посредники между вами и другим посредником. Гриб приходит с делянки к нам, от нас к вам.</p>
+        </div>
+        <div class="tile">
+          <span class="tile__ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 17V9M9 17V5M15 17v-6M21 17v-9"/><path d="M3 21h18"/></svg></span>
+          <h3>Объём и цена открыты</h3>
+          <p>Сколько есть, написано в карточке партии. Если партия кончилась, вы увидите это до звонка.</p>
+        </div>
+        <div class="tile">
+          <span class="tile__ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>
+          <h3>Документы на месте</h3>
+          <p>Декларации, протоколы лаборатории и ХАССП скачиваются прямо со страницы партии.</p>
+        </div>
+        <div class="tile">
+          <span class="tile__ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 1 1-3-6.2"/><path d="M8 12h8M12 8v8"/></svg></span>
+          <h3>Один разговор</h3>
+          <p>Отвечает тот, кто заготавливал. Без менеджера и без «уточню у поставщика».</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -140,8 +203,11 @@
       <h2>Отгружено в этом сезоне</h2>
       <a class="tlink" href="#/price">Прайс-лист →</a>
     </div>
-    <div class="rail" data-reveal>
+    <div class="rail" data-rail-box data-reveal>
       <ul class="rail__track" id="homeClosed"></ul>
+      <button class="rail__nav rail__nav--prev" type="button" data-rail="-1" aria-label="Назад">‹</button>
+      <button class="rail__nav rail__nav--next" type="button" data-rail="1" aria-label="Вперёд">›</button>
+      <div class="rail__dots" role="group" aria-label="Страницы"></div>
     </div>
     <p class="note" style="margin-top:var(--space-md)">Закрытые партии остаются на сайте: это публичная история оборота. Хотите такую же партию в следующий сбор, жмите бронь.</p>
 
@@ -156,12 +222,12 @@
       </form>
     </div>
 
-    <div class="shead shead--stack" data-reveal>
+    <div class="shead shead--center" data-reveal>
       <h2>Частые вопросы</h2>
       <p>То, что спрашивают в первом сообщении. Остальное ответим по телефону.</p>
     </div>
     <div class="faq" data-reveal>
-      <details>
+      <details open>
         <summary>Какая минимальная партия?</summary>
         <p>20 килограммов. Это мини-опт: рестораны и небольшие производства берут пробную партию, смотрят качество и потом заказывают объём.</p>
       </details>
@@ -187,7 +253,7 @@
       </details>
       <details>
         <summary>Как забронировать следующий сбор?</summary>
-        <p>Зимой фиксируем объём и цену на весенние и летние партии. Вы называете объём, мы цену, и партия едет к вам, а не в общий доступ. Кнопка «Бронь следующего сбора» есть у каждой закрытой партии.</p>
+        <p>Зимой фиксируем объём и цену на весенние и летние партии. Вы называете объём, мы цену, и партия едет к вам, а не в общий доступ.</p>
       </details>
     </div>
   </div>
@@ -197,67 +263,69 @@
 <section class="screen" data-route="/catalog" aria-label="Каталог">
   <div class="wrap">
     <div class="inv">
-      <h1>Каталог: шесть видов, четыре состояния</h1>
+      <h1>Каталог дикоросов</h1>
       <div class="inv__meta">
+        <span>Грибы, ягоды и травы</span>
         <span>Свежие, замороженные, сушёные, солёные</span>
-        <span>Каждая пара «вид плюс состояние» получит отдельную страницу</span>
       </div>
     </div>
 
-    <div class="shead">
-      <h2>Грибы</h2>
-      <p>Свежие только оптом и только в сезон. Сушёные и солёные едут в любой регион круглый год.</p>
-    </div>
-    <ul class="lots" id="catMushrooms"></ul>
+    <div class="catalog" style="margin-top:var(--space-xl)">
+      <aside class="catnav" id="catnav">
+        <button class="catnav__toggle" type="button" data-catnav-toggle>Категории</button>
+        <ul class="catnav__list">
+          <li class="catnav__group is-active" data-group="mushroom">
+            <button class="catnav__head" type="button" data-cat="mushroom">Грибы <span class="catnav__count" data-count-cat="mushroom">0</span></button>
+            <ul class="catnav__sub">
+              <li><button type="button" data-state="all" aria-current="true">Все <span class="catnav__count" data-count-state="mushroom:all">0</span></button></li>
+              <li><button type="button" data-state="fresh">Свежие <span class="catnav__count" data-count-state="mushroom:fresh">0</span></button></li>
+              <li><button type="button" data-state="dry">Сушёные <span class="catnav__count" data-count-state="mushroom:dry">0</span></button></li>
+              <li><button type="button" data-state="frozen">Замороженные <span class="catnav__count" data-count-state="mushroom:frozen">0</span></button></li>
+              <li><button type="button" data-state="salted">Солёные <span class="catnav__count" data-count-state="mushroom:salted">0</span></button></li>
+            </ul>
+          </li>
+          <li class="catnav__group" data-group="berry">
+            <button class="catnav__head" type="button" data-cat="berry">Ягоды <span class="catnav__count" data-count-cat="berry">0</span></button>
+            <ul class="catnav__sub" hidden>
+              <li><button type="button" data-state="all">Все <span class="catnav__count" data-count-state="berry:all">0</span></button></li>
+              <li><button type="button" data-state="fresh">Свежие <span class="catnav__count" data-count-state="berry:fresh">0</span></button></li>
+              <li><button type="button" data-state="frozen">Замороженные <span class="catnav__count" data-count-state="berry:frozen">0</span></button></li>
+              <li><button type="button" data-state="pureed">Протёртые <span class="catnav__count" data-count-state="berry:pureed">0</span></button></li>
+            </ul>
+          </li>
+          <li class="catnav__group" data-group="herb">
+            <button class="catnav__head" type="button" data-cat="herb">Травы <span class="catnav__count" data-count-cat="herb">0</span></button>
+            <ul class="catnav__sub" hidden>
+              <li><p class="catnav__soon">Категория готовится. Оставьте заявку, сообщим когда откроем сбор.</p></li>
+            </ul>
+          </li>
+        </ul>
+      </aside>
 
-    <div class="shead">
-      <h2>Ягоды</h2>
-      <p>Заморозка шоковая, ягода не в комках. Протёртая с сахаром под заказ от 200 кг.</p>
-    </div>
-    <ul class="lots" id="catBerries"></ul>
+      <div>
+        <div class="filterbar">
+          <div class="filters" role="group" aria-label="Фильтры">
+            <span class="filters__label">Наличие</span>
+            <button type="button" data-filter="avail" data-value="live" aria-pressed="true">В наличии</button>
+            <button type="button" data-filter="avail" data-value="all" aria-pressed="false">Все, включая закрытые</button>
+            <span class="filters__label">Объём</span>
+            <button type="button" data-filter="vol" data-value="mini" aria-pressed="false">Мини-опт от 20 кг</button>
+            <button type="button" data-filter="vol" data-value="big" aria-pressed="false">Опт от 500 кг</button>
+            <select id="sortSel" aria-label="Сортировка">
+              <option value="default">Сортировка: по наличию</option>
+              <option value="price">По цене</option>
+              <option value="date">По дате сбора</option>
+            </select>
+          </div>
+          <div class="chips" id="chips"></div>
+          <p class="counter" id="catCounter"></p>
+        </div>
 
-    <p class="note" style="margin-top:var(--space-2xl)">
-      Дерево каталога и есть SEO-фундамент: «сушёная лисичка оптом», «морошка замороженная купить», «белый гриб солёный опт». Сорок с лишним посадочных страниц разворачиваются из одного шаблона.
-    </p>
-  </div>
-</section>
-
-<!-- ══════════════════ КАТЕГОРИЯ ══════════════════ -->
-<section class="screen" data-route="/c/lisichka" aria-label="Лисичка">
-  <div class="wrap">
-    <p class="crumbs"><a href="#/">Главная</a> → <a href="#/catalog">Каталог</a> → Лисичка</p>
-    <div class="inv">
-      <h1>Лисичка настоящая</h1>
-      <div class="inv__meta">
-        <span>Cantharellus cibarius</span>
-        <span>Сезон: с июня по сентябрь</span>
-        <span>Регион: Свердловская область</span>
-      </div>
-    </div>
-
-    <div class="filters" role="group" aria-label="Состояние">
-      <button type="button" data-filter="all" aria-pressed="true">Все</button>
-      <button type="button" data-filter="fresh" aria-pressed="false">Свежая</button>
-      <button type="button" data-filter="dry" aria-pressed="false">Сушёная</button>
-      <button type="button" data-filter="frozen" aria-pressed="false">Замороженная</button>
-    </div>
-    <ul class="lots lots--wide" id="catLisichka"></ul>
-
-    <hr class="rule">
-    <div class="split">
-      <div class="prose stack">
-        <h2>Что важно знать про лисичку</h2>
-        <p>Лисичка не червивеет: в ней хиноманноза, и это единственный гриб, который можно везти двое суток без сортировки на месте. Поэтому свежую мы отгружаем даже в дальние регионы, а не только по Москве.</p>
-        <p>Сушёная теряет в весе примерно десятикратно: из десяти килограммов свежей выходит около килограмма сушёной. Сравнивайте цену состояний между собой, а не сушёную со свежей.</p>
-      </div>
-      <div class="stack">
-        <h3>Куда её берут</h3>
-        <dl class="dl">
-          <dt>Рестораны</dt><dd>свежая, 20-100 кг</dd>
-          <dt>Переработчики</dt><dd>свежая, от 500 кг</dd>
-          <dt>Производители смесей</dt><dd>сушёная, от 50 кг</dd>
-          <dt>Магазины</dt><dd>сушёная фасовка</dd>
-        </dl>
+        <ul class="lots" id="catGrid"></ul>
+        <div class="empty" id="catEmpty" hidden>
+          <p>По этим фильтрам ничего нет.</p>
+          <p><button class="btn" type="button" data-reset-filters>Сбросить фильтры</button></p>
+        </div>
       </div>
     </div>
   </div>
@@ -266,7 +334,7 @@
 <!-- ══════════════════ КАРТОЧКА ПАРТИИ ══════════════════ -->
 <section class="screen" data-route="/lot" aria-label="Партия">
   <div class="wrap">
-    <p class="crumbs"><a href="#/">Главная</a> → <a href="#/catalog">Каталог</a> → <a href="#/c/lisichka">Лисичка</a> → Сушёная, урожай 2026</p>
+    <p class="crumbs"><a href="#/">Главная</a> → <a href="#/catalog">Каталог</a> → Лисичка сушёная</p>
 
     <div class="inv">
       <span class="tag tag--live">партия открыта</span>
@@ -329,9 +397,9 @@
           <table class="sheet">
             <thead><tr><th>Документ</th><th>На что</th><th></th></tr></thead>
             <tbody>
-              <tr><td>Декларация соответствия</td><td>грибы сушёные</td><td><a href="#/docs">смотреть</a></td></tr>
-              <tr><td>Протокол радиологии</td><td>партия 2026-07-14</td><td><a href="#/docs">смотреть</a></td></tr>
-              <tr><td>Программа ХАССП</td><td>цех сушки</td><td><a href="#/docs">смотреть</a></td></tr>
+              <tr><td>Декларация соответствия</td><td>грибы сушёные</td><td><a href="#/about">смотреть</a></td></tr>
+              <tr><td>Протокол радиологии</td><td>партия 2026-07-14</td><td><a href="#/about">смотреть</a></td></tr>
+              <tr><td>Программа ХАССП</td><td>цех сушки</td><td><a href="#/about">смотреть</a></td></tr>
             </tbody>
           </table>
         </div>
@@ -387,7 +455,7 @@
 
     <div class="shead">
       <h2>Из этого же сезона</h2>
-      <p>Что ещё открыто прямо сейчас.</p>
+      <a class="tlink" href="#/catalog">Весь каталог →</a>
     </div>
     <ul class="lots" id="lotRelated"></ul>
   </div>
@@ -401,7 +469,7 @@
       <div class="inv__meta"><span>Мини-опт от 20 кг</span><span>Опт от 500 кг</span><span>Контракт на сезон обсуждается отдельно</span></div>
     </div>
 
-    <div class="shead">
+    <div class="shead shead--stack">
       <h2>Кому мы отгружаем</h2>
       <p>У каждого сегмента свой минимальный объём, своя тара и свой набор документов.</p>
     </div>
@@ -412,26 +480,17 @@
       <div><b>Экспорт</b>сушёный белый и лисичка, документы под таможню, объём и сроки индивидуально</div>
     </div>
 
-    <div class="shead">
+    <div class="shead shead--stack">
       <h2>Как проходит сделка</h2>
       <p>Три действия от заявки до машины. Без предоплаты за знакомство.</p>
     </div>
-    <ul class="why__list" style="max-width:var(--measure)">
-      <li>
-        <h3>Смотрите партию</h3>
-        <p>Объём, фракция, регион и дата сбора в карточке. Цена лесенкой от объёма, без «напишите в директ».</p>
-      </li>
-      <li>
-        <h3>Бронируете объём</h3>
-        <p>Заявка приходит напрямую, отвечаем в тот же день. Выставляем счёт или работаем за наличные.</p>
-      </li>
-      <li>
-        <h3>Забираете</h3>
-        <p>Самовывоз со склада, доставка по Москве или отправка транспортной компанией в регион.</p>
-      </li>
-    </ul>
+    <ol class="steps">
+      <li><b>Смотрите партию</b><p>Объём, фракция, регион и дата сбора в карточке. Цена лесенкой от объёма, без «напишите в директ».</p></li>
+      <li><b>Бронируете объём</b><p>Заявка приходит напрямую, отвечаем в тот же день. Выставляем счёт или работаем за наличные.</p></li>
+      <li><b>Забираете</b><p>Самовывоз со склада, доставка по Москве или отправка транспортной компанией в регион.</p></li>
+    </ol>
 
-    <div class="shead">
+    <div class="shead shead--stack">
       <h2>Условия</h2>
       <p>То, что закупщик всё равно спросит в первом же сообщении.</p>
     </div>
@@ -474,23 +533,14 @@
     <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-block:var(--space-xl)">
       <button class="btn" type="button" data-demo="Прайс собран в PDF">Скачать PDF</button>
       <button class="btn" type="button" data-demo="Прайс собран в XLSX">Скачать XLSX</button>
-      <a class="btn" href="#/opt">Запросить цену</a>
+      <a class="btn btn--solid" href="#/opt">Запросить цену</a>
     </div>
 
     <div class="scroller">
       <table class="sheet">
         <caption>Один источник данных на карточки, прайс и выгрузки. Цена меняется в админке и разъезжается везде.</caption>
         <thead><tr><th>Позиция</th><th>Состояние</th><th>В наличии</th><th>Цена за кг</th><th>Статус</th></tr></thead>
-        <tbody>
-          <tr><td>Лисичка</td><td>свежая</td><td class="n">есть</td><td class="n">по запросу</td><td>открыта</td></tr>
-          <tr><td>Лисичка</td><td>сушёная, урожай 2026</td><td class="n">240 кг</td><td class="n">по запросу</td><td>открыта</td></tr>
-          <tr><td>Белый гриб</td><td>свежий</td><td class="n">есть</td><td class="n">по запросу</td><td>открыта</td></tr>
-          <tr><td>Белый гриб</td><td>сушёный</td><td class="n">есть</td><td class="n">по запросу</td><td>открыта</td></tr>
-          <tr><td>Сморчок конический</td><td>свежий</td><td class="n">8 кг</td><td class="n">10 000 ₽</td><td>закрыта 02.07</td></tr>
-          <tr><td>Сморчковая шапочка</td><td>заморозка</td><td class="n">3 000 кг</td><td class="n">320 ₽</td><td>закрыта 28.06</td></tr>
-          <tr><td>Морошка</td><td>свежая</td><td class="n">4 000 кг</td><td class="n">по запросу</td><td>закрыта 18.07</td></tr>
-          <tr><td>Земляника</td><td>свежая</td><td class="n">под сбор</td><td class="n">по запросу</td><td>закрыта 06.06</td></tr>
-        </tbody>
+        <tbody id="priceRows"></tbody>
       </table>
     </div>
 
@@ -498,32 +548,56 @@
   </div>
 </section>
 
-<!-- ══════════════════ ДОКУМЕНТЫ ══════════════════ -->
-<section class="screen" data-route="/docs" aria-label="Документы и производство">
+<!-- ══════════════════ О КОМПАНИИ ══════════════════ -->
+<section class="screen" data-route="/about" aria-label="О компании">
   <div class="wrap">
-    <div class="inv">
-      <h1>Документы, лаборатория, производство</h1>
-      <div class="inv__meta"><span>Без этого закупщик не начнёт разговор</span></div>
+    <div class="pagehero">
+      <img src="img/korzina.jpg" alt="Приёмка свежесобранных грибов">
+      <div class="pagehero__veil"></div>
+      <div class="pagehero__copy">
+        <p class="eyebrow">О компании</p>
+        <h1>Лесной супермаркет дикоросов</h1>
+        <p>Собираем, сушим, солим и отгружаем сами. Без перекупов, без отдела продаж, без «уточню у поставщика».</p>
+      </div>
     </div>
 
-    <div class="shead">
-      <h2>Документы</h2>
-      <p>Скан каждого документа открывается прямо со страницы, запрашивать по почте не нужно.</p>
-    </div>
-    <div class="scroller">
-      <table class="sheet">
-        <thead><tr><th>Документ</th><th>На что</th><th>Действует до</th><th></th></tr></thead>
-        <tbody>
-          <tr><td>Декларация соответствия</td><td>грибы сушёные</td><td class="n">заполним</td><td><a href="#/docs">смотреть</a></td></tr>
-          <tr><td>Декларация соответствия</td><td>ягода замороженная</td><td class="n">заполним</td><td><a href="#/docs">смотреть</a></td></tr>
-          <tr><td>Протокол радиологии</td><td>партии 2026</td><td class="n">заполним</td><td><a href="#/docs">смотреть</a></td></tr>
-          <tr><td>Программа ХАССП</td><td>цех сушки</td><td class="n">заполним</td><td><a href="#/docs">смотреть</a></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p style="margin-top:var(--space-md);font-size:var(--text-sm);color:var(--color-muted)">Строки заполним реквизитами документов клиента, здесь показано устройство раздела.</p>
+    <div class="split" style="margin-top:var(--space-2xl)">
+      <div class="prose stack">
+        <h2>Как это начиналось</h2>
+        <p>Всё началось с обычного сбора для себя. Потом появились люди, которые просили привезти ещё, за ними рестораны, за ними переработчики. Так частный интерес превратился в заготовку: свои делянки, своя сушка, свои сборщики по регионам.</p>
+        <p>Сегодня «Лесник» это лесной супермаркет дикоросов. Мы показываем работу изнутри: реальные цены, реальные объёмы и реальные ошибки, которые в этом деле совершают все. За этим и следят восемь тысяч человек в наших соцсетях.</p>
 
-    <div class="shead">
+        <h2>Что мы делаем</h2>
+        <p>Принимаем сырьё у сборщиков в день сбора, сортируем и отбраковываем, сушим воздушной сушкой при 45 градусах, замораживаем шоковой заморозкой, солим в бочках. Отгружаем партиями со склада в Москве, отправляем транспортными компаниями в регионы.</p>
+      </div>
+
+      <div class="stack">
+        <div class="formcard">
+          <h3>Коротко о нас</h3>
+          <dl class="dl">
+            <dt>Чем занимаемся</dt><dd>заготовка дикоросов</dd>
+            <dt>Регионы сбора</dt><dd>Урал, Северо-Запад</dd>
+            <dt>Отгрузка</dt><dd>Москва, вся Россия</dd>
+            <dt>Минимальная партия</dt><dd>20 кг</dd>
+            <dt>Сезон</dt><dd>апрель — октябрь</dd>
+            <dt>Вне сезона</dt><dd>сушка, заморозка, соление</dd>
+          </dl>
+          <p style="font-size:var(--text-sm);color:var(--color-muted);margin-top:var(--space-md)">Юридические реквизиты подставим из документов клиента.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="shead shead--stack">
+      <h2>География сбора</h2>
+      <p>Сезон идёт волной с юга на север, и мы идём за ним.</p>
+    </div>
+    <ul class="timeline">
+      <li><b>Урал</b><p>Свердловская область: основная база по лисичке и белому грибу. Ежедневная приёмка в сезон.</p></li>
+      <li><b>Северо-Запад</b><p>Болотные ягоды: морошка, клюква, брусника. Сбор короткий, партии крупные.</p></li>
+      <li><b>Средняя полоса</b><p>Ранний сморчок весной, земляника в июне. Небольшие объёмы, высокая цена.</p></li>
+    </ul>
+
+    <div class="shead shead--stack">
       <h2>Как это делается</h2>
       <p>Три передела между лесом и вашей машиной.</p>
     </div>
@@ -531,6 +605,238 @@
       <figure class="figure"><img src="img/korzina.jpg" alt="Свежесобранные грибы в корзине" loading="lazy"><figcaption>Приёмка и сортировка в день сбора</figcaption></figure>
       <figure class="figure"><img src="img/sushenye.jpg" alt="Сушёные грибы" loading="lazy"><figcaption>Воздушная сушка при 45 градусах</figcaption></figure>
       <figure class="figure"><img src="img/belyi.jpg" alt="Белые грибы" loading="lazy"><figcaption>Калибровка и упаковка под заказчика</figcaption></figure>
+    </div>
+
+    <div class="shead shead--stack">
+      <h2>Документы и качество</h2>
+      <p>То, что закупщик проверяет до разговора о цене. Сканы открываются со страницы каждой партии.</p>
+    </div>
+    <div class="scroller">
+      <table class="sheet">
+        <thead><tr><th>Документ</th><th>На что</th><th>Действует до</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Декларация соответствия</td><td>грибы сушёные</td><td class="n">заполним</td><td><a href="#/lot">смотреть</a></td></tr>
+          <tr><td>Декларация соответствия</td><td>ягода замороженная</td><td class="n">заполним</td><td><a href="#/lot">смотреть</a></td></tr>
+          <tr><td>Протокол радиологии</td><td>партии 2026</td><td class="n">заполним</td><td><a href="#/lot">смотреть</a></td></tr>
+          <tr><td>Программа ХАССП</td><td>цех сушки</td><td class="n">заполним</td><td><a href="#/lot">смотреть</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note" style="margin-top:var(--space-md)">Строки заполним реквизитами документов клиента, здесь показано устройство раздела.</p>
+
+    <div class="subscribe">
+      <div>
+        <h2>Хотите работать с нами</h2>
+        <p>Посмотрите, что открыто прямо сейчас, или напишите: подскажем по объёму и срокам.</p>
+      </div>
+      <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
+        <a class="btn btn--solid" href="#/catalog">Смотреть каталог</a>
+        <a class="btn" href="#/contacts">Написать</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ МИССИЯ ══════════════════ -->
+<section class="screen" data-route="/mission" aria-label="Миссия и концепция">
+  <div class="wrap">
+    <div class="pagehero">
+      <img src="img/les.jpg" alt="Лес на рассвете">
+      <div class="pagehero__veil"></div>
+      <div class="pagehero__copy">
+        <p class="eyebrow">Миссия и концепция</p>
+        <h1>Сделать честную торговлю дикоросами нормой</h1>
+        <p>Лес не принадлежит никому и принадлежит всем. Мы хотим, чтобы деньги от него доходили до тех, кто ходит по нему ногами.</p>
+      </div>
+    </div>
+
+    <div class="shead shead--stack" style="margin-top:var(--space-2xl)">
+      <h2>Во что мы верим</h2>
+      <p>Четыре принципа, по которым мы принимаем решения, даже когда это невыгодно.</p>
+    </div>
+    <div class="principles">
+      <div class="principle">
+        <b>Честная цена</b>
+        <p>Мы публикуем цены открыто, в постах и на сайте. Покупатель должен видеть цифру до разговора, а не после трёх сообщений в директ.</p>
+      </div>
+      <div class="principle">
+        <b>Прямая работа</b>
+        <p>Между лесом и вашей машиной должно быть как можно меньше рук. Каждая лишняя пара рук это плюс к цене и минус к качеству.</p>
+      </div>
+      <div class="principle">
+        <b>Уважение к сборщику</b>
+        <p>Сборщик это не расходный материал, а основа дела. Мы платим в день сдачи, называем цену заранее и не занижаем её задним числом.</p>
+      </div>
+      <div class="principle">
+        <b>Качество как обязательство</b>
+        <p>Мы отвечаем за партию своим именем, потому что имя у нас одно. Мятое, подмоченное и перележавшее не берём и не продаём.</p>
+      </div>
+    </div>
+
+    <div class="split" style="margin-top:var(--space-2xl)">
+      <div class="prose stack">
+        <h2>Что значит «лесной супермаркет»</h2>
+        <p>Супермаркет это место, где всё понятно: видно товар, видно цену, видно срок. С дикоросами обычно наоборот: цена по запросу, наличие по звонку, качество по обещанию.</p>
+        <p>Мы переносим логику нормального магазина в промысел, где её никогда не было. Каждая партия имеет карточку с объёмом, датой сбора, регионом и документами. Закончилась — видно и это. Никакого «сейчас узнаю у поставщика».</p>
+
+        <h2>Куда мы идём</h2>
+        <p>Хотим построить сеть приёмных пунктов в лесных регионах, чтобы сборщику не нужно было везти сырьё за сотню километров. Хотим, чтобы сбор дикоросов стал нормальной сезонной работой с понятным доходом, а не подработкой на удачу.</p>
+        <p>И хотим, чтобы российский дикорос перестал уезжать за границу безымянным сырьём и возвращаться к нам под чужой этикеткой втридорога.</p>
+      </div>
+      <div class="stack">
+        <figure class="figure"><img src="img/doroga.jpg" alt="Дорога через осенний лес" loading="lazy"><figcaption>Сезон идёт по стране, и мы идём вместе с ним</figcaption></figure>
+        <div class="formcard">
+          <h3>Разделяете подход</h3>
+          <p style="font-size:var(--text-sm)">Мы всегда ищем людей: сборщиков, приёмщиков, партнёров в регионах.</p>
+          <a class="btn btn--solid btn--full" href="#/pickers">Стать сборщиком</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ СБОРЩИКАМ ══════════════════ -->
+<section class="screen" data-route="/pickers" aria-label="Сборщикам">
+  <div class="wrap">
+    <div class="pagehero">
+      <img src="img/sborshiki.jpg" alt="Сборщики дикоросов в лесу">
+      <div class="pagehero__veil"></div>
+      <div class="pagehero__copy">
+        <p class="eyebrow">Работа в команде «Лесника»</p>
+        <h1>Собирай, зарабатывай, путешествуй по стране</h1>
+        <p>Оплачиваем проезд и проживание, платим зарплату. Заработок в сезон от 120 000 ₽ в месяц.</p>
+        <p><a class="btn btn--solid" href="#pickerForm">Оставить заявку</a></p>
+      </div>
+    </div>
+
+    <div class="payout">
+      <div class="payout__big">от 120 000 ₽<small>в месяц в сезон</small></div>
+      <div>
+        <p><strong>Это не подработка на удачу.</strong> Мы платим зарплату, а не только за сданное сырьё, и берём на себя дорогу и жильё. Ваша задача — собирать и сдавать чистый продукт, всё остальное организуем мы.</p>
+        <p style="margin-bottom:0">Точный доход зависит от вида дикороса, урожайности и вашего темпа. Условия по каждому сезону обсуждаем на входе, без сюрпризов задним числом.</p>
+      </div>
+    </div>
+
+    <div class="shead shead--stack">
+      <h2>Что мы берём на себя</h2>
+      <p>Вам не нужны свои деньги на старте и своя машина.</p>
+    </div>
+    <div class="perks">
+      <div class="perk">
+        <span class="perk__ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17h16M6 17V9l3-4h6l3 4v8"/><circle cx="8" cy="19" r="2"/><circle cx="16" cy="19" r="2"/></svg></span>
+        <div><b>Проезд</b><p>Оплачиваем дорогу до места сбора и обратно. Организуем заброску на делянки.</p></div>
+      </div>
+      <div class="perk">
+        <span class="perk__ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span>
+        <div><b>Проживание</b><p>Жильё на весь период сбора. Не палатка в поле, а нормальные условия для отдыха.</p></div>
+      </div>
+      <div class="perk">
+        <span class="perk__ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+        <div><b>Зарплата</b><p>Фиксированная часть плюс оплата за сданное сырьё. Расчёт в день сдачи, без задержек.</p></div>
+      </div>
+      <div class="perk">
+        <span class="perk__ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-2.5L7 19l1-6-4-4 5.5-.5z"/></svg></span>
+        <div><b>Обучение</b><p>Новичка ставим в пару с опытным. Покажем места, виды, правила сбора и приёмки.</p></div>
+      </div>
+      <div class="perk">
+        <span class="perk__ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l3-4h10l3 4"/><path d="M9 12h6"/></svg></span>
+        <div><b>Тара и инвентарь</b><p>Вёдра, ящики, короба даём мы. Своё покупать не нужно.</p></div>
+      </div>
+      <div class="perk">
+        <span class="perk__ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.5 8 12 8 12s8-6.5 8-12a8 8 0 0 0-8-8z"/></svg></span>
+        <div><b>Смена регионов</b><p>Сезон идёт по стране: весной юг, летом Урал, осенью север. Ездим за урожаем вместе.</p></div>
+      </div>
+    </div>
+
+    <div class="shead shead--stack">
+      <h2>Кому это подходит</h2>
+      <p>Опыт не обязателен, желание работать в лесу обязательно.</p>
+    </div>
+    <div class="principles">
+      <div class="principle"><b>Жителям лесных регионов</b><p>Вы уже знаете свои места. Мы даём цену, тару и гарантию, что сырьё заберут.</p></div>
+      <div class="principle"><b>Тем, кто готов ездить</b><p>Сезон длится с апреля по октябрь и переходит из региона в регион. Дорога и жильё за наш счёт.</p></div>
+      <div class="principle"><b>Студентам на каникулах</b><p>Три летних месяца в лесу дают заработок, который сложно найти без опыта и диплома.</p></div>
+    </div>
+
+    <div class="shead shead--stack">
+      <h2>Как устроен сезон</h2>
+      <p>Календарь по видам: понятно, когда и куда едем.</p>
+    </div>
+    <ul class="timeline">
+      <li><b>Апрель, май</b><p>Сморчок. Средняя полоса. Объёмы небольшие, цена самая высокая в году.</p></li>
+      <li><b>Июнь</b><p>Земляника и первая лисичка. Урал. Начало основного сезона.</p></li>
+      <li><b>Июль</b><p>Морошка на Северо-Западе, лисичка и первый белый на Урале. Пик нагрузки и заработка.</p></li>
+      <li><b>Август, сентябрь</b><p>Белый гриб и лисичка. Основной вал, работаем в две смены.</p></li>
+      <li><b>Сентябрь, октябрь</b><p>Клюква и брусника на болотах. Финал сезона, крупные партии ягоды.</p></li>
+    </ul>
+
+    <div class="shead shead--stack">
+      <h2>Что мы просим взамен</h2>
+      <p>Правила простые, но без них партия не состоится.</p>
+    </div>
+    <div class="principles">
+      <div class="principle"><b>Чистое сырьё</b><p>Гриб без земли и хвои, ягода без листа. Мусор в партии это отбраковка и потеря денег для всех.</p></div>
+      <div class="principle"><b>Правила сбора</b><p>Не рвём с корнем, не вытаптываем грибницу, не берём молодняк и перезревшее. Лес должен родить и на следующий год.</p></div>
+      <div class="principle"><b>Ответственность за объём</b><p>Договорились на объём — сдаём объём. От этого зависит партия, которую мы обещали закупщику.</p></div>
+    </div>
+
+    <div class="shead shead--stack">
+      <h2>Как начать</h2>
+      <p>Три шага от заявки до первой сдачи.</p>
+    </div>
+    <ol class="steps">
+      <li><b>Оставляете заявку</b><p>Имя, телефон, регион и есть ли опыт. Перезваниваем в течение дня.</p></li>
+      <li><b>Обсуждаем условия</b><p>Рассказываем про сезон, цены приёма, дорогу и жильё. Отвечаем на все вопросы до выезда.</p></li>
+      <li><b>Выезжаете на сбор</b><p>Встречаем, размещаем, выдаём тару и ставим в пару с опытным сборщиком.</p></li>
+    </ol>
+
+    <div class="shead shead--center">
+      <h2>Вопросы сборщиков</h2>
+      <p>То, что спрашивают чаще всего перед первым сезоном.</p>
+    </div>
+    <div class="faq">
+      <details open>
+        <summary>Нужен ли опыт сбора?</summary>
+        <p>Нет. Новичка ставим в пару с опытным сборщиком: он покажет места, виды и как правильно резать, чтобы не портить грибницу. Через неделю вы работаете самостоятельно.</p>
+      </details>
+      <details>
+        <summary>Как считается заработок?</summary>
+        <p>Фиксированная часть плюс оплата за сданное сырьё по объёму и качеству. Цену приёма называем заранее, до выезда, и не меняем задним числом.</p>
+      </details>
+      <details>
+        <summary>Правда оплачиваете дорогу и жильё?</summary>
+        <p>Да, это часть условий. Мы заинтересованы, чтобы человек доехал и работал, а не тратил первую зарплату на билеты и съём.</p>
+      </details>
+      <details>
+        <summary>Можно приехать не на весь сезон?</summary>
+        <p>Можно. Многие приезжают на месяц или на конкретный сбор: морошка в июле, клюква осенью. Обсуждаем сроки на входе.</p>
+      </details>
+      <details>
+        <summary>Что брать с собой?</summary>
+        <p>Личные вещи, одежду по погоде и сапоги. Вёдра, ящики и короба выдаём мы.</p>
+      </details>
+    </div>
+
+    <div class="subscribe" id="pickerForm">
+      <div>
+        <h2>Оставить заявку</h2>
+        <p>Перезвоним в течение дня, расскажем про ближайший сбор и условия. Ни к чему не обязывает.</p>
+      </div>
+      <div class="formcard">
+        <form data-form="picker" novalidate>
+          <label class="field"><span>Имя</span><input name="name" placeholder="Как к вам обращаться" required><em class="err">Укажите имя</em></label>
+          <label class="field"><span>Телефон</span><input name="phone" type="tel" placeholder="+7" required><em class="err">Нужен телефон для связи</em></label>
+          <label class="field"><span>Регион</span><input name="region" placeholder="Откуда вы" required><em class="err">Укажите регион</em></label>
+          <label class="field"><span>Опыт сбора</span>
+            <select name="exp">
+              <option>Опыта нет, хочу научиться</option>
+              <option>Собираю для себя</option>
+              <option>Есть опыт сдачи сырья</option>
+            </select>
+          </label>
+          <button class="btn btn--solid btn--full" type="submit">Отправить заявку</button>
+        </form>
+      </div>
     </div>
   </div>
 </section>
@@ -543,49 +849,25 @@
       <div class="inv__meta"><span>Тот же материал, что в Instagram и Telegram, но он живёт вечно и его находит поиск</span></div>
     </div>
 
-    <ul class="posts">
-      <li><a href="#/blog/lisichka-price">
-        <span class="posts__date">06.08.2026</span>
-        <span>
-          <span class="posts__title">Сколько на самом деле стоит килограмм лисички</span>
-          <span class="posts__lede">Почему цена у заготовителя, на базе и в магазине отличается в разы, и из чего складывается каждый рубль по дороге из леса.</span>
-        </span>
-        <span class="posts__cat">Цены</span>
-      </a></li>
+    <div id="blogHero" style="margin-top:var(--space-xl)"></div>
 
-      <li><a href="#/blog/dry-ratio">
-        <span class="posts__date">14.07.2026</span>
-        <span>
-          <span class="posts__title">Десять к одному: экономика сушёного гриба</span>
-          <span class="posts__lede">Как считать цену сушёного гриба, чтобы не переплатить и не сравнивать несравнимое.</span>
-        </span>
-        <span class="posts__cat">Цены</span>
-      </a></li>
+    <div class="btabs" role="group" aria-label="Рубрики">
+      <button type="button" data-tab="all" aria-pressed="true">Все</button>
+      <button type="button" data-tab="Цены" aria-pressed="false">Цены</button>
+      <button type="button" data-tab="Качество" aria-pressed="false">Качество</button>
+      <button type="button" data-tab="Рынок" aria-pressed="false">Рынок</button>
+      <button type="button" data-tab="Изнанка сезона" aria-pressed="false">Изнанка сезона</button>
+    </div>
 
-      <li><a href="#/blog/quality">
-        <span class="posts__date">22.07.2026</span>
-        <span>
-          <span class="posts__title">Почему сушёный гриб бывает дешёвым и дорогим</span>
-          <span class="posts__lede">Пять признаков, по которым видно пересушенное, подмоченное и разбавленное сырьё. Проверяется за минуту.</span>
-        </span>
-        <span class="posts__cat">Качество</span>
-      </a></li>
+    <ul class="blog" id="blogGrid"></ul>
 
-      <li><a href="#/blog/smorchok">
-        <span class="posts__date">02.07.2026</span>
-        <span>
-          <span class="posts__title">Сморчок по десять тысяч за килограмм</span>
-          <span class="posts__lede">Восемь килограммов за сезон и очередь из ресторанов. Разбираем, откуда берётся такая цена.</span>
-        </span>
-        <span class="posts__cat">Рынок</span>
-      </a></li>
-    </ul>
-
-    <div class="formcard" style="margin-top:var(--space-2xl);max-width:34rem">
-      <h2 class="formcard__h">Прайс недели на почту</h2>
-      <p style="font-size:var(--text-sm)">Раз в неделю: что в наличии, по какой цене и что закрывается. Без рассылок «а вот и осень пришла».</p>
-      <form data-form="sub" novalidate>
-        <label class="field"><span>Почта</span><input name="mail" type="email" placeholder="zakupki@restoran.ru" required><em class="err">Проверьте адрес почты</em></label>
+    <div class="subscribe">
+      <div>
+        <h2>Прайс недели на почту</h2>
+        <p>Раз в неделю: что в наличии, по какой цене и что закрывается.</p>
+      </div>
+      <form data-form="sub2" novalidate>
+        <label class="field"><span class="sr-only">Почта</span><input name="mail" type="email" placeholder="zakupki@restoran.ru" required><em class="err">Проверьте адрес почты</em></label>
         <button class="btn btn--solid" type="submit">Подписаться</button>
       </form>
     </div>
@@ -598,30 +880,31 @@
     <p class="crumbs"><a href="#/">Главная</a> → <a href="#/blog">Блог</a> → Сколько стоит лисичка</p>
     <div class="articlewrap">
     <article class="article">
+      <div class="article__cover"><img src="img/lisichka.jpg" alt="Ведро свежих лисичек"></div>
       <h1>Сколько на самом деле стоит килограмм лисички</h1>
-      <p class="article__meta">6 августа 2026, рубрика «Цены»</p>
+      <p class="article__meta">6 августа 2026 · Цены · 4 минуты чтения</p>
 
       <p>Каждый сезон в комментариях повторяется один и тот же спор. Один человек говорит, что берёт лисичку у бабушки на трассе почти даром. Второй показывает ценник из супермаркета и не верит своим глазам. Оба правы: это не один и тот же товар и не одна и та же цена.</p>
 
-      <h2>Четыре цены одного гриба</h2>
+      <h2 id="a1-1">Четыре цены одного гриба</h2>
       <p>Между лесом и прилавком гриб проходит несколько рук, и на каждой к нему прибавляется не жадность, а работа:</p>
       <ul>
-        <li><strong>Цена сборщика.</strong> То, что человек получает на пункте приёма за ведро, принесённое из леса. Самая низкая цифра в цепочке и единственная, которую видит сборщик.</li>
-        <li><strong>Цена заготовителя.</strong> Наша. Сюда уже входят транспорт до пункта, сортировка, отбраковка, холод и потери, а они есть всегда: гриб живой.</li>
-        <li><strong>Цена базы.</strong> Оптовик, который держит склад в городе и разбивает партию на мелкие. Он берёт за хранение и за то, что вам не нужно ехать за тонной.</li>
-        <li><strong>Цена полки.</strong> Магазин добавляет фасовку, наценку, списание непроданного и аренду квадратного метра, на котором лежит гриб.</li>
+        <li><strong>Цена сборщика.</strong> То, что человек получает на пункте приёма за ведро, принесённое из леса.</li>
+        <li><strong>Цена заготовителя.</strong> Наша. Сюда уже входят транспорт, сортировка, отбраковка, холод и потери.</li>
+        <li><strong>Цена базы.</strong> Оптовик, который держит склад в городе и разбивает партию на мелкие.</li>
+        <li><strong>Цена полки.</strong> Магазин добавляет фасовку, наценку, списание непроданного и аренду.</li>
       </ul>
       <p>Разница между первой и последней цифрой бывает кратной. Это не значит, что кто-то кого-то обманывает. Это значит, что вы покупаете разный объём работы.</p>
 
       <blockquote><p>Дешёвая лисичка на трассе означает не выгодную сделку, а отсутствие сортировки, холода и ответственности за партию.</p></blockquote>
 
-      <h2>Почему цена скачет внутри сезона</h2>
+      <h2 id="a1-2">Почему цена скачет внутри сезона</h2>
       <p>Дикорос не выращивают, его находят. Прошёл дождь в нужную неделю, гриб пошёл стеной, цена валится. Стояла жара, сборщики возвращаются с пустыми вёдрами, и та же лисичка стоит вдвое дороже через семь дней.</p>
       <p>Поэтому прайс на дикоросы живёт неделю, а не квартал. Любой, кто называет цену «на сезон» в июне, либо заложил в неё риск с запасом, либо потом переиграет.</p>
 
-      <h2>Что спрашивать, чтобы сравнивать честно</h2>
-      <p>Прежде чем сравнивать два предложения, уточните три вещи: состояние (свежая, мороженая или сушёная), объём партии и кто именно продаёт, заготовитель или перекуп. Без этих трёх цифр сравнение бессмысленно.</p>
-      <p>Мы показываем цену прямо в карточке партии и не прячем её за «напишите в директ». <a href="#/catalog">Посмотреть, что открыто сейчас</a>.</p>
+      <h2 id="a1-3">Что спрашивать, чтобы сравнивать честно</h2>
+      <p>Прежде чем сравнивать два предложения, уточните три вещи: состояние, объём партии и кто именно продаёт, заготовитель или перекуп. Без этих трёх цифр сравнение бессмысленно.</p>
+      <div class="article__end"><a class="btn btn--solid" href="#/catalog">Посмотреть, что открыто сейчас</a></div>
     </article>
     <aside class="aside" data-aside></aside>
     </div>
@@ -634,28 +917,29 @@
     <p class="crumbs"><a href="#/">Главная</a> → <a href="#/blog">Блог</a> → Десять к одному</p>
     <div class="articlewrap">
     <article class="article">
+      <div class="article__cover"><img src="img/sushenye.jpg" alt="Сушёные лесные грибы"></div>
       <h1>Десять к одному: экономика сушёного гриба</h1>
-      <p class="article__meta">14 июля 2026, рубрика «Цены»</p>
+      <p class="article__meta">14 июля 2026 · Цены · 3 минуты чтения</p>
 
       <p>Самая частая ошибка новичка в закупке: сравнить цену свежего гриба с ценой сушёного и решить, что сушёный дороже в разы. Он действительно дороже в разы за килограмм. Но вы покупаете не килограмм, а концентрат.</p>
 
-      <h2>Куда девается вес</h2>
+      <h2 id="a2-1">Куда девается вес</h2>
       <p>Свежий гриб состоит в основном из воды. При правильной сушке она уходит, и от исходного веса остаётся примерно десятая часть. Точное соотношение зависит от вида и от того, насколько мокрым гриб пришёл из леса, но порядок именно такой.</p>
-      <p>Значит, чтобы сравнить два предложения честно, цену сушёного нужно делить примерно на десять. Получится сопоставимая цена «по свежему весу». После пересчёта сушёный обычно оказывается не дороже, а иногда и выгоднее: за него не надо платить холодом и не надо успевать использовать за трое суток.</p>
+      <p>Значит, чтобы сравнить два предложения честно, цену сушёного нужно делить примерно на десять. После пересчёта сушёный обычно оказывается не дороже, а иногда и выгоднее.</p>
 
-      <h2>Что вы получаете вместе с сушкой</h2>
+      <h2 id="a2-2">Что вы получаете вместе с сушкой</h2>
       <ul>
         <li><strong>Срок хранения.</strong> Полтора года вместо нескольких дней.</li>
-        <li><strong>Логистику.</strong> Мешок вместо рефрижератора: сушёное едет обычной транспортной компанией в любой регион.</li>
+        <li><strong>Логистику.</strong> Мешок вместо рефрижератора.</li>
         <li><strong>Отсутствие сезона.</strong> Гриб есть в феврале, когда свежего нет ни у кого.</li>
-        <li><strong>Концентрированный вкус.</strong> В блюде сушёный работает сильнее свежего, это знает любой шеф.</li>
+        <li><strong>Концентрированный вкус.</strong> В блюде сушёный работает сильнее свежего.</li>
       </ul>
 
       <blockquote><p>Сушка не способ спасти лишний гриб, а отдельный продукт со своей экономикой.</p></blockquote>
 
-      <h2>Где на этом жульничают</h2>
-      <p>Недосушенный гриб весит больше, и продавец получает деньги за воду. Влажность выше нормы на глаз не увидеть, но такой гриб слипается в мешке и через месяц плесневеет. Поэтому в спецификации на партию влажность должна быть указана цифрой, а не словом «сухой».</p>
-      <p>У нас она стоит в каждой карточке: <a href="#/lot">посмотреть спецификацию партии</a>.</p>
+      <h2 id="a2-3">Где на этом жульничают</h2>
+      <p>Недосушенный гриб весит больше, и продавец получает деньги за воду. Влажность выше нормы на глаз не увидеть, но такой гриб слипается в мешке и через месяц плесневеет. Поэтому в спецификации влажность должна быть указана цифрой, а не словом «сухой».</p>
+      <div class="article__end"><a class="btn btn--solid" href="#/lot">Посмотреть спецификацию партии</a></div>
     </article>
     <aside class="aside" data-aside></aside>
     </div>
@@ -668,28 +952,29 @@
     <p class="crumbs"><a href="#/">Главная</a> → <a href="#/blog">Блог</a> → Качество сушёного гриба</p>
     <div class="articlewrap">
     <article class="article">
+      <div class="article__cover"><img src="img/belyi.jpg" alt="Белые грибы"></div>
       <h1>Почему сушёный гриб бывает дешёвым и дорогим</h1>
-      <p class="article__meta">22 июля 2026, рубрика «Качество»</p>
+      <p class="article__meta">22 июля 2026 · Качество · 4 минуты чтения</p>
 
       <p>Два мешка сушёной лисички могут отличаться по цене вдвое и выглядеть при этом почти одинаково. Разница видна, если знать, куда смотреть. Проверка занимает минуту и не требует лаборатории.</p>
 
-      <h2>Пять признаков</h2>
+      <h2 id="a3-1">Пять признаков</h2>
       <ul>
-        <li><strong>Цвет.</strong> Правильно высушенная лисичка остаётся рыжей. Бурый, «печёный» оттенок означает сушку на высокой температуре: быстро, дёшево и с потерей аромата.</li>
-        <li><strong>Ломкость.</strong> Гриб должен ломаться с хрустом, а не гнуться. Гнётся, значит недосушен: вы платите за воду и получите плесень.</li>
-        <li><strong>Запах.</strong> Сушёный гриб пахнет грибом. Кисловатый или затхлый запах говорит, что сырьё лежало влажным перед сушкой.</li>
-        <li><strong>Однородность.</strong> Если в мешке вперемешку крупная шляпка, крошка и ножки, партию собирали из остатков разных сборов.</li>
-        <li><strong>Мусор.</strong> Хвоя, песок и трава в сушёном виде никуда не денутся. Их количество показывает, чистили ли гриб вообще.</li>
+        <li><strong>Цвет.</strong> Правильно высушенная лисичка остаётся рыжей. Бурый оттенок означает сушку на высокой температуре.</li>
+        <li><strong>Ломкость.</strong> Гриб должен ломаться с хрустом, а не гнуться. Гнётся, значит недосушен.</li>
+        <li><strong>Запах.</strong> Сушёный гриб пахнет грибом. Кисловатый запах говорит, что сырьё лежало влажным.</li>
+        <li><strong>Однородность.</strong> Вперемешку шляпка, крошка и ножки — партию собирали из остатков.</li>
+        <li><strong>Мусор.</strong> Хвоя и песок в сушёном виде никуда не денутся.</li>
       </ul>
 
       <blockquote><p>Пересушенная крошка стоит дёшево не потому, что продавец добрый, а потому что это отход производства.</p></blockquote>
 
-      <h2>Что должно быть в документах</h2>
-      <p>На сушёные грибы оформляется декларация соответствия. К партии прикладывается протокол лаборатории, по дикоросам особенно важна радиология: гриб накапливает всё, что есть в почве. Если продавец не может показать ни того, ни другого, разговор про цену не имеет смысла.</p>
+      <h2 id="a3-2">Что должно быть в документах</h2>
+      <p>На сушёные грибы оформляется декларация соответствия. К партии прикладывается протокол лаборатории, по дикоросам особенно важна радиология: гриб накапливает всё, что есть в почве.</p>
 
-      <h2>Как проверить перед крупной закупкой</h2>
+      <h2 id="a3-3">Как проверить перед крупной закупкой</h2>
       <p>Возьмите пробную партию в двадцать килограммов и посмотрите её у себя: как ведёт себя в мешке через две недели, сколько отхода, каким получается бульон. Это дешевле, чем разбираться с тонной, которая слиплась.</p>
-      <p>Мы отправляем пробные партии от двадцати килограммов: <a href="#/opt">условия опта</a>.</p>
+      <div class="article__end"><a class="btn btn--solid" href="#/opt">Условия опта</a></div>
     </article>
     <aside class="aside" data-aside></aside>
     </div>
@@ -702,23 +987,24 @@
     <p class="crumbs"><a href="#/">Главная</a> → <a href="#/blog">Блог</a> → Сморчок</p>
     <div class="articlewrap">
     <article class="article">
+      <div class="article__cover"><img src="img/smorchok.jpg" alt="Сморчок конический"></div>
       <h1>Сморчок по десять тысяч за килограмм</h1>
-      <p class="article__meta">2 июля 2026, рубрика «Рынок»</p>
+      <p class="article__meta">2 июля 2026 · Рынок · 3 минуты чтения</p>
 
       <p>В начале июля мы выставили восемь килограммов конического сморчка по десять тысяч рублей за килограмм. Партия ушла. Каждый раз, когда мы публикуем такую цифру, приходит один и тот же вопрос: за что.</p>
 
-      <h2>Ответ в арифметике сезона</h2>
-      <p>Сморчок растёт три-четыре недели в году, ранней весной, когда в лесу ещё сыро и холодно. Он не встречается коврами: за день ходьбы человек находит килограмм-полтора, и это хороший день. Ни объёма, ни предсказуемости, только календарь и удача.</p>
+      <h2 id="a4-1">Ответ в арифметике сезона</h2>
+      <p>Сморчок растёт три-четыре недели в году, ранней весной, когда в лесу ещё сыро и холодно. Он не встречается коврами: за день ходьбы человек находит килограмм-полтора, и это хороший день.</p>
       <p>При этом спрос на него не сезонный. Шефы ставят сморчок в меню на весь весенний сет, а найти его негде: в отличие от лисички, вырастить или докупить у соседа не выйдет.</p>
 
       <blockquote><p>Цену на сморчок делает не наглость продавца, а тридцать дней в году и полтора килограмма за смену.</p></blockquote>
 
-      <h2>Почему такие вещи не лежат на складе</h2>
+      <h2 id="a4-2">Почему такие вещи не лежат на складе</h2>
       <p>Партию в восемь килограммов невозможно «держать в наличии». Она уходит в первые дни тому, кто успел, а следующая появится только через год. Именно поэтому мы показываем и закрытые партии: чтобы к следующему сезону вы знали, когда занимать очередь.</p>
 
-      <h2>Что делать, если сморчок нужен</h2>
+      <h2 id="a4-3">Что делать, если сморчок нужен</h2>
       <p>Договариваться заранее. Мы фиксируем бронь на весенний сбор зимой: вы называете объём, мы называем цену, и партия едет к вам, а не в общий доступ.</p>
-      <p><a href="#/opt">Обсудить бронь следующего сезона</a>.</p>
+      <div class="article__end"><a class="btn btn--solid" href="#/opt">Обсудить бронь следующего сезона</a></div>
     </article>
     <aside class="aside" data-aside></aside>
     </div>
@@ -763,6 +1049,7 @@
         <dl class="dl">
           <dt>Телефон и WhatsApp</dt><dd>8 932 474-83-83</dd>
           <dt>Telegram</dt><dd>канал «Свежие грибы здесь»</dd>
+          <dt>MAX</dt><dd>подключим, когда клиент даст профиль</dd>
           <dt>Instagram</dt><dd>lesnik_rf</dd>
           <dt>Склад и самовывоз</dt><dd>Москва, адрес уточняется</dd>
           <dt>Реквизиты</dt><dd>подставим из документов</dd>
@@ -828,64 +1115,120 @@
 
 </main>
 
+<!-- ══════════════════ ПОДВАЛ ══════════════════ -->
 <footer class="colophon">
-  <div class="wrap colophon__grid">
-    <div>
-      <b>Лесник</b>
-      Лесной супермаркет дикоросов.<br>
-      Заготовка, сушка, соление, отгрузка.<br>
-      Сезон 2026.
+  <img class="colophon__bg" src="img/les.jpg" alt="" aria-hidden="true" loading="lazy">
+  <div class="colophon__scrim"></div>
+
+  <div class="wrap">
+    <div class="colophon__top">
+      <div>
+        <p class="colophon__word">ЛЕСНИК</p>
+        <p class="colophon__slogan">Лесной супермаркет дикоросов</p>
+        <p class="colophon__about">Собираем, сушим, солим и отгружаем сами. Партиями, с открытой ценой и документами на каждую отгрузку. Работаем с ресторанами, переработчиками, магазинами и частными покупателями.</p>
+        <div class="colophon__soc">
+          <a href="#/contacts"><svg viewBox="0 0 24 24"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.2 13.2 1.4 11.7c-1-.3-1-1 .2-1.5l19-7.3c.9-.3 1.6.2 1.3 1.4z"/></svg>Telegram</a>
+          <a href="#/contacts"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.4-1.8-.7-3-1.3-5-4.4-5.2-4.6-.1-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.3.4-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.4 2.5 1.5.3.1.5.1.6-.1l.9-1c.2-.2.4-.2.6-.1l2 1c.2.1.4.2.4.3.1.1.1.6-.1 1.4z"/></svg>WhatsApp</a>
+          <a href="#/contacts"><svg viewBox="0 0 24 24"><path d="M4 4h4l4 8 4-8h4v16h-3.5V9.8L12.5 17h-1L7.5 9.8V20H4z"/></svg>MAX</a>
+          <a href="#/contacts"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c0 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2 0-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c0-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2zm0 3.3a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zm0 10.7a4.2 4.2 0 1 1 0-8.4 4.2 4.2 0 0 1 0 8.4zm6.8-10.9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>Instagram</a>
+        </div>
+      </div>
+
+      <div class="colophon__contact">
+        <a class="colophon__tel" href="tel:+79324748383">8 932 474-83-83</a>
+        <p>Отвечаем в тот же день, в сезон включая выходные.</p>
+        <p>Склад и самовывоз: Москва. Отгрузка транспортными компаниями по всей России.</p>
+        <p style="margin-top:var(--space-md)"><a class="btn" href="#/contacts" style="border-color:currentColor;color:inherit">Написать нам</a></p>
+      </div>
     </div>
-    <div>
-      <b>Каталог</b>
-      <a href="#/catalog">Грибы и ягоды</a><br>
-      <a href="#/price">Прайс-лист</a><br>
-      <a href="#/opt">Оптовикам</a><br>
-      <a href="#/blog">Блог</a>
+
+    <div class="colophon__grid">
+      <div>
+        <b>Каталог</b>
+        <a href="#/catalog">Грибы</a>
+        <a href="#/catalog">Ягоды</a>
+        <a href="#/catalog">Травы</a>
+        <a href="#/price">Прайс-лист</a>
+      </div>
+      <div>
+        <b>Покупателям</b>
+        <a href="#/opt">Оптовикам</a>
+        <a href="#/lot">Пример партии</a>
+        <a href="#/cart">Корзина</a>
+      </div>
+      <div>
+        <b>О нас</b>
+        <a href="#/about">О компании</a>
+        <a href="#/mission">Миссия и концепция</a>
+        <a href="#/blog">Блог</a>
+      </div>
+      <div>
+        <b>Сотрудничество</b>
+        <a href="#/pickers">Стать сборщиком</a>
+        <a href="#/contacts">Контакты</a>
+      </div>
     </div>
-    <div>
-      <b>Документы</b>
-      <a href="#/docs">Декларации и протоколы</a><br>
-      <a href="#/docs">Производство</a><br>
-      <a href="#/contacts">Реквизиты</a>
+
+    <div class="colophon__legal">
+      <span>© 2026 Лесник</span>
+      <span>Реквизиты подставим из документов</span>
+      <a href="#/contacts">Политика обработки данных</a>
+      <a href="#/contacts">Публичная оферта</a>
     </div>
-    <div>
-      <b>Связь</b>
-      <a href="tel:+79324748383">8 932 474-83-83</a><br>
-      Telegram, Instagram<br>
-      <a href="#/contacts">Написать</a>
+  </div>
+
+  <div class="protobar">
+    <div class="wrap">
+      <span>Прототип для согласования</span>
+      <a href="#/admin">админка</a>
+      <a href="#/lot">карточка партии</a>
+      <span>фото временные, из открытых источников</span>
     </div>
   </div>
 </footer>
 
-<div class="protobar">
-  <div class="wrap">
-    <span>Прототип для согласования</span>
-    <a href="#/admin">админка</a>
-    <a href="#/lot">карточка партии</a>
-    <a href="#/cart">корзина</a>
-    <span>фото временные, из открытых источников</span>
+<!-- ══════════════════ МУЛЬТИКНОПКА СВЯЗИ ══════════════════ -->
+<div class="fab" id="fab">
+  <div class="fab__list" id="fabList" hidden>
+    <a class="fab__item" href="#/contacts" data-fab-link>
+      <span class="fab__ico fab__ico--tg"><svg viewBox="0 0 24 24"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.2 13.2 1.4 11.7c-1-.3-1-1 .2-1.5l19-7.3c.9-.3 1.6.2 1.3 1.4z"/></svg></span>
+      <span><b>Telegram</b><small>отвечаем в течение часа</small></span>
+    </a>
+    <a class="fab__item" href="#/contacts" data-fab-link>
+      <span class="fab__ico fab__ico--wa"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.4-1.8-.7-3-1.3-5-4.4-5.2-4.6-.1-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.3.4-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.4 2.5 1.5.3.1.5.1.6-.1l.9-1c.2-.2.4-.2.6-.1l2 1c.2.1.4.2.4.3.1.1.1.6-.1 1.4z"/></svg></span>
+      <span><b>WhatsApp</b><small>отвечаем в течение часа</small></span>
+    </a>
+    <a class="fab__item" href="#/contacts" data-fab-link>
+      <span class="fab__ico fab__ico--max"><svg viewBox="0 0 24 24"><path d="M4 4h4l4 8 4-8h4v16h-3.5V9.8L12.5 17h-1L7.5 9.8V20H4z"/></svg></span>
+      <span><b>MAX</b><small>ссылку подставим позже</small></span>
+    </a>
+    <button class="fab__item" type="button" id="chatOpen">
+      <span class="fab__ico fab__ico--chat"><svg viewBox="0 0 24 24"><path d="M12 3c5 0 9 3.4 9 7.5S17 18 12 18c-.9 0-1.8-.1-2.6-.3L4 20l1.3-3.4C3.9 15.2 3 13 3 10.5 3 6.4 7 3 12 3z"/></svg></span>
+      <span><b>Чат с консультантом</b><small>отвечает сразу</small></span>
+    </button>
   </div>
+
+  <button class="fab__main" type="button" id="fabMain" aria-expanded="false" aria-label="Связаться с нами">
+    <span class="fab__chatico"><svg viewBox="0 0 24 24"><path d="M12 3c5 0 9 3.4 9 7.5S17 18 12 18c-.9 0-1.8-.1-2.6-.3L4 20l1.3-3.4C3.9 15.2 3 13 3 10.5 3 6.4 7 3 12 3z"/></svg></span>
+    <span class="fab__plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></span>
+  </button>
 </div>
 
-<!-- Панель настройки стиля: только для согласования, в прод не идёт -->
-<details class="tweak" id="tweak">
-  <summary>стиль</summary>
-  <div class="tweak__body">
-    <label>Акцент
-      <span class="swatches">
-        <button type="button" data-accent="oklch(40% 0.095 152)" data-accent-dark="oklch(72% 0.100 148)" style="background:oklch(40% 0.095 152)" aria-label="Лесной зелёный"></button>
-        <button type="button" data-accent="oklch(45% 0.140 258)" data-accent-dark="oklch(72% 0.120 258)" style="background:oklch(45% 0.140 258)" aria-label="Кобальт"></button>
-        <button type="button" data-accent="oklch(52% 0.130 40)" data-accent-dark="oklch(72% 0.120 45)" style="background:oklch(52% 0.130 40)" aria-label="Терракота"></button>
-        <button type="button" data-accent="oklch(35% 0.040 260)" data-accent-dark="oklch(78% 0.040 250)" style="background:oklch(35% 0.040 260)" aria-label="Графит"></button>
-      </span>
-    </label>
-    <label>Скругление углов
-      <input type="range" data-var="--radius" min="0" max="16" step="2" value="0" data-unit="px">
-    </label>
-    <button class="btn" type="button" id="copyTokens" style="min-height:36px">Скопировать CSS</button>
+<!-- окно чата -->
+<div class="chat" id="chat" hidden role="dialog" aria-label="Чат с консультантом">
+  <div class="chat__head" style="position:relative">
+    <b>Консультант Лесника</b>
+    <small>Отвечает цифровой помощник. Сложные вопросы передаём Илье.</small>
+    <button class="chat__close" type="button" id="chatClose" aria-label="Закрыть чат">×</button>
   </div>
-</details>
+  <div class="chat__body" id="chatBody"></div>
+  <div class="chat__chips" id="chatChips"></div>
+  <div class="chat__foot">
+    <input type="text" id="chatInput" placeholder="Спросите про товар или доставку" aria-label="Сообщение">
+    <button class="chat__send" type="button" id="chatSend" aria-label="Отправить">→</button>
+  </div>
+  <p class="chat__note">Демонстрация в прототипе. <button type="button" id="chatHuman">Позвать живого человека</button></p>
+</div>
 
 <script src="app.js"></script>
 </body>
