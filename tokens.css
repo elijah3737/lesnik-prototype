@@ -1,0 +1,108 @@
+/* rebuild v3 · studied-DNA (source: fungiline.ru, референс клиента)
+ * перенесены: структура, логика секций, семейство цвета, скругления, коммерс-тон
+ * НЕ перенесены: логотип, фирменные цвета 1:1, шрифты, контент
+ * shape system: buttons = pill · cards 16px · inputs 10px · banner 24px
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* ── surface & ink (light) ── */
+  --color-paper:      oklch(98%   0.006 95);
+  --color-paper-2:    oklch(95.5% 0.010 100);
+  --color-paper-3:    oklch(92%   0.014 100);
+  --color-block:      oklch(27%   0.045 150);
+  --color-block-2:    oklch(22%   0.038 150);
+  --color-block-ink:  oklch(96%   0.015 110);
+  --color-rule:       oklch(88%   0.010 110);
+  --color-rule-2:     oklch(32%   0.030 145);
+  --color-muted:      oklch(46%   0.020 140);
+  --color-neutral:    oklch(33%   0.025 145);
+  --color-ink:        oklch(20%   0.030 150);
+  --color-accent:     var(--accent, oklch(46% 0.085 145));
+  --color-accent-ink: oklch(36%   0.080 148);
+  --color-on-accent:  oklch(98%   0.010 110);
+  --color-focus:      oklch(52%   0.120 150);
+  --color-live:       oklch(40%   0.095 150);
+  --color-live-bg:    oklch(92%   0.035 148);
+  --color-closed-bg:  oklch(93%   0.008 100);
+
+  /* ── type: один гротеск во всех ролях, как в референсе ── */
+  --font-display: "Golos Text", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Golos Text", ui-sans-serif, system-ui, sans-serif;
+  --font-label:   "Golos Text", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, monospace;
+
+  --display-weight: 600;
+  --tracking-display: -0.015em;
+  --tracking-label:    0.06em;
+
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1.0625rem;
+  --text-md:   1.1875rem;
+  --text-lg:   1.375rem;
+  --text-xl:   1.75rem;
+  --text-2xl:  2.125rem;
+  --text-display:   clamp(2.1rem, 3vw + 1rem, 3.4rem);
+  --text-display-s: clamp(1.65rem, 2vw + 0.9rem, 2.4rem);
+  --text-counter:   clamp(3rem, 6vw, 5.5rem);
+
+  --lh-tight:   1.06;
+  --lh-snug:    1.22;
+  --lh-normal:  1.55;
+  --lh-relaxed: 1.65;
+
+  /* ── space ── */
+  --space-2xs: 0.25rem;
+  --space-xs:  0.5rem;
+  --space-sm:  0.75rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4.5rem;
+  --section-gap: clamp(3.5rem, 6vw, 5.5rem);
+  --measure: 62ch;
+  --page-max: 82rem;
+
+  /* ── shape: скругления как в референсе ── */
+  --radius-card:   var(--radius, 16px);
+  --radius-banner: 24px;
+  --radius-pill:   999px;
+  --radius-input:  10px;
+  --rule-card:  1px;
+  --rule-heavy: 2px;
+
+  /* ── motion ── */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 240ms;
+  --dur-long:  480ms;
+
+  --z-sticky-nav: 300;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper:      oklch(18%   0.020 150);
+    --color-paper-2:    oklch(22%   0.022 150);
+    --color-paper-3:    oklch(27%   0.024 150);
+    --color-block:      oklch(23%   0.040 150);
+    --color-block-2:    oklch(19%   0.034 150);
+    --color-block-ink:  oklch(94%   0.020 110);
+    --color-rule:       oklch(32%   0.020 148);
+    --color-rule-2:     oklch(80%   0.030 130);
+    --color-muted:      oklch(70%   0.020 130);
+    --color-neutral:    oklch(80%   0.020 125);
+    --color-ink:        oklch(94%   0.012 110);
+    --color-accent:     var(--accent-dark, oklch(70% 0.095 145));
+    --color-accent-ink: oklch(80%   0.090 145);
+    --color-on-accent:  oklch(18%   0.030 150);
+    --color-focus:      oklch(75%   0.120 148);
+    --color-live:       oklch(78%   0.100 148);
+    --color-live-bg:    oklch(30%   0.045 150);
+    --color-closed-bg:  oklch(27%   0.010 140);
+  }
+}
