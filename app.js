@@ -3,67 +3,80 @@
    Розничные цены с пометкой demo заглушки для прохода по сценарию. */
 
 const LOTS = [
-  { id: 'lisichka-fresh', name: 'Лисичка свежая', kind: 'mushroom', state: 'fresh',
+  { gal: ["img/lisichka.jpg", "img/korzina.jpg", "img/priemka.jpg", "img/doroga.jpg"], region: "Свердловская область", harvest: "сбор ежедневно", stock: 180, total: 400, about: "Собираем и принимаем в день сбора, охлаждаем сразу. Лисичка не червивеет, поэтому доезжает даже в дальние регионы без сортировки на месте.", specs: [["Состояние", "свежая"], ["Калибр", "2-5 см"], ["Тара", "ящик 10 кг"], ["Хранение", "до 5 суток при +2"], ["Отгрузка", "в день заявки"], ["Минимум", "20 кг"]],
+    id: 'lisichka-fresh', name: 'Лисичка свежая', kind: 'mushroom', state: 'fresh',
     img: 'img/lisichka.jpg', alt: 'Свежие лисички',
     spec: 'Свердловская область, сбор ежедневно', volume: 'отгрузка партиями',
     opt: 'по запросу', retail: null, minVol: 'mini', date: 20260810, status: 'live' },
 
-  { id: 'lisichka-dry', name: 'Лисичка сушёная', kind: 'mushroom', state: 'dry',
+  { gal: ["img/sushenye.jpg", "img/lisichka.jpg", "img/korzina.jpg", "img/priemka.jpg"], region: "Свердловская область", harvest: "сбор июль 2026", stock: 240, total: 600, about: "Сушка воздушная, при 45 градусах: гриб не «печётся», сохраняет цвет и аромат. Сырьё собрано в один заход, разнобоя по возрасту гриба нет.", specs: [["Состояние", "сушёная"], ["Урожай", "2026"], ["Влажность", "до 12 %"], ["Фракция", "целая шляпка"], ["Тара", "крафт-мешок 10 кг"], ["Хранение", "18 месяцев"]],
+    id: 'lisichka-dry', name: 'Лисичка сушёная', kind: 'mushroom', state: 'dry',
     img: 'img/sushenye.jpg', alt: 'Сушёные лесные грибы',
     spec: 'Урожай 2026, влажность до 12 %', volume: 'мешок 10 кг',
     opt: 'по запросу', retail: 690, retailUnit: 'за 100 г', demo: true, minVol: 'mini', date: 20260714, status: 'live' },
 
-  { id: 'lisichka-frozen', name: 'Лисичка замороженная', kind: 'mushroom', state: 'frozen',
+  { gal: ["img/lisichka.jpg", "img/priemka.jpg", "img/korzina.jpg", "img/doroga.jpg"], region: "Свердловская область", harvest: "заморозка августа", stock: 900, total: 1500, about: "Шоковая заморозка в день сбора, ягода и гриб не слипаются в ком. Едет рефрижератором, хранится до следующего сезона.", specs: [["Состояние", "замороженная"], ["Заморозка", "шоковая"], ["Тара", "короб 10 кг"], ["Хранение", "12 месяцев при -18"], ["Отгрузка", "1-2 дня"], ["Минимум", "500 кг"]],
+    id: 'lisichka-frozen', name: 'Лисичка замороженная', kind: 'mushroom', state: 'frozen',
     img: 'img/lisichka.jpg', alt: 'Лисички',
     spec: 'Шоковая заморозка, короб 10 кг', volume: 'короб 10 кг',
     opt: 'по запросу', retail: null, minVol: 'big', date: 20260801, status: 'live' },
 
-  { id: 'belyi-fresh', name: 'Белый гриб свежий', kind: 'mushroom', state: 'fresh',
+  { gal: ["img/belyi.jpg", "img/priemka.jpg", "img/korzina.jpg", "img/doroga.jpg"], region: "Свердловская область", harvest: "сбор ежедневно", stock: 120, total: 300, about: "Первый сорт, калиброванный, червивый отбраковываем на приёмке. Берут рестораны под сезонное меню и переработчики под сушку.", specs: [["Состояние", "свежий"], ["Сорт", "первый"], ["Калибр", "от 4 см"], ["Тара", "ящик 10 кг"], ["Хранение", "до 3 суток при +2"], ["Минимум", "20 кг"]],
+    id: 'belyi-fresh', name: 'Белый гриб свежий', kind: 'mushroom', state: 'fresh',
     img: 'img/belyi.jpg', alt: 'Белые грибы',
     spec: 'Первый сорт, калиброванный', volume: 'ящик 10 кг',
     opt: 'по запросу', retail: null, minVol: 'mini', date: 20260808, status: 'live' },
 
-  { id: 'belyi-dry', name: 'Белый гриб сушёный', kind: 'mushroom', state: 'dry',
+  { gal: ["img/sushenye.jpg", "img/belyi.jpg", "img/priemka.jpg", "img/korzina.jpg"], region: "Свердловская область", harvest: "сбор июль 2026", stock: 95, total: 250, about: "Резаный пластиной и целой шляпкой, сушка воздушная. Из десяти килограммов свежего получается около килограмма сушёного, поэтому цена за килограмм выше свежего в разы.", specs: [["Состояние", "сушёный"], ["Урожай", "2026"], ["Влажность", "до 12 %"], ["Фракция", "шляпка целая"], ["Тара", "мешок 5 кг"], ["Хранение", "18 месяцев"]],
+    id: 'belyi-dry', name: 'Белый гриб сушёный', kind: 'mushroom', state: 'dry',
     img: 'img/sushenye.jpg', alt: 'Сушёный белый гриб',
     spec: 'Урожай 2026, шляпка целая', volume: 'мешок 5 кг',
     opt: 'по запросу', retail: 1190, retailUnit: 'за 100 г', demo: true, minVol: 'mini', date: 20260720, status: 'live' },
 
-  { id: 'gruzd-salted', name: 'Груздь солёный', kind: 'mushroom', state: 'salted',
+  { gal: ["img/korzina.jpg", "img/priemka.jpg", "img/belyi.jpg", "img/doroga.jpg"], region: "Урал", harvest: "засолка августа", stock: 400, total: 800, about: "Холодная засолка в бочках, без уксуса и консервантов. Готовность через 40 дней, отгружаем партиями от бочки.", specs: [["Состояние", "солёный"], ["Способ", "холодная засолка"], ["Тара", "бочка 25 кг"], ["Хранение", "9 месяцев при +4"], ["Отгрузка", "по готовности"], ["Минимум", "бочка"]],
+    id: 'gruzd-salted', name: 'Груздь солёный', kind: 'mushroom', state: 'salted',
     img: 'img/korzina.jpg', alt: 'Солёные грузди',
     spec: 'Холодная засолка, бочка 25 кг', volume: 'бочка 25 кг',
     opt: 'по запросу', retail: 890, retailUnit: 'за 1 кг', demo: true, minVol: 'big', date: 20260805, status: 'live' },
 
-  { id: 'klukva', name: 'Клюква замороженная', kind: 'berry', state: 'frozen',
+  { gal: ["img/klukva.jpg", "img/priemka.jpg", "img/doroga.jpg", "img/korzina.jpg"], region: "Северо-Запад", harvest: "сбор сентябрь", stock: 1200, total: 2000, about: "Болотная клюква, шоковая заморозка без листа и веток. Берут переработчики под морсы и кондитеры.", specs: [["Состояние", "замороженная"], ["Заморозка", "шоковая"], ["Примеси", "без листа"], ["Тара", "короб 10 кг"], ["Хранение", "12 месяцев при -18"], ["Минимум", "20 кг"]],
+    id: 'klukva', name: 'Клюква замороженная', kind: 'berry', state: 'frozen',
     img: 'img/klukva.jpg', alt: 'Клюква',
     spec: 'Шоковая заморозка, без листа', volume: 'короб 10 кг',
     opt: 'по запросу', retail: 490, retailUnit: 'за 1 кг', demo: true, minVol: 'mini', date: 20260930, status: 'live' },
 
-  { id: 'brusnika', name: 'Брусника замороженная', kind: 'berry', state: 'frozen',
+  { gal: ["img/brusnika.jpg", "img/priemka.jpg", "img/doroga.jpg", "img/korzina.jpg"], region: "Северо-Запад", harvest: "сбор сентябрь", stock: 800, total: 1500, about: "Брусника с болот, очищенная от листа, шоковая заморозка. Плотная ягода, не течёт после разморозки.", specs: [["Состояние", "замороженная"], ["Заморозка", "шоковая"], ["Примеси", "без листа"], ["Тара", "короб 10 кг"], ["Хранение", "12 месяцев при -18"], ["Минимум", "20 кг"]],
+    id: 'brusnika', name: 'Брусника замороженная', kind: 'berry', state: 'frozen',
     img: 'img/brusnika.jpg', alt: 'Брусника',
     spec: 'Шоковая заморозка, без листа', volume: 'короб 10 кг',
     opt: 'по запросу', retail: 590, retailUnit: 'за 1 кг', demo: true, minVol: 'mini', date: 20260925, status: 'live' },
 
-  { id: 'brusnika-pureed', name: 'Брусника протёртая', kind: 'berry', state: 'pureed',
+  { gal: ["img/brusnika.jpg", "img/korzina.jpg", "img/priemka.jpg", "img/doroga.jpg"], region: "Северо-Запад", harvest: "переработка сентября", stock: 300, total: 600, about: "Протёртая с сахаром, без варки: витамины остаются. Делаем под заказ от 200 килограммов, фасуем в пищевые вёдра.", specs: [["Состояние", "протёртая"], ["Сахар", "1 к 1"], ["Обработка", "без варки"], ["Тара", "ведро 5 кг"], ["Хранение", "6 месяцев при +4"], ["Минимум", "200 кг"]],
+    id: 'brusnika-pureed', name: 'Брусника протёртая', kind: 'berry', state: 'pureed',
     img: 'img/brusnika.jpg', alt: 'Протёртая брусника с сахаром',
     spec: 'С сахаром, ведро 5 кг, под заказ от 200 кг', volume: 'ведро 5 кг',
     opt: 'по запросу', retail: 740, retailUnit: 'за 1 кг', demo: true, minVol: 'big', date: 20260920, status: 'live' },
 
-  { id: 'smorchok', name: 'Сморчок конический', kind: 'mushroom', state: 'fresh',
+  { gal: ["img/smorchok.jpg", "img/priemka.jpg", "img/doroga.jpg", "img/korzina.jpg"], region: "Средняя полоса", harvest: "сбор май 2026", stock: 0, total: 8, about: "Ранний весенний гриб, растёт три-четыре недели в году. Партия была восемь килограммов, ушла за два дня.", specs: [["Состояние", "свежий"], ["Урожай", "2026"], ["Партия", "8 кг"], ["Тара", "ящик 2 кг"], ["Сезон", "апрель, май"], ["Следующий сбор", "весна 2027"]],
+    id: 'smorchok', name: 'Сморчок конический', kind: 'mushroom', state: 'fresh',
     img: 'img/smorchok.jpg', alt: 'Сморчок конический',
     spec: 'Партия 8 кг, сбор май', volume: '8 кг',
     opt: '10 000 ₽', retail: null, minVol: 'mini', date: 20260702, status: 'closed', closed: '02.07' },
 
-  { id: 'shapochka', name: 'Сморчковая шапочка', kind: 'mushroom', state: 'frozen',
+  { gal: ["img/smorchok.jpg", "img/priemka.jpg", "img/korzina.jpg", "img/doroga.jpg"], region: "Средняя полоса", harvest: "сбор май 2026", stock: 0, total: 3000, about: "Сморчковая шапочка в шоковой заморозке, партия три тонны. Забрал один переработчик целиком.", specs: [["Состояние", "замороженная"], ["Урожай", "2026"], ["Партия", "3 000 кг"], ["Тара", "короб 10 кг"], ["Хранение", "12 месяцев при -18"], ["Следующий сбор", "весна 2027"]],
+    id: 'shapochka', name: 'Сморчковая шапочка', kind: 'mushroom', state: 'frozen',
     img: 'img/smorchok.jpg', alt: 'Сморчковая шапочка',
     spec: 'Заморозка, партия 3 000 кг', volume: '3 000 кг',
     opt: '320 ₽', retail: null, minVol: 'big', date: 20260628, status: 'closed', closed: '28.06' },
 
-  { id: 'moroshka', name: 'Морошка', kind: 'berry', state: 'fresh',
+  { gal: ["img/moroshka.jpg", "img/doroga.jpg", "img/priemka.jpg", "img/korzina.jpg"], region: "Северо-Запад", harvest: "сбор июль 2026", stock: 0, total: 4000, about: "Северная ягода, сезон две недели. Партия четыре тонны разошлась за неделю между переработчиками.", specs: [["Состояние", "свежая"], ["Урожай", "2026"], ["Партия", "4 000 кг"], ["Тара", "короб 10 кг"], ["Сезон", "июль"], ["Следующий сбор", "июль 2027"]],
+    id: 'moroshka', name: 'Морошка', kind: 'berry', state: 'fresh',
     img: 'img/moroshka.jpg', alt: 'Морошка',
     spec: 'Партия 4 000 кг, сбор июль', volume: '4 000 кг',
     opt: 'по запросу', retail: null, minVol: 'big', date: 20260718, status: 'closed', closed: '18.07' },
 
-  { id: 'zemlyanika', name: 'Земляника лесная', kind: 'berry', state: 'fresh',
+  { gal: ["img/zemlyanika.jpg", "img/doroga.jpg", "img/priemka.jpg", "img/korzina.jpg"], region: "Средняя полоса", harvest: "сбор июнь 2026", stock: 0, total: 0, about: "Лесная земляника, только опт и только по факту сбора. Ягода нежная, отгружаем в день приёмки.", specs: [["Состояние", "свежая"], ["Урожай", "2026"], ["Тара", "лоток 2 кг"], ["Хранение", "до 2 суток при +2"], ["Сезон", "июнь"], ["Следующий сбор", "июнь 2027"]],
+    id: 'zemlyanika', name: 'Земляника лесная', kind: 'berry', state: 'fresh',
     img: 'img/zemlyanika.jpg', alt: 'Лесная земляника',
     spec: 'Сбор июнь, только опт', volume: 'по факту сбора',
     opt: 'по запросу', retail: null, minVol: 'mini', date: 20260606, status: 'closed', closed: '06.06' }
@@ -102,7 +115,7 @@ function card(lot) {
   return `<li class="lot${live ? '' : ' lot--closed'}">
     <div class="lot__shot">${tag}<img src="${lot.img}" alt="${lot.alt}" loading="lazy"></div>
     <div class="lot__body">
-      <p class="lot__name"><a href="#/lot">${lot.name}</a></p>
+      <p class="lot__name"><a href="#/lot/${lot.id}">${lot.name}</a></p>
       <p class="lot__spec">${lot.spec}</p>
     </div>
     <div class="lot__foot">
@@ -271,7 +284,7 @@ function renderAsides(live) {
       .map(h => `<li><a href="#${h.id}">${h.textContent}</a></li>`).join('');
 
     const lots = live.slice(0, 3).map(l => `
-      <a class="aside__row" href="#/lot">
+      <a class="aside__row" href="#/lot/${l.id}">
         <img src="${l.img}" alt="${l.alt}">
         <span><b>${l.name}</b><span>${mode === 'opt' ? l.opt : (l.retail ? money(l.retail) : 'только опт')}</span></span>
       </a>`).join('');
@@ -336,27 +349,134 @@ function renderAll() {
 
   fill('homeLive', live);
   fill('homeClosed', closed);
-  fill('lotRelated', live.filter(l => l.id !== 'lisichka-dry').slice(0, 4));
 
   renderCatalog();
   renderPrice();
   renderBlog();
   renderAsides(live);
   renderCart();
-
-  const lotPrice = document.getElementById('lotPrice');
-  if (lotPrice) {
-    const l = LOTS.find(x => x.id === 'lisichka-dry');
-    if (mode === 'opt') {
-      lotPrice.textContent = l.opt;
-      document.getElementById('lotHint').textContent = 'Опт от 20 кг, крафт-мешок 10 кг';
-    } else {
-      lotPrice.textContent = money(l.retail) + ' ' + l.retailUnit;
-      document.getElementById('lotHint').textContent = 'Розница, цена демонстрационная';
-    }
-  }
+  if (currentLot && location.hash.startsWith('#/lot')) renderProduct(currentLot.id);
 
   requestAnimationFrame(() => document.querySelectorAll('[data-rail-box]').forEach(setupRail));
+}
+
+/* ═══════════ страница товара ═══════════ */
+
+let currentLot = null;
+
+function renderProduct(id) {
+  const lot = LOTS.find(l => l.id === id) || LOTS[0];
+  currentLot = lot;
+  const box = document.getElementById('lotPage');
+  if (!box) return;
+
+  const live = lot.status === 'live';
+  const pct = lot.total ? Math.round((lot.stock / lot.total) * 100) : 0;
+  const kindRu = lot.kind === 'berry' ? 'Ягоды' : lot.kind === 'herb' ? 'Травы' : 'Грибы';
+
+  const priceBlock = mode === 'retail' && lot.retail
+    ? `<p class="buy__price">${money(lot.retail)}<small>${lot.retailUnit}${lot.demo ? ', цена демонстрационная' : ''}</small></p>`
+    : `<p class="buy__price">${lot.opt}<small>${live ? 'за кг, опт от 20 кг' : 'цена закрытой партии'}</small></p>`;
+
+  const tiers = live && mode === 'opt' ? `
+    <ul class="tiers">
+      <li><b>от 20 кг</b><span>мини-опт</span></li>
+      <li><b>от 100 кг</b><span>дешевле</span></li>
+      <li><b>от 500 кг</b><span>лучшая цена</span></li>
+    </ul>` : '';
+
+  const stockBlock = live ? `
+    <div class="stockbar">
+      <div class="stockbar__top"><span>Осталось в партии</span><b class="num">${fmt(lot.stock)} из ${fmt(lot.total)} кг</b></div>
+      <div class="stockbar__rail"><i style="width:${Math.max(4, pct)}%"></i></div>
+      <p class="stockbar__note">${pct < 35 ? 'Партия заканчивается, уточняйте остаток при заявке' : 'Отгружаем со склада в Москве'}</p>
+    </div>` : `
+    <div class="stockbar stockbar--out">
+      <div class="stockbar__top"><span>Партия закрыта</span><b>${lot.closed}</b></div>
+      <p class="stockbar__note">Забронируйте объём в следующем сборе, чтобы не ждать общего доступа.</p>
+    </div>`;
+
+  const action = !live
+    ? `<a class="btn btn--solid btn--full btn--lg" href="#/opt">Бронь следующего сбора</a>`
+    : (mode === 'retail' && lot.retail
+        ? `<button class="btn btn--solid btn--full btn--lg" type="button" data-add="${lot.id}">В корзину</button>`
+        : `<a class="btn btn--solid btn--full btn--lg" href="#buyForm">Запросить цену на объём</a>`);
+
+  const related = LOTS.filter(l => l.id !== lot.id && l.status === 'live' && l.kind === lot.kind).slice(0, 4);
+
+  box.innerHTML = `
+    <p class="crumbs"><a href="#/">Главная</a> → <a href="#/catalog">Каталог</a> → ${kindRu} → ${lot.name}</p>
+
+    <div class="product">
+      <div class="product__media">
+        <div class="pgal">
+          <div class="pgal__thumbs" role="group" aria-label="Кадры партии">
+            ${lot.gal.map((g, i) => `<button type="button" data-shot="${g}" aria-pressed="${i === 0}"><img src="${g}" alt=""></button>`).join('')}
+          </div>
+          <div class="pgal__main"><img id="galMain" src="${lot.gal[0]}" alt="${lot.alt}"></div>
+        </div>
+      </div>
+
+      <div class="product__buy">
+        <div class="buy">
+          <span class="tag ${live ? 'tag--live' : 'tag--closed'}">${live ? 'партия открыта' : 'партия закрыта'}</span>
+          <h1>${lot.name}</h1>
+          <p class="buy__meta">${lot.region} · ${lot.harvest}</p>
+          ${priceBlock}
+          ${tiers}
+          ${stockBlock}
+          <div class="buy__act">${action}</div>
+          <a class="buy__tel" href="tel:+79324748383">Или сразу: 8 932 474-83-83</a>
+          <ul class="buy__facts">
+            <li>Отгрузка 1-2 рабочих дня</li>
+            <li>Самовывоз в Москве или доставка</li>
+            <li>Нал, безнал, счёт для юрлиц</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="psections">
+      <section class="psection">
+        <h2>Об этой партии</h2>
+        <p>${lot.about}</p>
+      </section>
+
+      <section class="psection">
+        <h2>Характеристики</h2>
+        <dl class="ptable">
+          ${lot.specs.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}
+        </dl>
+      </section>
+
+      <section class="psection">
+        <h2>Доставка и оплата</h2>
+        <div class="pfacts">
+          <div><b>Самовывоз</b><span>Склад в Москве, в день оплаты</span></div>
+          <div><b>По Москве</b><span>От 300 кг без доплаты</span></div>
+          <div><b>В регионы</b><span>Транспортной компанией</span></div>
+          <div><b>Оплата</b><span>Нал, безнал, счёт юрлицу</span></div>
+        </div>
+      </section>
+
+      <section class="psection" id="buyForm">
+        <h2>Запросить цену на объём</h2>
+        <p class="psection__lede">Назовите объём, ответим в тот же день и выставим счёт.</p>
+        <form class="buyform" data-form="lot" novalidate>
+          <label class="field"><span>Сколько нужно, кг</span><input name="qty" type="number" min="1" placeholder="200" required><em class="err">Укажите объём в килограммах</em></label>
+          <label class="field"><span>Телефон</span><input name="phone" type="tel" placeholder="+7" required><em class="err">Нужен телефон для связи</em></label>
+          <label class="field"><span>Кто вы</span>
+            <select name="who"><option>Ресторан или кафе</option><option>Переработчик</option><option>Магазин или сеть</option><option>Экспорт</option><option>Частное лицо</option></select>
+          </label>
+          <button class="btn btn--solid btn--lg" type="submit">Отправить заявку</button>
+        </form>
+      </section>
+    </div>
+
+    ${related.length ? `
+    <div class="shead"><h2>Из этой же категории</h2><a class="tlink" href="#/catalog">Весь каталог →</a></div>
+    <ul class="lots">${related.map(card).join('')}</ul>` : ''}
+  `;
 }
 
 /* ═══════════ карусели: точки и стрелки ═══════════ */
@@ -460,7 +580,7 @@ function runSearch(q) {
   ).slice(0, 5);
 
   drop.innerHTML = hits.length
-    ? hits.map(l => `<a class="search__row" href="#/lot" data-search-hit>
+    ? hits.map(l => `<a class="search__row" href="#/lot/${l.id}" data-search-hit>
         <img src="${l.img}" alt="">
         <span><b>${l.name}</b><span>${mode === 'opt' ? l.opt : (l.retail ? money(l.retail) + ' ' + l.retailUnit : 'только оптом')}</span></span>
       </a>`).join('')
@@ -510,11 +630,14 @@ function chatInit() {
 
 function route() {
   const path = location.hash.replace(/^#/, '') || '/';
-  if (!path.startsWith('/')) return;  // якорь внутри статьи
+  if (!path.startsWith('/')) return;  // якорь внутри страницы
+
+  const isLot = path.startsWith('/lot');
+  if (isLot) renderProduct(path.split('/')[2] || 'lisichka-dry');
 
   let hit = null;
   document.querySelectorAll('.screen').forEach(s => {
-    const on = s.dataset.route === path;
+    const on = isLot ? s.dataset.route === '/lot' : s.dataset.route === path;
     s.classList.toggle('is-active', on);
     if (on) hit = s;
   });
@@ -625,7 +748,7 @@ document.addEventListener('click', e => {
   const shot = e.target.closest('[data-shot]');
   if (shot) {
     document.getElementById('galMain').src = shot.dataset.shot;
-    document.querySelectorAll('[data-shot]').forEach(b => b.setAttribute('aria-pressed', String(b === shot)));
+    shot.closest('.pgal__thumbs').querySelectorAll('[data-shot]').forEach(b => b.setAttribute('aria-pressed', String(b === shot)));
     return;
   }
 
@@ -642,8 +765,9 @@ document.addEventListener('click', e => {
     const out = document.getElementById('admStock');
     const next = Math.max(0, Number(out.textContent) + Number(stock.dataset.stock));
     out.textContent = next;
-    const onLot = document.getElementById('lotStock');
-    if (onLot) onLot.textContent = next;
+    const dry = LOTS.find(l => l.id === 'lisichka-dry');
+    if (dry) dry.stock = next;
+    if (currentLot && location.hash.startsWith('#/lot')) renderProduct(currentLot.id);
     return;
   }
 
