@@ -24,11 +24,19 @@
     <a class="catbtn" href="#/catalog">Каталог</a>
 
     <div class="search" id="search">
-      <span class="search__ico" aria-hidden="true">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-      </span>
-      <input type="search" id="searchInput" placeholder="Найти: лисичка, морошка, сушёные" aria-label="Поиск по каталогу" autocomplete="off">
-      <div class="search__drop" id="searchDrop" hidden></div>
+      <form class="search__form" id="searchForm" role="search">
+        <span class="search__ico" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        </span>
+        <input type="search" id="searchInput" placeholder="Поиск по каталогу"
+               data-ph-open="Например: лисичка сушёная в мешках или ягода в заморозке"
+               aria-label="Поиск по каталогу" autocomplete="off">
+        <button class="search__go" type="submit">Найти</button>
+        <button class="search__x" type="button" id="searchClose" aria-label="Закрыть поиск">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        <div class="search__drop" id="searchDrop" role="region" aria-label="Подсказки поиска" hidden></div>
+      </form>
     </div>
 
     <nav class="mast__nav" aria-label="Основная навигация">

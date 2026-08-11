@@ -100,7 +100,7 @@ function card(lot) {
     price = lot.opt;
     unit = live ? `опт, ${lot.volume}` : `партия ${lot.volume}`;
     action = live
-      ? `<a class="btn btn--soft btn--full" href="#/lot">Запросить цену</a>`
+      ? `<a class="btn btn--soft btn--full" href="#/lot/${lot.id}">Запросить цену</a>`
       : `<a class="btn btn--soft btn--full" href="#/opt">Бронь следующего сбора</a>`;
   } else if (lot.retail) {
     price = money(lot.retail);
@@ -132,10 +132,11 @@ const fill = (id, list) => {
 
 /* ═══════════ каталог: категории и фильтры ═══════════ */
 
-const filters = { cat: 'mushroom', state: 'all', avail: 'live', vol: null, sort: 'default' };
+const filters = { cat: 'mushroom', state: 'all', avail: 'live', vol: null, sort: 'default', q: '' };
 
 function catalogList() {
-  let list = LOTS.filter(l => l.kind === filters.cat);
+  // поиск идёт поверх категорий: клиент ищет «морошку», а не «ягоды → морошка»
+  let list = filters.q ? searchLots(filters.q) : LOTS.filter(l => l.kind === filters.cat);
   if (filters.state !== 'all') list = list.filter(l => l.state === filters.state);
   if (filters.avail === 'live') list = list.filter(l => l.status === 'live');
   if (filters.vol) list = list.filter(l => l.minVol === filters.vol);
@@ -151,9 +152,11 @@ function renderCatalog() {
   const empty = document.getElementById('catEmpty');
   if (empty) empty.hidden = list.length > 0;
 
-  const total = LOTS.filter(l => l.kind === filters.cat).length;
+  const total = filters.q ? searchLots(filters.q).length : LOTS.filter(l => l.kind === filters.cat).length;
   const counter = document.getElementById('catCounter');
-  if (counter) counter.textContent = `Показано ${list.length} из ${total}`;
+  if (counter) counter.textContent = filters.q
+    ? `По запросу «${filters.q}» нашли ${total}`
+    : `Показано ${list.length} из ${total}`;
 
   // счётчики в левом меню
   document.querySelectorAll('[data-count-cat]').forEach(el => {
@@ -166,7 +169,7 @@ function renderCatalog() {
 
   // активная группа и подпункт
   document.querySelectorAll('.catnav__group').forEach(g => {
-    const on = g.dataset.group === filters.cat;
+    const on = !filters.q && g.dataset.group === filters.cat;
     g.classList.toggle('is-active', on);
     const sub = g.querySelector('.catnav__sub');
     if (sub) sub.hidden = !on;
@@ -186,8 +189,9 @@ function renderCatalog() {
   const chips = document.getElementById('chips');
   if (chips) {
     const active = [];
+    if (filters.q) active.push({ k: 'q', label: `Поиск: ${filters.q}` });
     if (filters.state !== 'all') active.push({ k: 'state', label: STATE_RU[filters.state] || filters.state });
-    if (filters.avail === 'all') active.push({ k: 'avail', label: 'включая закрытые' });
+    if (filters.avail === 'all' && !filters.q) active.push({ k: 'avail', label: 'включая закрытые' });
     if (filters.vol) active.push({ k: 'vol', label: filters.vol === 'mini' ? 'мини-опт от 20 кг' : 'опт от 500 кг' });
     chips.innerHTML = active.length
       ? active.map(a => `<button class="chip" type="button" data-chip="${a.k}">${a.label}<span aria-hidden="true">×</span><span class="sr-only">убрать фильтр</span></button>`).join('') +
@@ -197,7 +201,7 @@ function renderCatalog() {
 }
 
 function resetFilters() {
-  filters.state = 'all'; filters.avail = 'live'; filters.vol = null; filters.sort = 'default';
+  filters.state = 'all'; filters.avail = 'live'; filters.vol = null; filters.sort = 'default'; filters.q = '';
   const sel = document.getElementById('sortSel');
   if (sel) sel.value = 'default';
   renderCatalog();
@@ -570,22 +574,149 @@ function observeReveals() {
 
 /* ═══════════ поиск ═══════════ */
 
+/* Ищем так, как товар называет клиент: «лисички», «сушеные», «боровик», «ягода».
+   Поэтому ё сводим к е, слова сравниваем по основе, а к каждой партии
+   приписываем синонимы вида и состояния. */
+
+const SEARCH_STOP = new Set(['от', 'до', 'в', 'на', 'и', 'с', 'по', 'для', 'из', 'за', 'или', 'а']);
+
+const KIND_WORDS = {
+  mushroom: 'гриб грибы грибной грибная грибочки',
+  berry: 'ягода ягоды ягодный ягодная',
+  herb: 'трава травы травяной иван-чай сбор'
+};
+
+const STATE_WORDS = {
+  fresh: 'свежая свежий свежее охлажденная',
+  dry: 'сушеная сушеный сушеные сухая сушка вяленая',
+  frozen: 'замороженная замороженный заморозка мороженая свежемороженая шоковая',
+  salted: 'соленая соленый соление засолка соленья бочка',
+  pureed: 'протертая перетертая пюре с сахаром'
+};
+
+const LOT_ALIAS = {
+  'belyi-fresh': 'боровик белые грибы',
+  'belyi-dry': 'боровик белые грибы',
+  'gruzd-salted': 'грузди',
+  'lisichka-fresh': 'лисички',
+  'lisichka-dry': 'лисички',
+  'lisichka-frozen': 'лисички',
+  'smorchok': 'сморчки',
+  'shapochka': 'сморчки шапочки',
+  'klukva': 'клюквенная болотная',
+  'brusnika': 'брусничная',
+  'brusnika-pureed': 'брусничная',
+  'moroshka': 'северная ягода',
+  'zemlyanika': 'земляничная'
+};
+
+const VOL_WORDS = { mini: 'мини-опт от 20 кг небольшая партия', big: 'крупный опт от 500 кг тонна фура' };
+
+const searchNorm = s => (s || '').toLowerCase().replace(/ё/g, 'е')
+  .replace(/[^a-zа-я0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+const searchStem = w => (w.length > 4 ? w.slice(0, Math.max(4, w.length - 2)) : w);
+
+const SEARCH_INDEX = LOTS.map(l => {
+  const hay = [
+    l.name, STATE_RU[l.state], KIND_WORDS[l.kind], STATE_WORDS[l.state], LOT_ALIAS[l.id],
+    VOL_WORDS[l.minVol], l.spec, l.region, l.harvest, l.volume,
+    (l.specs || []).map(p => p.join(' ')).join(' ')
+  ].join(' ');
+  return { lot: l, name: searchNorm(l.name).split(' '), hay: searchNorm(hay).split(' ') };
+});
+
+function searchLots(q) {
+  const words = searchNorm(q).split(' ').filter(w => w && !SEARCH_STOP.has(w));
+  const terms = words.filter(w => w.length >= 2).map(searchStem);
+  if (!terms.length) return [];
+
+  const found = [];
+  for (const entry of SEARCH_INDEX) {
+    let score = 0, ok = true;
+    for (const t of terms) {
+      if (entry.name.some(w => w.startsWith(t))) score += 4;
+      else if (entry.hay.some(w => w.startsWith(t))) score += 1;
+      else { ok = false; break; }
+    }
+    if (!ok) continue;
+    if (entry.lot.status === 'live') score += 0.5;
+    found.push({ lot: entry.lot, score });
+  }
+  return found.sort((a, b) => b.score - a.score).map(x => x.lot);
+}
+
+const priceLabel = l => mode === 'opt'
+  ? l.opt
+  : (l.retail ? money(l.retail) + ' ' + l.retailUnit : 'только оптом');
+
+const SEARCH_TAGS = ['лисичка сушёная', 'белый гриб', 'ягода в заморозке', 'груздь солёный', 'морошка'];
+
+function searchIdle() {
+  return `<p class="search__hint">Спрашивайте как привыкли: название, вид или состояние</p>
+    <div class="search__tags">
+      ${SEARCH_TAGS.map(t => `<button class="search__tag" type="button" data-search-tag="${t}">${t}</button>`).join('')}
+    </div>
+    <a class="search__all" href="#/catalog" data-search-hit>Открыть весь каталог</a>`;
+}
+
 function runSearch(q) {
   const drop = document.getElementById('searchDrop');
-  const query = q.trim().toLowerCase();
-  if (query.length < 2) { drop.hidden = true; return; }
+  if (!drop) return;
+  const query = q.trim();
 
-  const hits = LOTS.filter(l =>
-    (l.name + ' ' + (STATE_RU[l.state] || '') + ' ' + l.spec).toLowerCase().includes(query)
-  ).slice(0, 5);
+  if (query.length < 2) { drop.innerHTML = searchIdle(); openSearchDrop(true); return; }
 
-  drop.innerHTML = hits.length
-    ? hits.map(l => `<a class="search__row" href="#/lot/${l.id}" data-search-hit>
+  const hits = searchLots(query);
+  const shown = hits.slice(0, 6);
+
+  drop.innerHTML = shown.length
+    ? shown.map(l => `<a class="search__row" href="#/lot/${l.id}" data-search-hit>
         <img src="${l.img}" alt="">
-        <span><b>${l.name}</b><span>${mode === 'opt' ? l.opt : (l.retail ? money(l.retail) + ' ' + l.retailUnit : 'только оптом')}</span></span>
-      </a>`).join('')
-    : `<p class="search__empty">Ничего не нашли. Позвоните, подскажем что есть: <a href="tel:+79324748383">8 932 474-83-83</a></p>`;
-  drop.hidden = false;
+        <span><b>${l.name}</b><span>${l.status === 'live' ? l.spec : 'партия закрыта ' + l.closed}</span></span>
+        <span class="search__price${/^\d/.test(priceLabel(l)) ? ' search__price--num' : ''}">${priceLabel(l)}</span>
+      </a>`).join('') +
+      `<a class="search__all" href="#/catalog" data-search-all>${
+        hits.length > shown.length ? `Показать все результаты: ${hits.length}` : 'Показать в каталоге'
+      }</a>`
+    : `<p class="search__empty">По запросу «${query}» ничего не нашли. Сезон меняется каждую неделю, позвоните и мы подскажем: <a href="tel:+79324748383">8 932 474-83-83</a></p>
+       <a class="search__all" href="#/catalog" data-search-hit>Открыть весь каталог</a>`;
+  openSearchDrop(true);
+}
+
+function openSearchDrop(on) {
+  const drop = document.getElementById('searchDrop');
+  if (drop) drop.hidden = !on;
+}
+
+function openSearch() {
+  const box = document.getElementById('search');
+  const input = document.getElementById('searchInput');
+  if (!box || box.classList.contains('is-open')) return;
+  box.classList.add('is-open');
+  input.placeholder = input.dataset.phOpen || input.placeholder;
+  runSearch(input.value);
+}
+
+function closeSearch(blur) {
+  const box = document.getElementById('search');
+  const input = document.getElementById('searchInput');
+  if (!box) return;
+  box.classList.remove('is-open');
+  if (input) {
+    input.placeholder = 'Поиск по каталогу';
+    if (blur) input.blur();
+  }
+  openSearchDrop(false);
+}
+
+/* Enter или «Найти»: переносим запрос в каталог, там он живёт как фильтр */
+function searchToCatalog(q) {
+  filters.q = (q || '').trim();
+  if (filters.q) { filters.state = 'all'; filters.avail = 'all'; filters.vol = null; }
+  closeSearch(true);
+  renderCatalog();
+  if (location.hash.replace('#', '') !== '/catalog') location.hash = '#/catalog';
 }
 
 /* ═══════════ чат с ИИ-консультантом (демо) ═══════════ */
@@ -594,7 +725,7 @@ const CHAT_QA = [
   { q: 'Что есть в наличии?', a: 'Сейчас открыто шесть партий: лисичка свежая, сушёная и замороженная, белый гриб свежий и сушёный, груздь солёный. Из ягод есть клюква и брусника в заморозке. Открыть каталог целиком: раздел «Каталог».' },
   { q: 'Чем сушёное лучше замороженного?', a: 'Сушёное хранится полтора года и едет обычной транспортной компанией без холода. Замороженное ближе к свежему по вкусу, но требует рефрижератора и морозильной камеры у вас. Для регионов почти всегда выгоднее сушёное.' },
   { q: 'Какой объём брать для ресторана?', a: 'Ресторану обычно хватает 20-50 кг свежего в неделю в сезон. Начните с пробной партии 20 кг: посмотрите отход и как гриб ведёт себя на кухне, потом зафиксируем регулярный объём.' },
-  { q: 'Какие документы дадите?', a: 'Декларацию соответствия, протокол лаборатории с радиологией и программу ХАССП цеха. Сканы открываются со страницы каждой партии, отдельно запрашивать не нужно.' },
+  { q: 'Как оформляем сделку?', a: 'Работаем по счёту и договору поставки, оплата безналичная. Реквизиты есть в разделе «Контакты», счёт выставим в день заявки. Отгружаем после поступления оплаты или по согласованной отсрочке.' },
   { q: 'Доставите в другой город?', a: 'Да. Сушёное и замороженное отправляем транспортной компанией по всей России. Свежую лисичку тоже возим: она не червивеет и переносит двое суток дороги.' }
 ];
 
@@ -611,7 +742,7 @@ function chatAnswer(question) {
   const q = question.toLowerCase();
   const hit = CHAT_QA.find(x => x.q.toLowerCase() === q)
     || CHAT_QA.find(x => q.split(' ').some(w => w.length > 4 && x.q.toLowerCase().includes(w)))
-    || CHAT_QA.find(x => (q.includes('налич') && x.q.includes('наличии')) || (q.includes('документ') && x.q.includes('документы'))
+    || CHAT_QA.find(x => (q.includes('налич') && x.q.includes('наличии')) || ((q.includes('счёт') || q.includes('счет') || q.includes('договор') || q.includes('оплат')) && x.q.includes('сделку'))
       || (q.includes('достав') && x.q.includes('Доставите')) || (q.includes('объ') && x.q.includes('объём')));
   setTimeout(() => {
     chatSay(hit ? hit.a : 'В прототипе я отвечаю на подготовленные вопросы. В рабочей версии здесь будет живой помощник с базой знаний по товарам и ценам. Пока могу позвать Илью: он ответит на что угодно.', 'bot');
@@ -649,6 +780,7 @@ function route() {
   });
 
   if (drop) { drop.open = false; dropByHover = false; }
+  closeSearch(false);
 
   window.scrollTo({ top: 0, behavior: 'instant' });
   observeReveals();
@@ -668,9 +800,26 @@ document.addEventListener('click', e => {
     return;
   }
 
+  // поиск
+  const tagBtn = e.target.closest('[data-search-tag]');
+  if (tagBtn) {
+    const input = document.getElementById('searchInput');
+    input.value = tagBtn.dataset.searchTag;
+    input.focus();
+    runSearch(input.value);
+    return;
+  }
+  if (e.target.closest('[data-search-all]')) {
+    e.preventDefault();
+    searchToCatalog(document.getElementById('searchInput').value);
+    return;
+  }
+  if (e.target.closest('[data-search-hit]')) { closeSearch(true); return; }
+  if (e.target.closest('#searchClose')) { closeSearch(true); return; }
+
   // каталог: категория
   const catBtn = e.target.closest('[data-cat]');
-  if (catBtn) { filters.cat = catBtn.dataset.cat; filters.state = 'all'; renderCatalog(); return; }
+  if (catBtn) { filters.cat = catBtn.dataset.cat; filters.state = 'all'; filters.q = ''; renderCatalog(); return; }
 
   // каталог: состояние
   const stBtn = e.target.closest('.catnav__sub [data-state]');
@@ -687,6 +836,7 @@ document.addEventListener('click', e => {
   const chip = e.target.closest('[data-chip]');
   if (chip) {
     const k = chip.dataset.chip;
+    if (k === 'q') { filters.q = ''; filters.avail = 'live'; document.getElementById('searchInput').value = ''; }
     if (k === 'state') filters.state = 'all';
     if (k === 'avail') filters.avail = 'live';
     if (k === 'vol') filters.vol = null;
@@ -808,7 +958,7 @@ document.addEventListener('click', e => {
   }
 
   // закрыть выпадающие при клике вне
-  if (!e.target.closest('#search')) document.getElementById('searchDrop').hidden = true;
+  if (!e.target.closest('#search')) closeSearch(false);
   const drop = document.getElementById('dropAbout');
   if (drop && drop.open && !e.target.closest('#dropAbout')) drop.open = false;
   if (!e.target.closest('#fab')) {
@@ -834,17 +984,54 @@ document.addEventListener('change', e => {
   if (e.target.id === 'sortSel') { filters.sort = e.target.value; renderCatalog(); }
 });
 
+document.addEventListener('focusin', e => {
+  if (e.target.id === 'searchInput') openSearch();
+});
+
+document.addEventListener('focusout', e => {
+  // уводим фокус с клавиатуры за пределы поиска: сворачиваем строку обратно.
+  // Клик мимо закрывает отдельный обработчик, иначе выдача пропадёт до click.
+  if (!e.target.closest('#search')) return;
+  const to = e.relatedTarget;
+  if (to && !to.closest('#search')) closeSearch(false);
+});
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.target.id === 'chatInput') {
     if (e.target.value.trim()) { chatSay(e.target.value, 'me'); chatAnswer(e.target.value); e.target.value = ''; }
   }
+
+  // стрелками ходим по подсказкам поиска, не трогая мышь
+  if (e.target.closest('#search') && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+    const rows = [...document.querySelectorAll('#searchDrop .search__row')];
+    if (rows.length) {
+      e.preventDefault();
+      const at = rows.indexOf(document.activeElement);
+      const next = e.key === 'ArrowDown'
+        ? (at + 1) % rows.length
+        : (at <= 0 ? rows.length - 1 : at - 1);
+      rows[next].focus();
+    }
+  }
+
   if (e.key === 'Escape') {
     document.getElementById('chat').hidden = true;
-    document.getElementById('searchDrop').hidden = true;
+    closeSearch(true);
   }
 });
 
 document.addEventListener('submit', e => {
+  if (e.target.id === 'searchForm') {
+    e.preventDefault();
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) return;
+    const hits = searchLots(q);
+    // одно попадание ведём сразу в карточку, иначе показываем выдачу в каталоге
+    if (hits.length === 1) { closeSearch(true); location.hash = '#/lot/' + hits[0].id; }
+    else searchToCatalog(q);
+    return;
+  }
+
   const form = e.target.closest('form[data-form]');
   if (!form) return;
   e.preventDefault();
