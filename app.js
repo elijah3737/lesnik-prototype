@@ -119,7 +119,7 @@ function card(lot) {
       <p class="lot__spec">${lot.spec}</p>
     </div>
     <div class="lot__foot">
-      <p class="lot__price">${price}<small class="lot__unit">${unit}</small></p>
+      <p class="lot__price${/^\d/.test(String(price)) ? '' : ' lot__price--ask'}">${price}<small class="lot__unit">${unit}</small></p>
       <div class="lot__act">${action}</div>
     </div>
   </li>`;
@@ -378,9 +378,13 @@ function renderProduct(id) {
   const pct = lot.total ? Math.round((lot.stock / lot.total) * 100) : 0;
   const kindRu = lot.kind === 'berry' ? 'Ягоды' : lot.kind === 'herb' ? 'Травы' : 'Грибы';
 
+  // «по запросу» не число: крупный моношрифт оставляем настоящим ценам
+  const ask = mode !== 'retail' && !/^\d/.test(lot.opt);
   const priceBlock = mode === 'retail' && lot.retail
     ? `<p class="buy__price">${money(lot.retail)}<small>${lot.retailUnit}${lot.demo ? ', цена демонстрационная' : ''}</small></p>`
-    : `<p class="buy__price">${lot.opt}<small>${live ? 'за кг, опт от 20 кг' : 'цена закрытой партии'}</small></p>`;
+    : ask
+      ? `<p class="buy__price buy__price--ask">Цена по объёму<small>${live ? 'считаем под партию, опт от 20 кг' : 'партия закрыта, цену следующей скажем при брони'}</small></p>`
+      : `<p class="buy__price">${lot.opt}<small>${live ? 'за кг, опт от 20 кг' : 'цена закрытой партии'}</small></p>`;
 
   const tiers = live && mode === 'opt' ? `
     <ul class="tiers">
@@ -401,10 +405,17 @@ function renderProduct(id) {
     </div>`;
 
   const action = !live
-    ? `<a class="btn btn--solid btn--full btn--lg" href="#/opt">Бронь следующего сбора</a>`
+    ? `<button class="btn btn--solid btn--full btn--lg" type="button" data-scroll="buyForm">Бронь следующего сбора</button>`
     : (mode === 'retail' && lot.retail
         ? `<button class="btn btn--solid btn--full btn--lg" type="button" data-add="${lot.id}">В корзину</button>`
-        : `<a class="btn btn--solid btn--full btn--lg" href="#buyForm">Запросить цену на объём</a>`);
+        : `<button class="btn btn--solid btn--full btn--lg" type="button" data-scroll="buyForm">Запросить цену на объём</button>`);
+
+  // у закрытой партии отгружать нечего: подписи под кнопкой берём про следующий сбор
+  const nextHarvest = (lot.specs.find(([k]) => k === 'Следующий сбор') || lot.specs.find(([k]) => k === 'Сезон') || [])[1];
+  const facts = live
+    ? ['Отгрузка 1-2 рабочих дня', 'Самовывоз в Москве или доставка', 'Нал, безнал, счёт для юрлиц']
+    : [nextHarvest ? `Следующий сбор: ${nextHarvest}` : 'Сбор повторится в свой сезон',
+       'Напишем, как только партия откроется', 'Счёт и договор для юрлиц'];
 
   const related = LOTS.filter(l => l.id !== lot.id && l.status === 'live' && l.kind === lot.kind).slice(0, 4);
 
@@ -419,6 +430,11 @@ function renderProduct(id) {
           </div>
           <div class="pgal__main"><img id="galMain" src="${lot.gal[0]}" alt="${lot.alt}"></div>
         </div>
+
+        <section class="psection psection--about">
+          <h2>Об этой партии</h2>
+          <p>${lot.about}</p>
+        </section>
       </div>
 
       <div class="product__buy">
@@ -430,22 +446,15 @@ function renderProduct(id) {
           ${tiers}
           ${stockBlock}
           <div class="buy__act">${action}</div>
-          <a class="buy__tel" href="tel:+79324748383">Или сразу: 8 932 474-83-83</a>
+          <a class="buy__tel" href="tel:+79324748383">Или позвоните: <b>8 932 474-83-83</b></a>
           <ul class="buy__facts">
-            <li>Отгрузка 1-2 рабочих дня</li>
-            <li>Самовывоз в Москве или доставка</li>
-            <li>Нал, безнал, счёт для юрлиц</li>
+            ${facts.map(f => `<li>${f}</li>`).join('')}
           </ul>
         </div>
       </div>
     </div>
 
-    <div class="psections">
-      <section class="psection">
-        <h2>Об этой партии</h2>
-        <p>${lot.about}</p>
-      </section>
-
+    <div class="pgrid">
       <section class="psection">
         <h2>Характеристики</h2>
         <dl class="ptable">
@@ -462,20 +471,29 @@ function renderProduct(id) {
           <div><b>Оплата</b><span>Нал, безнал, счёт юрлицу</span></div>
         </div>
       </section>
-
-      <section class="psection" id="buyForm">
-        <h2>Запросить цену на объём</h2>
-        <p class="psection__lede">Назовите объём, ответим в тот же день и выставим счёт.</p>
-        <form class="buyform" data-form="lot" novalidate>
-          <label class="field"><span>Сколько нужно, кг</span><input name="qty" type="number" min="1" placeholder="200" required><em class="err">Укажите объём в килограммах</em></label>
-          <label class="field"><span>Телефон</span><input name="phone" type="tel" placeholder="+7" required><em class="err">Нужен телефон для связи</em></label>
-          <label class="field"><span>Кто вы</span>
-            <select name="who"><option>Ресторан или кафе</option><option>Переработчик</option><option>Магазин или сеть</option><option>Экспорт</option><option>Частное лицо</option></select>
-          </label>
-          <button class="btn btn--solid btn--lg" type="submit">Отправить заявку</button>
-        </form>
-      </section>
     </div>
+
+    <section class="pband" id="buyForm">
+      <div class="pband__head">
+        <h2>${live ? 'Запросить цену на объём' : 'Забронировать следующий сбор'}</h2>
+        <p class="pband__lede">${live
+          ? 'Цена на партию зависит от объёма. Назовите, сколько нужно, и мы посчитаем под вас.'
+          : 'Партия ушла, но сбор повторится. Оставьте объём, и мы напишем, как только он откроется.'}</p>
+        <ul class="pband__facts">
+          <li>Отвечаем в тот же день, в сезон включая выходные</li>
+          <li>Считаем цену под ваш объём, от 20 кг</li>
+          <li>Скажем сразу, если в этом сборе объёма нет</li>
+        </ul>
+      </div>
+      <form class="buyform" data-form="lot" novalidate>
+        <label class="field"><span>Сколько нужно, кг</span><input name="qty" type="number" min="1" placeholder="200" required><em class="err">Укажите объём в килограммах</em></label>
+        <label class="field"><span>Телефон</span><input name="phone" type="tel" placeholder="+7" required><em class="err">Нужен телефон для связи</em></label>
+        <label class="field"><span>Кто вы</span>
+          <select name="who"><option>Ресторан или кафе</option><option>Переработчик</option><option>Магазин или сеть</option><option>Экспорт</option><option>Частное лицо</option></select>
+        </label>
+        <button class="btn btn--solid btn--lg" type="submit">${live ? 'Отправить заявку' : 'Записаться на сбор'}</button>
+      </form>
+    </section>
 
     ${related.length ? `
     <div class="shead"><h2>Из этой же категории</h2><a class="tlink" href="#/catalog">Весь каталог →</a></div>
@@ -797,6 +815,19 @@ document.addEventListener('click', e => {
     mode = modeBtn.dataset.mode;
     document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
     renderAll();
+    return;
+  }
+
+  // прокрутка к блоку внутри страницы, не трогая адрес: иначе маршрут потеряет партию
+  const scrollBtn = e.target.closest('[data-scroll]');
+  if (scrollBtn) {
+    const target = document.getElementById(scrollBtn.dataset.scroll);
+    if (target) {
+      const top = target.getBoundingClientRect().top + window.scrollY - 96;
+      window.scrollTo({ top, behavior: reduced() ? 'auto' : 'smooth' });
+      const first = target.querySelector('input, select');
+      if (first) setTimeout(() => first.focus({ preventScroll: true }), reduced() ? 0 : 500);
+    }
     return;
   }
 

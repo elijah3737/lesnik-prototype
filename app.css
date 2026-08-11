@@ -498,6 +498,8 @@ a:hover { color: var(--color-accent-ink); }
 .lot__foot { margin-top: auto; padding: var(--space-sm) var(--space-md) var(--space-md); }
 .lot__price { font-family: var(--font-mono); font-size: 1.45rem; font-weight: 500; line-height: 1.1; color: var(--color-ink); letter-spacing: -0.02em; }
 .lot__unit { display: block; font-family: var(--font-body); font-size: var(--text-xs); color: var(--color-muted); margin-top: 3px; }
+/* крупный моношрифт бережём для настоящих цифр, «по запросу» цифрой не притворяется */
+.lot__price--ask { font-family: var(--font-display); font-weight: 600; font-size: var(--text-base); letter-spacing: 0; color: var(--color-neutral); }
 .lot__act { margin-top: var(--space-sm); position: relative; z-index: 3; }
 
 .lot--closed .lot__shot img { filter: grayscale(0.55) brightness(0.92); }
@@ -788,7 +790,8 @@ a:hover { color: var(--color-accent-ink); }
 
 /* ═════════════  СТРАНИЦА ТОВАРА  ═════════════ */
 
-.product { display: grid; grid-template-columns: 1fr; gap: var(--space-xl); align-items: start; padding-bottom: var(--space-2xl); }
+/* колонки тянутся на всю высоту сетки, иначе панели покупки некуда ехать и sticky не работает */
+.product { display: grid; grid-template-columns: 1fr; gap: var(--space-xl); padding-bottom: var(--space-2xl); }
 @media (min-width: 62rem) { .product { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-2xl); } }
 
 .pgal { display: grid; grid-template-columns: 1fr; gap: var(--space-sm); }
@@ -815,6 +818,7 @@ a:hover { color: var(--color-accent-ink); }
 .buy__meta { font-size: var(--text-sm); color: var(--color-muted); margin-bottom: var(--space-md); }
 .buy__price { font-family: var(--font-mono); font-size: clamp(1.7rem, 3vw, 2.2rem); line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 var(--space-md); }
 .buy__price small { display: block; font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-muted); letter-spacing: 0; margin-top: 4px; }
+.buy__price--ask { font-family: var(--font-display); font-weight: 600; font-size: var(--text-xl); letter-spacing: 0; }
 
 .tiers { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-xs); margin: 0 0 var(--space-md); padding: 0; }
 .tiers li { background: var(--color-paper-2); border-radius: var(--radius-input); padding: var(--space-sm); text-align: center; }
@@ -832,13 +836,26 @@ a:hover { color: var(--color-accent-ink); }
 .btn--lg { min-height: 52px; font-size: var(--text-base); }
 .buy__act { margin-bottom: var(--space-sm); }
 .buy__tel { display: block; text-align: center; font-size: var(--text-sm); color: var(--color-neutral); text-decoration: none; padding-block: var(--space-xs); }
-.buy__tel:hover { color: var(--color-accent); }
+.buy__tel b { font-family: var(--font-mono); font-weight: 500; color: var(--color-accent-ink); border-bottom: 1px solid var(--color-accent-soft); }
+.buy__tel:hover b { border-bottom-color: var(--color-accent); }
 .buy__facts { list-style: none; margin: var(--space-md) 0 0; padding: var(--space-md) 0 0; border-top: 1px solid var(--color-rule); font-size: var(--text-sm); color: var(--color-neutral); }
 .buy__facts li { padding-left: 1.5rem; position: relative; margin-bottom: var(--space-2xs); }
 .buy__facts li::before { content: ""; position: absolute; left: 0; top: 0.45em; width: 9px; height: 5px; border-left: 2px solid var(--color-accent); border-bottom: 2px solid var(--color-accent); transform: rotate(-45deg); }
 
-.psections { display: grid; gap: var(--space-xl); max-width: 46rem; }
+/* описание идёт под галереей, а таблицы во всю ширину: справа не остаётся пустой колонки */
+.psection--about { margin-top: var(--space-xl); }
+
+/* на телефоне цена и кнопка обязаны идти сразу за фото, описание уходит ниже */
+@media (max-width: 61.99rem) {
+  .product__media { display: contents; }
+  .pgal { order: 1; }
+  .product__buy { order: 2; }
+  .psection--about { order: 3; margin-top: 0; }
+}
+.pgrid { display: grid; grid-template-columns: 1fr; gap: var(--space-xl); }
+@media (min-width: 62rem) { .pgrid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-2xl); } }
 .psection h2 { font-size: var(--text-lg); margin-bottom: var(--space-sm); }
+.psection p { max-width: 62ch; }
 .psection__lede { font-size: var(--text-sm); color: var(--color-muted); margin-bottom: var(--space-md); }
 .ptable { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr)); gap: 0 var(--space-xl); margin: 0; }
 .ptable > div { display: flex; justify-content: space-between; gap: var(--space-sm); padding-block: var(--space-sm); border-bottom: 1px solid var(--color-rule); }
@@ -851,6 +868,36 @@ a:hover { color: var(--color-accent-ink); }
 .pfacts span { font-size: var(--text-sm); color: var(--color-neutral); }
 .buyform { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr)); gap: 0 var(--space-md); align-items: end; }
 .buyform button { grid-column: 1 / -1; justify-self: start; }
+
+/* заявка отдельной горизонтальной полосой: тёмный блок разбивает белую страницу надвое */
+.pband {
+  margin-top: var(--section-gap);
+  background: var(--color-block); color: var(--color-block-ink);
+  border-radius: var(--radius-banner);
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+  display: grid; grid-template-columns: 1fr; gap: var(--space-xl); align-items: start;
+}
+@media (min-width: 62rem) {
+  .pband { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: var(--space-2xl); align-items: center; }
+}
+.pband h2 { font-size: var(--text-xl); color: var(--color-block-ink); margin-bottom: var(--space-sm); }
+.pband__lede { font-size: var(--text-sm); color: var(--color-block-mute); margin: 0 0 var(--space-md); max-width: 42ch; }
+.pband__facts { list-style: none; margin: 0; padding: 0; font-size: var(--text-sm); color: var(--color-block-mute); }
+.pband__facts li { position: relative; padding-left: 1.5rem; margin-bottom: var(--space-2xs); }
+.pband__facts li::before {
+  content: ""; position: absolute; left: 0; top: 0.45em;
+  width: 9px; height: 5px; transform: rotate(-45deg);
+  border-left: 2px solid var(--color-block-ink); border-bottom: 2px solid var(--color-block-ink);
+}
+.pband .field span { color: var(--color-block-mute); }
+.pband .field input, .pband .field select {
+  background: var(--color-paper); color: var(--color-ink); border-color: transparent;
+}
+.pband .field select { background-image: none; }
+.pband .btn--solid { background: var(--color-paper); border-color: var(--color-paper); color: var(--color-block); }
+.pband .btn--solid:hover { background: var(--color-accent-soft); border-color: var(--color-accent-soft); color: var(--color-accent-ink); }
+.pband .field .err { color: oklch(86% 0.13 75); }
+.pband .field[data-invalid="true"] input, .pband .field[data-invalid="true"] select { border-color: oklch(86% 0.13 75); }
 
 /* ═════════════  дескриптор под логотипом  ═════════════ */
 
