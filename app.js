@@ -108,7 +108,10 @@ function catalogList() {
   if (filters.state !== 'all') list = list.filter(l => l.state === filters.state);
   if (filters.avail === 'live') list = list.filter(l => l.status === 'live');
   if (filters.vol) list = list.filter(l => l.minVol === filters.vol);
-  if (filters.sort === 'price') list = [...list].sort((a, b) => (b.retail || 0) - (a.retail || 0));
+  // сортируем по той цене, которую человек видит: в опте по входной ступени, в рознице по розничной
+  if (filters.sort === 'price') list = [...list].sort((a, b) => mode === 'retail'
+    ? (b.retail || 0) - (a.retail || 0)
+    : (entryPrice(b) || 0) - (entryPrice(a) || 0));
   if (filters.sort === 'date') list = [...list].sort((a, b) => b.date - a.date);
   if (filters.sort === 'default') list = [...list].sort((a, b) => (a.status === 'live' ? 0 : 1) - (b.status === 'live' ? 0 : 1));
   return list;
@@ -447,7 +450,9 @@ function renderProduct(id) {
     ? `<p class="buy__price">${money(lot.retail)}<small>${lot.retailUnit}${lot.demo ? ', цена демонстрационная' : ''}</small></p>`
     : ask
       ? `<p class="buy__price buy__price--ask">Цена по объёму<small>${live ? `считаем под партию, опт от ${mk} кг` : 'партия закрыта, цену следующей скажем при брони'}</small></p>`
-      : `<p class="buy__price">${optLabel(lot)}<small>${live ? `за кг при заказе от ${mk} кг${lot.demoOpt ? ' · цена демонстрационная' : ''}` : `цена закрытой партии${lot.demoOpt ? ', демо' : ''}`}</small></p>`;
+      : `<p class="buy__price">${optLabel(lot)}<small>${live
+          ? `за кг при заказе от ${mk} кг${lot.demoOpt ? ' · цена демонстрационная' : ''}${mode === 'retail' ? ' · в розницу эта партия не продаётся' : ''}`
+          : `цена закрытой партии${lot.demoOpt ? ', демо' : ''}`}</small></p>`;
 
   const tierRows = tiersOf(lot);
   const tiers = live && mode === 'opt' && tierRows ? `
@@ -916,6 +921,9 @@ document.addEventListener('click', e => {
     persistUI();
     document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
     renderAll();
+    toast(mode === 'retail'
+      ? `Розничные цены: в розницу доступно ${LOTS.filter(l => l.retail && l.status === 'live').length} позиций`
+      : 'Оптовые цены: лесенка от объёма в каждой карточке');
     return;
   }
 
@@ -1165,13 +1173,24 @@ document.addEventListener('submit', e => {
   const btn = form.querySelector('button[type="submit"]');
   const was = btn.textContent;
   const kind = form.dataset.form;
-  btn.textContent = kind === 'sub'
-    ? 'Готово, прайс будет приходить раз в неделю'
-    : 'Отправлено, перезвоним сегодня';
+  btn.textContent = kind === 'sub' ? 'Готово' : 'Отправлено';
   btn.dataset.state = 'ok';
   btn.disabled = true;
   form.reset();
   setTimeout(() => { btn.textContent = was; delete btn.dataset.state; btn.disabled = false; }, 2600);
+
+  // подтверждение не исчезает: номер обращения и что будет дальше остаются перед глазами
+  let okBox = form.querySelector('.form-ok');
+  if (!okBox) {
+    okBox = document.createElement('p');
+    okBox.className = 'form-ok';
+    okBox.setAttribute('role', 'status');
+    form.appendChild(okBox);
+  }
+  const num = 'Л-' + String(Date.now()).slice(-5);
+  okBox.innerHTML = kind === 'sub'
+    ? 'Готово. Первый прайс придёт в ближайший понедельник утром. Отписаться можно в одно нажатие из любого письма.'
+    : `Заявка №${num} принята. Перезвоним сегодня до 20:00. Если срочно: <a href="${siteTel()}">${sitePhone()}</a>.`;
 });
 
 /* ═══════════ раскрытие по наведению ═══════════

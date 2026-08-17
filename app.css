@@ -329,6 +329,16 @@ a:hover { color: var(--color-accent-ink); }
 .toast[hidden] { display: none; }
 
 .empty__h { font-size: var(--text-lg); margin-bottom: var(--space-xs); }
+
+/* подтверждение отправки: остаётся на странице, а не мигает на кнопке */
+.form-ok {
+  grid-column: 1 / -1;
+  margin-top: var(--space-md); padding: var(--space-sm) var(--space-md);
+  background: var(--color-accent-soft); color: var(--color-accent-ink);
+  border-radius: var(--radius-input); font-size: var(--text-sm); line-height: 1.5;
+}
+.form-ok a { color: inherit; font-weight: 600; }
+.pband .form-ok { background: oklch(100% 0 0 / 0.12); color: var(--color-block-ink); }
 .empty__sub { display: flex; gap: var(--space-sm); flex-wrap: wrap; justify-content: center; margin-top: var(--space-md); }
 .empty__sub .field { flex: 1 1 14rem; max-width: 20rem; margin: 0; }
 .colophon__soon { display: inline-flex; align-items: center; gap: 8px; opacity: 0.5; }
@@ -366,6 +376,10 @@ a:hover { color: var(--color-accent-ink); }
   box-shadow: var(--shadow-2);
   display: inline-flex; align-items: center; justify-content: center;
   transition: transform var(--dur-short) var(--ease-out), background var(--dur-micro) var(--ease-out);
+}
+/* на телефоне кнопка чуть меньше: меньше перекрывает контент у правого края */
+@media (max-width: 40rem) {
+  .fab__main { width: 48px; height: 48px; }
 }
 .fab__main:hover { background: var(--color-accent-ink); }
 .fab__main svg { width: 26px; height: 26px; fill: currentColor; }
@@ -934,6 +948,7 @@ a:hover { color: var(--color-accent-ink); }
 }
 .pgrid { display: grid; grid-template-columns: 1fr; gap: var(--space-xl); }
 @media (min-width: 62rem) { .pgrid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-2xl); } }
+.psection { border-top: 1px solid var(--color-rule); padding-top: var(--space-md); }
 .psection h2 { font-size: var(--text-lg); margin-bottom: var(--space-sm); }
 .psection p { max-width: 62ch; }
 .psection__lede { font-size: var(--text-sm); color: var(--color-muted); margin-bottom: var(--space-md); }
@@ -962,7 +977,7 @@ a:hover { color: var(--color-accent-ink); }
 }
 .pband h2 { font-size: var(--text-xl); color: var(--color-block-ink); margin-bottom: var(--space-sm); }
 .pband__lede { font-size: var(--text-sm); color: var(--color-block-mute); margin: 0 0 var(--space-md); max-width: 42ch; }
-.pband__facts { list-style: none; margin: 0; padding: 0; font-size: var(--text-sm); color: var(--color-block-mute); }
+.pband__facts { list-style: none; margin: 0; padding: 0; font-size: var(--text-sm); color: var(--color-block-ink); }
 .pband__facts li { position: relative; padding-left: 1.5rem; margin-bottom: var(--space-2xs); }
 .pband__facts li::before {
   content: ""; position: absolute; left: 0; top: 0.45em;
