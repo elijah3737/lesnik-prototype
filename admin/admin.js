@@ -32,6 +32,16 @@
   var $ = function (sel, root) { return (root || document).querySelector(sel); };
   var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
 
+  // Обработчик на постоянном контейнере: прежний снимается, новый встаёт.
+  // Без этого каждый заход на экран добавлял слушатель, и со второго визита
+  // тап по статусу заявки срабатывал дважды («туда-обратно», как будто не работает).
+  function bind(el, type, fn) {
+    el.__bound = el.__bound || {};
+    if (el.__bound[type]) el.removeEventListener(type, el.__bound[type]);
+    el.__bound[type] = fn;
+    el.addEventListener(type, fn);
+  }
+
   function esc(s) {
     return String(s === undefined || s === null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -228,8 +238,8 @@
       tile('cats', 'Категории', 'Виды и состояния', db.categories.kinds.length + ' вида'),
       tile('photos', 'Фото', 'Загрузить и заменить', Store.images().length + ' шт'),
       tile('leads', 'Заявки', 'Кто написал с сайта', newLeads ? newLeads + ' новых' : 'новых нет', newLeads > 0),
-      tile('texts', 'Тексты', 'Телефон и реквизиты', ''),
-      tile('history', 'История', 'Откатить изменения', '')
+      tile('texts', 'Тексты', 'Телефон и реквизиты', TEXT_FIELDS.length + ' строк'),
+      tile('history', 'История', 'Откатить изменения', histCount() ? histCount() + ' версий' : 'пока пусто')
     ].join('');
 
     var touched = Store.isTouched();
@@ -314,20 +324,37 @@
   function editPrice(id) {
     var lot = findLot(id);
     if (!lot) return;
-    sheet(lot.name, 'Цена за килограмм в опте. Можно словами: «по запросу», «300 ₽ / 200 г».',
-      '<label class="field"><span>Цена</span>' +
-      '<input type="text" id="shPrice" value="' + esc(lot.opt) + '" autocomplete="off">' +
-      '<span class="field__hint">Знак ₽ подставим сами, если написать просто число.</span></label>' +
-      '<button class="btn btn--solid btn--full" type="button" data-save>Сохранить цену</button>',
+    var t = (lot.tiers && lot.tiers.length ? lot.tiers : [[20, ''], [100, ''], [500, '']]).slice(0, 3);
+    while (t.length < 3) t.push(['', '']);
+    sheet(lot.name, 'Цена за килограмм по ступеням объёма. Первая ступень — минимум заказа и цена на сайте. Пустые ступени не показываются.',
+      t.map(function (row, i) {
+        return '<div class="two" data-trow="' + i + '">' +
+          '<label class="field"><span>От, кг</span><input type="text" inputmode="numeric" data-tkg value="' + esc(row[0]) + '"></label>' +
+          '<label class="field"><span>Цена за кг, ₽</span><input type="text" inputmode="numeric" data-tpr value="' + esc(row[1]) + '"></label>' +
+        '</div>';
+      }).join('') +
+      '<button class="btn btn--solid btn--full" type="button" data-save>Сохранить лесенку</button>',
       function (box) {
-        var inp = $('#shPrice', box);
-        inp.focus(); inp.select();
+        var first = $('[data-tpr]', box);
+        first.focus(); first.select();
         $('[data-save]', box).addEventListener('click', function () {
-          var v = inp.value.trim();
-          if (v === '') { toast('Цена не может быть пустой. Напишите «по запросу», если цены пока нет.', true); return; }
-          if (/\d/.test(v) && v.indexOf('₽') === -1) v += ' ₽';
-          lot.opt = v;
-          if (commit('lots', db.lots, 'Цена сохранена: ' + v)) { closeSheet(); renderLots(); }
+          var tiers = [];
+          var bad = false;
+          $$('[data-trow]', box).forEach(function (row) {
+            var kg = $('[data-tkg]', row).value.trim().replace(/\s+/g, '');
+            var pr = $('[data-tpr]', row).value.trim().replace(/\s+/g, '');
+            if (kg === '' && pr === '') return;
+            if (!/^\d+$/.test(kg) || !/^\d+$/.test(pr) || +kg <= 0 || +pr <= 0) { bad = true; return; }
+            tiers.push([+kg, +pr]);
+          });
+          if (bad) { toast('Ступени пишутся числами: килограммы и цена. Проверьте заполненные строки.', true); return; }
+          if (!tiers.length) { toast('Нужна хотя бы одна ступень: минимум и цена. Без цены партия на сайт не пойдёт.', true); return; }
+          tiers.sort(function (a, b) { return a[0] - b[0]; });
+          lot.tiers = tiers;
+          lot.demoOpt = true;   // до боевого прайса клиента цены остаются демонстрационными
+          lot.opt = fmt(tiers[0][1]) + ' ₽';
+          lot.minVol = tiers[0][0] >= 200 ? 'big' : 'mini';
+          if (commit('lots', db.lots, 'Лесенка сохранена: от ' + fmt(tiers[0][0]) + ' кг — ' + fmt(tiers[0][1]) + ' ₽/кг')) { closeSheet(); renderLots(); }
         });
       });
   }
@@ -406,7 +433,7 @@
   function blankLot() {
     return {
       id: '', name: '', kind: db.categories.kinds[0].id, state: db.categories.states[0].id,
-      status: 'live', opt: 'по запросу', retail: null, retailUnit: 'за 1 кг', demo: true,
+      status: 'live', opt: 'по запросу', tiers: [], retail: null, retailUnit: 'за 1 кг', demo: true,
       stock: 0, total: 0, minVol: 'mini',
       region: '', harvest: '', spec: '', volume: '',
       about: '', specs: [['Состояние', ''], ['Тара', '']],
@@ -447,10 +474,20 @@
       '</div>' +
 
       sect('Цена и объём', true,
-        '<label class="field"><span>Цена опт</span>' +
-          '<input type="text" name="opt" value="' + esc(work.opt) + '" placeholder="по запросу">' +
-          '<em class="err">Напишите цену или «по запросу»</em>' +
-          '<span class="field__hint">Знак ₽ подставим сами, если написать просто число.</span></label>' +
+        '<div class="field"><span>Лесенка опта: от какого объёма какая цена за кг</span>' +
+          (function () {
+            var t = (work.tiers && work.tiers.length ? work.tiers : [[20, ''], [100, ''], [500, '']]).slice(0, 3);
+            while (t.length < 3) t.push(['', '']);
+            return t.map(function (row, i) {
+              return '<div class="two" data-trow="' + i + '">' +
+                '<label class="field" style="margin-bottom:8px"><span>От, кг</span><input type="text" inputmode="numeric" data-tkg value="' + esc(row[0]) + '"></label>' +
+                '<label class="field" style="margin-bottom:8px"><span>Цена за кг, ₽</span><input type="text" inputmode="numeric" data-tpr value="' + esc(row[1]) + '"></label>' +
+              '</div>';
+            }).join('');
+          })() +
+          '<em class="err" data-tiers-err>Заполните хотя бы первую ступень: минимум и цена числами</em>' +
+          '<span class="field__hint">Первая ступень — минимум заказа и цена на сайте. Пустые ступени не показываются.</span>' +
+        '</div>' +
         '<div class="two">' +
           '<label class="field"><span>Цена в розницу</span>' +
             '<input type="text" inputmode="numeric" name="retail" value="' + esc(work.retail === null || work.retail === undefined ? '' : work.retail) + '" placeholder="пусто = только опт"></label>' +
@@ -459,11 +496,7 @@
         '</div>' +
         '<label class="field"><span>Тара и объём отгрузки</span>' +
           '<input type="text" name="volume" value="' + esc(work.volume) + '" placeholder="мешок 10 кг"></label>' +
-        '<div class="field"><span>Минимальный заказ</span>' +
-          '<div class="switch" data-switch="minVol">' +
-            '<button type="button" data-v="mini" aria-pressed="' + (work.minVol === 'mini') + '">от 20 кг</button>' +
-            '<button type="button" data-v="big" aria-pressed="' + (work.minVol === 'big') + '">от 500 кг</button>' +
-          '</div></div>'
+        '<p class="field__hint">Минимальный заказ сайт берёт из первой ступени лесенки, отдельно его вводить не нужно.</p>'
       ) +
 
       sect('Остаток и статус', true,
@@ -533,16 +566,6 @@
     }
     paintGallery();
 
-    box.addEventListener('click', function (e) {
-      var pick = e.target.closest('[data-pick]');
-      if (pick) {
-        work.img = pick.dataset.pick;
-        work.gal = [work.img].concat((work.gal || []).filter(function (g) { return g.replace(/^img\//, '') !== work.img; })).slice(0, 4);
-        paintGallery();
-        saveDraft();
-      }
-    });
-
     $('#lotUpload').addEventListener('change', function (e) {
       var file = e.target.files && e.target.files[0];
       if (!file) return;
@@ -583,8 +606,16 @@
       });
     }
 
-    // ---- переключатели и степперы ----
-    box.addEventListener('click', function (e) {
+    // ---- один клик-обработчик на форму: фото, переключатели, степперы ----
+    bind(box, 'click', function (e) {
+      var pick = e.target.closest('[data-pick]');
+      if (pick) {
+        work.img = pick.dataset.pick;
+        work.gal = [work.img].concat((work.gal || []).filter(function (g) { return g.replace(/^img\//, '') !== work.img; })).slice(0, 4);
+        paintGallery();
+        saveDraft();
+        return;
+      }
       var sw = e.target.closest('[data-switch] button');
       if (sw) {
         var grp = sw.closest('[data-switch]');
@@ -593,6 +624,7 @@
           $('[data-when="closed"]', box).hidden = sw.dataset.v !== 'closed';
         }
         saveDraft();
+        return;
       }
       var st = e.target.closest('[data-fstep]');
       if (st) {
@@ -606,7 +638,7 @@
     function saveDraft() {
       try { sessionStorage.setItem(draftKey, JSON.stringify(collect(true))); } catch (e) {}
     }
-    box.addEventListener('input', saveDraft);
+    bind(box, 'input', saveDraft);
 
     var stashed = null;
     try { stashed = JSON.parse(sessionStorage.getItem(draftKey) || 'null'); } catch (e) {}
@@ -626,14 +658,33 @@
       out.kind = val('kind');
       out.state = val('state');
       out.spec = val('spec').trim();
-      out.opt = val('opt').trim();
+
+      // лесенка опта: строки с числами; первая ступень задаёт минимум и цену на сайте
+      var tiers = [];
+      out.tiersBad = false;
+      $$('[data-trow]', box).forEach(function (row) {
+        var kg = $('[data-tkg]', row).value.trim().replace(/\s+/g, '');
+        var pr = $('[data-tpr]', row).value.trim().replace(/\s+/g, '');
+        if (kg === '' && pr === '') return;
+        if (!/^\d+$/.test(kg) || !/^\d+$/.test(pr) || +kg <= 0 || +pr <= 0) { out.tiersBad = true; return; }
+        tiers.push([+kg, +pr]);
+      });
+      tiers.sort(function (a, b) { return a[0] - b[0]; });
+      out.tiers = tiers;
+      if (tiers.length) {
+        out.opt = fmt(tiers[0][1]) + ' ₽';
+        out.demoOpt = true;
+        out.minVol = tiers[0][0] >= 200 ? 'big' : 'mini';
+      } else {
+        out.opt = work.opt || 'по запросу';
+      }
+
       out.retailUnit = val('retailUnit').trim();
       out.volume = val('volume').trim();
       out.region = val('region').trim();
       out.harvest = val('harvest').trim();
       out.about = val('about').trim();
       out.alt = val('alt').trim() || out.name;
-      out.minVol = switchVal('minVol');
       out.status = switchVal('status');
       out.specs = collectSpecs().filter(function (p) { return loose || (p[0].trim() && p[1].trim()); });
 
@@ -655,7 +706,18 @@
         if (!bad) { bad = msg; if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
       }
       if (!data.name) fail('name', 'Впишите название партии.');
-      if (!data.opt) fail('opt', 'Впишите цену или «по запросу».');
+      if (data.tiersBad || (data.status === 'live' && !data.tiers.length)) {
+        var tf = box.querySelector('[data-tiers-err]');
+        if (tf && tf.closest('.field')) tf.closest('.field').dataset.invalid = 'true';
+        if (!bad) {
+          bad = data.tiersBad
+            ? 'Ступени лесенки пишутся числами: килограммы и цена.'
+            : 'Открытой партии нужна хотя бы одна ступень цены: минимум и цена за кг.';
+          var firstTier = box.querySelector('[data-tkg]');
+          if (firstTier) firstTier.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+      }
+      delete data.tiersBad;
       if (!data.img) bad = bad || 'Выберите фото: карточка без фото ломает вид на сайте.';
       if (data.status === 'closed') {
         var d = parseShortDate(val('closed'));
@@ -796,7 +858,7 @@
       })(0);
     });
 
-    $('#photosBox').addEventListener('click', function (e) {
+    bind($('#photosBox'), 'click', function (e) {
       var p = e.target.closest('[data-photo]');
       if (!p) return;
       var name = p.dataset.photo;
@@ -858,7 +920,7 @@
       }).join('');
     }
 
-    $('#catsForm').addEventListener('click', function (e) {
+    bind($('#catsForm'), 'click', function (e) {
       var add = e.target.closest('[data-add]');
       if (add) {
         var g = add.dataset.add;
@@ -920,28 +982,42 @@
 
   /* ═══════════ заявки ═══════════ */
 
+  var leadFilter = 'new';
+
   function renderLeads() {
-    var list = db.leads;
+    var all = db.leads;
+    var list = leadFilter === 'all' ? all : all.filter(function (l) { return l.status === leadFilter; });
     $('#leadsBox').innerHTML =
       '<p class="lede">Заявки с сайта. В прототипе показаны примеры, в рабочей версии они будут приходить сюда и дублироваться вам в Telegram.</p>' +
+      '<div class="filters" style="margin-top:14px">' +
+        [['new', 'Новые', all.filter(function (l) { return l.status === 'new'; }).length],
+         ['done', 'Обработанные', all.filter(function (l) { return l.status === 'done'; }).length],
+         ['all', 'Все', all.length]].map(function (f) {
+          return '<button type="button" data-leadf="' + f[0] + '" aria-pressed="' + (leadFilter === f[0]) + '">' + f[1] + ' · ' + f[2] + '</button>';
+        }).join('') +
+      '</div>' +
       (list.length
-        ? '<div class="rows" style="margin-top:16px">' + list.map(function (l) {
+        ? '<div class="rows">' + list.map(function (l) {
+            var isNew = l.status === 'new';
             return '<article class="row" style="grid-template-columns:1fr">' +
               '<div class="row__main">' +
-                '<b>' + esc(l.name) + '</b>' +
+                '<b>' + esc(l.name) + '</b> <span class="pill' + (isNew ? ' pill--new' : ' pill--off') + '"><i></i>' + (isNew ? 'новая' : 'обработана') + '</span>' +
                 '<div class="row__meta">' + esc(l.date) + ' · ' + esc(l.who) + '</div>' +
                 '<div class="row__meta">' + esc(l.lot) + ', ' + esc(l.qty) + '</div>' +
-                '<div class="row__meta"><a href="tel:' + esc(l.phone.replace(/[^\d+]/g, '')) + '">' + esc(l.phone) + '</a></div>' +
               '</div>' +
-              '<div class="row__nums">' +
+              '<div class="row__nums" style="grid-template-columns:1fr 1fr">' +
+                '<a class="row__num row__num--call" href="tel:' + esc(l.phone.replace(/[^\d+]/g, '')) + '">' +
+                  '<small>Позвонить</small><b>' + esc(l.phone) + '</b></a>' +
                 '<button class="row__num" type="button" data-lead="' + esc(l.id) + '">' +
-                  '<small>Статус</small><b>' + (l.status === 'new' ? 'новая' : 'обработана') + '</b></button>' +
+                  '<small>Отметить</small><b>' + (isNew ? 'обработана' : 'вернуть в новые') + '</b></button>' +
               '</div>' +
             '</article>';
           }).join('') + '</div>'
-        : '<div class="empty">Заявок пока нет.</div>');
+        : '<div class="empty">' + (leadFilter === 'new' ? 'Новых заявок нет — все разобраны.' : 'Здесь пока пусто.') + '</div>');
 
-    $('#leadsBox').addEventListener('click', function (e) {
+    bind($('#leadsBox'), 'click', function (e) {
+      var f = e.target.closest('[data-leadf]');
+      if (f) { leadFilter = f.dataset.leadf; renderLeads(); return; }
       var b = e.target.closest('[data-lead]');
       if (!b) return;
       var lead = db.leads.filter(function (l) { return l.id === b.dataset.lead; })[0];
@@ -988,6 +1064,10 @@
 
   var FILE_RU = { lots: 'Партии', categories: 'Категории', texts: 'Тексты', leads: 'Заявки', photos: 'Фото' };
 
+  function histCount() {
+    return Store.FILES.reduce(function (a, f) { return a + Store.backups(f).length; }, 0);
+  }
+
   function renderHistory() {
     var html = '<p class="lede">Каждое сохранение кладёт предыдущую версию сюда. Хранятся 30 последних по каждому разделу.</p>';
     var any = false;
@@ -995,16 +1075,18 @@
       var list = Store.backups(f);
       if (!list.length) return;
       any = true;
-      html += '<div class="group"><div class="group__head"><h2>' + esc(FILE_RU[f]) + '</h2></div><div class="hist">' +
+      html += '<div class="group"><div class="group__head"><h2>' + esc(FILE_RU[f]) + '</h2>' +
+        (list.length > 10 ? '<span class="group__note">показаны 10 из ' + list.length + '</span>' : '') + '</div><div class="hist">' +
         list.slice(0, 10).map(function (b) {
           return '<div class="hist__row"><time>' + esc(when(b.at)) + '</time>' +
             '<button class="btn btn--sm" type="button" data-restore="' + f + ':' + b.at + '">Вернуть</button></div>';
         }).join('') + '</div></div>';
     });
-    if (!any) html += '<div class="empty">Пока нечего откатывать: изменений не было.</div>';
+    if (!any) html += '<div class="empty">Пока нечего откатывать: изменений не было.<br><br>' +
+      '<button class="btn" type="button" data-go="lots">Открыть партии</button></div>';
     $('#histBox').innerHTML = html;
 
-    $('#histBox').addEventListener('click', function (e) {
+    bind($('#histBox'), 'click', function (e) {
       var b = e.target.closest('[data-restore]');
       if (!b) return;
       var parts = b.dataset.restore.split(':');

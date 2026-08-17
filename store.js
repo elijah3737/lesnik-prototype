@@ -184,7 +184,8 @@
 
   // Полный список доступных картинок: встроенные в прототип и загруженные.
   var BUILTIN = [
-    'hero.jpg', 'lisichka.jpg', 'belyi.jpg', 'sushenye.jpg', 'smorchok.jpg',
+    'hero.jpg', 'lisichka.jpg', 'belyi.jpg', 'belyi-sush.jpg', 'sushenye.jpg',
+    'smorchok.jpg', 'shapochka.jpg', 'solenya.jpg',
     'moroshka.jpg', 'klukva.jpg', 'brusnika.jpg', 'zemlyanika.jpg',
     'korzina.jpg', 'doroga.jpg', 'sborshiki.jpg', 'priemka.jpg'
   ];

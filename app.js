@@ -2,16 +2,58 @@
    Данные партий из Telegram-канала клиента (июнь-август 2026).
    Розничные цены с пометкой demo заглушки для прохода по сценарию. */
 
-/* Данные партий и категорий приходят из слоя хранения (store.js).
+/* Данные партий, категорий и текстов приходят из слоя хранения (store.js).
    Сейчас это localStorage с исходными данными из seed.js, в боевой версии
-   тот же слой читает content/*.json, которые пишет админка. */
-const LOTS = Store.load('lots');
-const CATS = Store.load('categories');
+   тот же слой читает content/*.json, которые пишет админка.
+   При правке в соседней вкладке админки данные перечитываются на лету. */
+let LOTS, CATS, TEXTS, STATE_RU;
 
-const STATE_RU = CATS.states.reduce((m, s) => (m[s.id] = s.name, m), {});
+function loadData(withIndex) {
+  LOTS = Store.load('lots');
+  CATS = Store.load('categories');
+  TEXTS = Store.load('texts') || {};
+  STATE_RU = CATS.states.reduce((m, s) => (m[s.id] = s.name, m), {});
+  if (withIndex) buildSearchIndex();   // при первом вызове индекс собирается ниже, после словарей
+}
+loadData(false);
+
 const money = n => n.toLocaleString('ru-RU') + ' ₽';
+const sitePhone = () => TEXTS.phone || '8 932 474-83-83';
+const siteTel = () => 'tel:+7' + sitePhone().replace(/\D/g, '').replace(/^[78]/, '');
+const fmt = n => Number(n || 0).toLocaleString('ru-RU');
+
+/* корзина и режим цен переживают перезагрузку: покупатель не теряет набранное */
 let mode = 'opt';
 const cart = new Map();
+try {
+  const savedMode = localStorage.getItem('lesnik.ui.mode');
+  if (savedMode === 'retail') mode = 'retail';
+  const savedCart = JSON.parse(localStorage.getItem('lesnik.ui.cart') || '[]');
+  savedCart.forEach(([id, qty]) => { if (typeof id === 'string' && qty > 0) cart.set(id, qty); });
+} catch (e) {}
+
+function persistUI() {
+  try {
+    localStorage.setItem('lesnik.ui.mode', mode);
+    localStorage.setItem('lesnik.ui.cart', JSON.stringify([...cart.entries()]));
+  } catch (e) {}
+}
+
+/* лесенка цен: [от кг, ₽/кг]; первая ступень — входная цена и минимум заказа */
+const tiersOf = l => (Array.isArray(l.tiers) && l.tiers.length ? l.tiers : null);
+const minKg = l => { const t = tiersOf(l); return t ? t[0][0] : 20; };
+const entryPrice = l => { const t = tiersOf(l); return t ? t[0][1] : null; };
+const optLabel = l => (entryPrice(l) !== null ? money(entryPrice(l)) : l.opt);
+const kindName = id => { const k = CATS.kinds.find(x => x.id === id); return k ? k.name : id; };
+
+/* состояние согласуем с родом товара: «белый гриб сушёный», но «лисичка сушёная» */
+const STATE_MALE = { 'свежая': 'свежий', 'сушёная': 'сушёный', 'замороженная': 'замороженный', 'солёная': 'солёный', 'протёртая': 'протёртый' };
+function stateLabel(l) {
+  const base = STATE_RU[l.state] || l.state;
+  const lastWord = l.name.trim().split(' ').pop().toLowerCase();
+  const male = !/[ая]$/.test(lastWord);
+  return male && STATE_MALE[base] ? STATE_MALE[base] : base;
+}
 
 /* ═══════════ карточка товара ═══════════ */
 
@@ -23,11 +65,11 @@ function card(lot) {
 
   let price, unit, action;
   if (mode === 'opt') {
-    price = lot.opt;
-    unit = live ? `опт, ${lot.volume}` : `партия ${lot.volume}`;
+    price = optLabel(lot);
+    unit = live ? `за кг, опт от ${minKg(lot)} кг` : `партия ${lot.volume}`;
     action = live
-      ? `<a class="btn btn--soft btn--full" href="#/lot/${lot.id}">Запросить цену</a>`
-      : `<a class="btn btn--soft btn--full" href="#/opt">Бронь следующего сбора</a>`;
+      ? `<a class="btn btn--soft btn--full" href="#/lot/${lot.id}">Смотреть партию</a>`
+      : `<a class="btn btn--soft btn--full" href="#/lot/${lot.id}">Бронь следующего сбора</a>`;
   } else if (lot.retail) {
     price = money(lot.retail);
     unit = `${lot.retailUnit}${lot.demo ? ', цена демонстрационная' : ''}`;
@@ -72,26 +114,64 @@ function catalogList() {
   return list;
 }
 
+/* множественное число состояния для пунктов меню: «свежая» → «Свежие» */
+const STATE_PLURAL = { 'свежая': 'Свежие', 'сушёная': 'Сушёные', 'замороженная': 'Замороженные', 'солёная': 'Солёные', 'протёртая': 'Протёртые' };
+const statePlural = s => STATE_PLURAL[s.name] || (s.name.charAt(0).toUpperCase() + s.name.slice(1));
+
+/* левое меню каталога строится из категорий админки: переименование и новые виды доезжают до сайта */
+function renderCatnav() {
+  const box = document.getElementById('catnavList');
+  if (!box) return;
+  box.innerHTML = CATS.kinds.map(k => {
+    const inKind = LOTS.filter(l => l.kind === k.id);
+    const states = CATS.states.filter(s => inKind.some(l => l.state === s.id));
+    const sub = inKind.length
+      ? `<li><button type="button" data-state="all">Все <span class="catnav__count">${inKind.length}</span></button></li>` +
+        states.map(s => `<li><button type="button" data-state="${s.id}">${statePlural(s)} <span class="catnav__count">${inKind.filter(l => l.state === s.id).length}</span></button></li>`).join('')
+      : `<li><p class="catnav__soon">Категория готовится. Оставьте заявку, сообщим когда откроем сбор.</p></li>`;
+    return `<li class="catnav__group" data-group="${k.id}">
+      <button class="catnav__head" type="button" data-cat="${k.id}">${k.name} <span class="catnav__count">${inKind.length}</span></button>
+      <ul class="catnav__sub" hidden>${sub}</ul>
+    </li>`;
+  }).join('');
+}
+
 function renderCatalog() {
+  renderCatnav();
   const list = catalogList();
   fill('catGrid', list);
-  const empty = document.getElementById('catEmpty');
-  if (empty) empty.hidden = list.length > 0;
 
-  const total = filters.q ? searchLots(filters.q).length : LOTS.filter(l => l.kind === filters.cat).length;
+  const empty = document.getElementById('catEmpty');
+  if (empty) {
+    empty.hidden = list.length > 0;
+    if (!list.length) {
+      const kindEmpty = !filters.q && !LOTS.some(l => l.kind === filters.cat);
+      const filtersOn = filters.state !== 'all' || filters.avail !== 'live' || filters.vol || filters.q;
+      if (kindEmpty) {
+        // категория ещё не запущена: не «фильтры виноваты», а честное состояние с подпиской
+        empty.innerHTML = `<h2 class="empty__h">${kindName(filters.cat)}: сбор откроем в сезон</h2>
+          <p>Категория готовится. Оставьте почту, и мы напишем, когда появятся первые партии.</p>
+          <form data-form="sub" novalidate class="empty__sub">
+            <label class="field"><span class="sr-only">Почта</span><input name="mail" type="email" placeholder="zakupki@restoran.ru" required><em class="err">Проверьте адрес почты</em></label>
+            <button class="btn btn--solid" type="submit">Сообщить о старте</button>
+          </form>`;
+      } else {
+        empty.innerHTML = `<p>${filters.q ? `По запросу «${filters.q}» в каталоге пусто.` : 'По этим фильтрам ничего нет.'}</p>
+          ${filtersOn ? '<p><button class="btn" type="button" data-reset-filters>Сбросить фильтры</button></p>' : ''}
+          <p><a class="tlink" href="${siteTel()}">Позвоните, подскажем, что есть: ${sitePhone()}</a></p>`;
+      }
+    }
+  }
+
+  const inKind = LOTS.filter(l => l.kind === filters.cat);
+  const total = filters.q ? searchLots(filters.q).length : inKind.length;
+  const hiddenClosed = !filters.q && filters.avail === 'live' ? inKind.filter(l => l.status === 'closed').length : 0;
   const counter = document.getElementById('catCounter');
   if (counter) counter.textContent = filters.q
     ? `По запросу «${filters.q}» нашли ${total}`
-    : `Показано ${list.length} из ${total}`;
-
-  // счётчики в левом меню
-  document.querySelectorAll('[data-count-cat]').forEach(el => {
-    el.textContent = LOTS.filter(l => l.kind === el.dataset.countCat).length;
-  });
-  document.querySelectorAll('[data-count-state]').forEach(el => {
-    const [kind, st] = el.dataset.countState.split(':');
-    el.textContent = LOTS.filter(l => l.kind === kind && (st === 'all' || l.state === st)).length;
-  });
+    : mode === 'retail'
+      ? `Показано ${list.length}, в розницу из них ${list.filter(l => l.retail).length}`
+      : `Показано ${list.length} из ${total}${hiddenClosed ? `, ${hiddenClosed} в архиве закрытых` : ''}`;
 
   // активная группа и подпункт
   document.querySelectorAll('.catnav__group').forEach(g => {
@@ -140,9 +220,9 @@ function renderPrice() {
   if (!tb) return;
   tb.innerHTML = LOTS.map(l => `<tr>
     <td>${l.name.replace(/ (свежая|свежий|сушёная|сушёный|замороженная|солёный|протёртая)$/i, '')}</td>
-    <td>${STATE_RU[l.state]}</td>
-    <td class="n">${l.status === 'live' ? 'есть' : l.volume}</td>
-    <td class="n">${l.opt}</td>
+    <td>${stateLabel(l)}</td>
+    <td class="n">${l.status === 'live' ? fmt(l.stock) + ' кг' : l.volume}</td>
+    <td class="n">${optLabel(l)}${tiersOf(l) ? ` <small>от ${fmt(minKg(l))} кг</small>` : ''}</td>
     <td>${l.status === 'live' ? 'открыта' : 'закрыта ' + l.closed}</td>
   </tr>`).join('');
 }
@@ -177,7 +257,7 @@ function renderBlog() {
     if (blogTab === 'all') {
       const p = POSTS[0];
       hero.innerHTML = `<article class="bhero">
-        <a class="bhero__img" href="${p.href}" tabindex="-1" aria-hidden="true"><img src="${p.img}" alt="" loading="lazy"></a>
+        <a class="bhero__img" href="${p.href}" tabindex="-1" aria-hidden="true"><img src="${Store.img(p.img)}" alt="" loading="lazy"></a>
         <div class="bhero__b">
           <div class="bmeta"><span class="bmeta__tag">${p.cat}</span><span>${p.date}</span><span>${p.read}</span></div>
           <h2 class="bhero__t"><a href="${p.href}">${p.title}</a></h2>
@@ -190,7 +270,7 @@ function renderBlog() {
 
   const rest = blogTab === 'all' ? list.slice(1) : list;
   grid.innerHTML = rest.map(p => `<li><article class="bcard">
-    <a class="bcard__img" href="${p.href}" tabindex="-1" aria-hidden="true"><img src="${p.img}" alt="" loading="lazy"></a>
+    <a class="bcard__img" href="${p.href}" tabindex="-1" aria-hidden="true"><img src="${Store.img(p.img)}" alt="" loading="lazy"></a>
     <div class="bcard__b">
       <div class="bmeta"><span class="bmeta__tag">${p.cat}</span><span>${p.date}</span><span>${p.read}</span></div>
       <h3 class="bcard__t"><a href="${p.href}">${p.title}</a></h3>
@@ -248,6 +328,9 @@ function renderCart() {
 
   const box = document.getElementById('cartBody');
   if (!box) return;
+  // пустой корзине не нужна форма оформления с активной кнопкой
+  const checkout = document.getElementById('cartCheckout');
+  if (checkout) checkout.hidden = !cart.size;
   if (!cart.size) {
     box.innerHTML = `<p>Пока пусто. В розницу продаём то, что переживёт дорогу: сушёное, мороженое и солёное.</p>
       <p><a class="tlink" href="#/catalog">Открыть каталог →</a></p>`;
@@ -259,7 +342,7 @@ function renderCart() {
     sum += lot.retail * qty;
     return `<div class="cartline">
       <img src="${Store.img(lot.img)}" alt="${lot.alt}">
-      <div><strong>${lot.name}</strong><br><span class="lot__spec">${money(lot.retail)} ${lot.retailUnit}</span></div>
+      <div><strong>${lot.name}</strong><br><span class="lot__spec">${money(lot.retail)} ${lot.retailUnit} × ${qty} ${lot.retailUnit.indexOf('100 г') !== -1 ? 'уп. по 100 г' : 'кг'}</span></div>
       <span class="qty">
         <button type="button" data-qty="-1" data-id="${id}" aria-label="Убрать одну">−</button>
         <span class="num">${qty}</span>
@@ -273,12 +356,44 @@ function renderCart() {
 
 /* ═══════════ общий рендер ═══════════ */
 
+/* «Цифры сезона» считаются из партий, а не живут константами в разметке */
+function renderFigures() {
+  const closedKg = LOTS.filter(l => l.status === 'closed').reduce((a, l) => a + (l.total || 0), 0);
+  const liveKg = LOTS.filter(l => l.status === 'live').reduce((a, l) => a + (l.stock || 0), 0);
+  const species = new Set(LOTS.map(l =>
+    l.name.replace(/ (свежая|свежий|сушёная|сушёный|замороженная|замороженный|солёная|солёный|протёртая|протёртый)$/i, '')
+  )).size;
+  const minOrder = Math.min(...LOTS.filter(l => l.status === 'live').map(minKg));
+  const share = closedKg + liveKg ? closedKg / (closedKg + liveKg) : 0;
+
+  const box = document.querySelector('.figures');
+  if (!box) return;
+  const figs = box.querySelectorAll('.fig');
+  if (figs.length < 3) return;
+
+  const ring = figs[0].querySelector('[data-ring]');
+  ring.dataset.ring = String(Math.round(share * 100) / 100);
+  figs[0].querySelector('[data-count]').dataset.count = String(closedKg);
+  figs[0].querySelector('.fig__val').innerHTML = `<span data-count="${closedKg}">0</span> кг`;
+  figs[0].querySelector('.fig__cap').textContent = `отгружено за сезон, ${Math.round(share * 100)}% заявленного объёма`;
+
+  const dots = figs[1].querySelector('[data-dots]');
+  dots.dataset.dots = String(species);
+  dots.innerHTML = Array.from({ length: species }, () => '<span class="on"></span>').join('');
+  figs[1].querySelector('.fig__val').innerHTML = `<span data-count="${species}">0</span>`;
+
+  const bar = figs[2].querySelector('[data-bar]');
+  bar.dataset.bar = String(Math.max(4, Math.round(minOrder / 500 * 100)));
+  figs[2].querySelector('.fig__val').innerHTML = `<span data-count="${minOrder}">0</span> кг`;
+}
+
 function renderAll() {
   const live = LOTS.filter(l => l.status === 'live');
   const closed = LOTS.filter(l => l.status === 'closed');
 
   fill('homeLive', live);
   fill('homeClosed', closed);
+  renderFigures();
 
   renderCatalog();
   renderPrice();
@@ -294,36 +409,58 @@ function renderAll() {
 
 let currentLot = null;
 
+/* сохранённая ссылка на несуществующую партию не должна молча показывать чужой товар */
+function renderLotMissing() {
+  const box = document.getElementById('lotPage');
+  if (!box) return;
+  currentLot = null;
+  const live = LOTS.filter(l => l.status === 'live').slice(0, 4);
+  box.innerHTML = `
+    <p class="crumbs"><a href="#/">Главная</a> → <a href="#/catalog">Каталог</a> → Партия не найдена</p>
+    <div class="empty" style="text-align:left;padding-inline:0">
+      <h1 style="margin-bottom:var(--space-sm)">Такой партии больше нет</h1>
+      <p style="max-width:52ch">Ссылка устарела или партия удалена. Сезон меняется каждую неделю: посмотрите, что открыто сейчас, или позвоните — подскажем замену.</p>
+      <p class="btn-row" style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-md)">
+        <a class="btn btn--solid" href="#/catalog">Открытые партии</a>
+        <a class="btn" href="${siteTel()}">${sitePhone()}</a>
+      </p>
+    </div>
+    ${live.length ? `<div class="shead" style="margin-top:var(--space-xl)"><h2>Сейчас в наличии</h2></div>
+    <ul class="lots">${live.map(card).join('')}</ul>` : ''}`;
+}
+
 function renderProduct(id) {
-  const lot = LOTS.find(l => l.id === id) || LOTS[0];
+  const lot = LOTS.find(l => l.id === id);
+  if (!lot) { renderLotMissing(id); return; }
   currentLot = lot;
   const box = document.getElementById('lotPage');
   if (!box) return;
 
   const live = lot.status === 'live';
   const pct = lot.total ? Math.round((lot.stock / lot.total) * 100) : 0;
-  const kindRu = lot.kind === 'berry' ? 'Ягоды' : lot.kind === 'herb' ? 'Травы' : 'Грибы';
+  const kindRu = kindName(lot.kind);
+  const mk = minKg(lot);
 
   // «по запросу» не число: крупный моношрифт оставляем настоящим ценам
-  const ask = mode !== 'retail' && !/^\d/.test(lot.opt);
+  const ask = mode !== 'retail' && !/^\d/.test(optLabel(lot));
   const priceBlock = mode === 'retail' && lot.retail
     ? `<p class="buy__price">${money(lot.retail)}<small>${lot.retailUnit}${lot.demo ? ', цена демонстрационная' : ''}</small></p>`
     : ask
-      ? `<p class="buy__price buy__price--ask">Цена по объёму<small>${live ? 'считаем под партию, опт от 20 кг' : 'партия закрыта, цену следующей скажем при брони'}</small></p>`
-      : `<p class="buy__price">${lot.opt}<small>${live ? 'за кг, опт от 20 кг' : 'цена закрытой партии'}</small></p>`;
+      ? `<p class="buy__price buy__price--ask">Цена по объёму<small>${live ? `считаем под партию, опт от ${mk} кг` : 'партия закрыта, цену следующей скажем при брони'}</small></p>`
+      : `<p class="buy__price">${optLabel(lot)}<small>${live ? `за кг при заказе от ${mk} кг${lot.demoOpt ? ' · цена демонстрационная' : ''}` : `цена закрытой партии${lot.demoOpt ? ', демо' : ''}`}</small></p>`;
 
-  const tiers = live && mode === 'opt' ? `
+  const tierRows = tiersOf(lot);
+  const tiers = live && mode === 'opt' && tierRows ? `
     <ul class="tiers">
-      <li><b>от 20 кг</b><span>мини-опт</span></li>
-      <li><b>от 100 кг</b><span>дешевле</span></li>
-      <li><b>от 500 кг</b><span>лучшая цена</span></li>
+      ${tierRows.map(([kg, p], i) => `<li${i === tierRows.length - 1 ? ' class="tiers__best"' : ''}><b>от ${fmt(kg)} кг</b><span class="num">${money(p)}/кг</span></li>`).join('')}
     </ul>` : '';
 
+  const lowStock = live && pct < 35;
   const stockBlock = live ? `
-    <div class="stockbar">
+    <div class="stockbar${lowStock ? ' stockbar--low' : ''}">
       <div class="stockbar__top"><span>Осталось в партии</span><b class="num">${fmt(lot.stock)} из ${fmt(lot.total)} кг</b></div>
       <div class="stockbar__rail"><i style="width:${Math.max(4, pct)}%"></i></div>
-      <p class="stockbar__note">${pct < 35 ? 'Партия заканчивается, уточняйте остаток при заявке' : 'Отгружаем со склада в Москве'}</p>
+      <p class="stockbar__note${lowStock ? ' stockbar__note--low' : ''}">${lowStock ? 'Партия заканчивается, уточняйте остаток при заявке' : 'Отгружаем со склада в Москве'}</p>
     </div>` : `
     <div class="stockbar stockbar--out">
       <div class="stockbar__top"><span>Партия закрыта</span><b>${lot.closed}</b></div>
@@ -339,7 +476,7 @@ function renderProduct(id) {
   // у закрытой партии отгружать нечего: подписи под кнопкой берём про следующий сбор
   const nextHarvest = (lot.specs.find(([k]) => k === 'Следующий сбор') || lot.specs.find(([k]) => k === 'Сезон') || [])[1];
   const facts = live
-    ? ['Отгрузка 1-2 рабочих дня', 'Самовывоз в Москве или доставка', 'Нал, безнал, счёт для юрлиц']
+    ? [`Опт от ${fmt(mk)} кг, отгрузка 1-2 рабочих дня`, 'Самовывоз в Москве или доставка', 'Нал, безнал, счёт для юрлиц']
     : [nextHarvest ? `Следующий сбор: ${nextHarvest}` : 'Сбор повторится в свой сезон',
        'Напишем, как только партия откроется', 'Счёт и договор для юрлиц'];
 
@@ -365,14 +502,17 @@ function renderProduct(id) {
 
       <div class="product__buy">
         <div class="buy">
-          <span class="tag ${live ? 'tag--live' : 'tag--closed'}">${live ? 'партия открыта' : 'партия закрыта'}</span>
+          <div class="buy__tags">
+            <span class="tag ${live ? 'tag--live' : 'tag--closed'}">${live ? 'партия открыта' : 'партия закрыта'}</span>
+            <span class="lotno" title="Номер партии">№ Л-${String(lot.date).slice(2)}</span>
+          </div>
           <h1>${lot.name}</h1>
           <p class="buy__meta">${lot.region} · ${lot.harvest}</p>
           ${priceBlock}
           ${tiers}
           ${stockBlock}
           <div class="buy__act">${action}</div>
-          <a class="buy__tel" href="tel:+79324748383">Или позвоните: <b>8 932 474-83-83</b></a>
+          <a class="buy__tel" href="${siteTel()}">Или позвоните: <b>${sitePhone()}</b></a>
           <ul class="buy__facts">
             ${facts.map(f => `<li>${f}</li>`).join('')}
           </ul>
@@ -390,29 +530,29 @@ function renderProduct(id) {
 
       <section class="psection">
         <h2>Доставка и оплата</h2>
-        <div class="pfacts">
-          <div><b>Самовывоз</b><span>Склад в Москве, в день оплаты</span></div>
-          <div><b>По Москве</b><span>От 300 кг без доплаты</span></div>
-          <div><b>В регионы</b><span>Транспортной компанией</span></div>
-          <div><b>Оплата</b><span>Нал, безнал, счёт юрлицу</span></div>
-        </div>
+        <dl class="ptable">
+          <div><dt>Самовывоз</dt><dd>склад в Москве, в день оплаты</dd></div>
+          <div><dt>По Москве</dt><dd>от 300 кг без доплаты</dd></div>
+          <div><dt>В регионы</dt><dd>транспортной компанией</dd></div>
+          <div><dt>Оплата</dt><dd>нал, безнал, счёт юрлицу</dd></div>
+        </dl>
       </section>
     </div>
 
     <section class="pband" id="buyForm">
       <div class="pband__head">
-        <h2>${live ? 'Запросить цену на объём' : 'Забронировать следующий сбор'}</h2>
+        <h2>${live ? 'Оставьте объём, посчитаем цену' : 'Забронировать следующий сбор'}</h2>
         <p class="pband__lede">${live
-          ? 'Цена на партию зависит от объёма. Назовите, сколько нужно, и мы посчитаем под вас.'
+          ? `Цена уточняется от объёма: лесенка выше показывает шаг. Минимум по этой партии ${fmt(mk)} кг.`
           : 'Партия ушла, но сбор повторится. Оставьте объём, и мы напишем, как только он откроется.'}</p>
         <ul class="pband__facts">
           <li>Отвечаем в тот же день, в сезон включая выходные</li>
-          <li>Считаем цену под ваш объём, от 20 кг</li>
+          <li>Считаем цену под ваш объём, от ${fmt(mk)} кг</li>
           <li>Скажем сразу, если в этом сборе объёма нет</li>
         </ul>
       </div>
       <form class="buyform" data-form="lot" novalidate>
-        <label class="field"><span>Сколько нужно, кг</span><input name="qty" type="number" min="1" placeholder="200" required><em class="err">Укажите объём в килограммах</em></label>
+        <label class="field"><span>Сколько нужно, кг</span><input name="qty" type="number" min="${mk}" placeholder="${mk * 2}" required><em class="err">Минимум для этой партии: ${fmt(mk)} кг</em></label>
         <label class="field"><span>Телефон</span><input name="phone" type="tel" placeholder="+7" required><em class="err">Нужен телефон для связи</em></label>
         <label class="field"><span>Кто вы</span>
           <select name="who"><option>Ресторан или кафе</option><option>Переработчик</option><option>Магазин или сеть</option><option>Экспорт</option><option>Частное лицо</option></select>
@@ -455,8 +595,26 @@ function setupRail(box) {
 
 /* ═══════════ инфографика счётчиков ═══════════ */
 
-const fmt = n => n.toLocaleString('ru-RU');
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ═══════════ тост: короткое подтверждение действия ═══════════ */
+
+let toastTimer = null;
+function toast(msg) {
+  let t = document.getElementById('siteToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'siteToast';
+    t.className = 'toast';
+    t.setAttribute('role', 'status');
+    t.setAttribute('aria-live', 'polite');
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 2400);
+}
 
 const figIO = new IntersectionObserver(entries => {
   entries.forEach(en => {
@@ -561,14 +719,18 @@ const searchNorm = s => (s || '').toLowerCase().replace(/ё/g, 'е')
 
 const searchStem = w => (w.length > 4 ? w.slice(0, Math.max(4, w.length - 2)) : w);
 
-const SEARCH_INDEX = LOTS.map(l => {
-  const hay = [
-    l.name, STATE_RU[l.state], KIND_WORDS[l.kind], STATE_WORDS[l.state], LOT_ALIAS[l.id],
-    VOL_WORDS[l.minVol], l.spec, l.region, l.harvest, l.volume,
-    (l.specs || []).map(p => p.join(' ')).join(' ')
-  ].join(' ');
-  return { lot: l, name: searchNorm(l.name).split(' '), hay: searchNorm(hay).split(' ') };
-});
+let SEARCH_INDEX = [];
+function buildSearchIndex() {
+  SEARCH_INDEX = LOTS.map(l => {
+    const hay = [
+      l.name, STATE_RU[l.state], stateLabel(l), KIND_WORDS[l.kind], STATE_WORDS[l.state], LOT_ALIAS[l.id],
+      VOL_WORDS[l.minVol], l.spec, l.region, l.harvest, l.volume,
+      (l.specs || []).map(p => p.join(' ')).join(' ')
+    ].join(' ');
+    return { lot: l, name: searchNorm(l.name).split(' '), hay: searchNorm(hay).split(' ') };
+  });
+}
+buildSearchIndex();
 
 function searchLots(q) {
   const words = searchNorm(q).split(' ').filter(w => w && !SEARCH_STOP.has(w));
@@ -591,7 +753,7 @@ function searchLots(q) {
 }
 
 const priceLabel = l => mode === 'opt'
-  ? l.opt
+  ? optLabel(l) + (tiersOf(l) ? '/кг' : '')
   : (l.retail ? money(l.retail) + ' ' + l.retailUnit : 'только оптом');
 
 const SEARCH_TAGS = ['лисичка сушёная', 'белый гриб', 'ягода в заморозке', 'груздь солёный', 'морошка'];
@@ -623,7 +785,7 @@ function runSearch(q) {
       `<a class="search__all" href="#/catalog" data-search-all>${
         hits.length > shown.length ? `Показать все результаты: ${hits.length}` : 'Показать в каталоге'
       }</a>`
-    : `<p class="search__empty">По запросу «${query}» ничего не нашли. Сезон меняется каждую неделю, позвоните и мы подскажем: <a href="tel:+79324748383">8 932 474-83-83</a></p>
+    : `<p class="search__empty">По запросу «${query}» ничего не нашли. Сезон меняется каждую неделю, позвоните и мы подскажем: <a href="${siteTel()}">${sitePhone()}</a></p>
        <a class="search__all" href="#/catalog" data-search-hit>Открыть весь каталог</a>`;
   openSearchDrop(true);
 }
@@ -648,7 +810,7 @@ function closeSearch(blur) {
   if (!box) return;
   box.classList.remove('is-open');
   if (input) {
-    input.placeholder = 'Поиск по каталогу';
+    input.placeholder = 'Поиск';
     if (blur) input.blur();
   }
   openSearchDrop(false);
@@ -665,8 +827,14 @@ function searchToCatalog(q) {
 
 /* ═══════════ чат с ИИ-консультантом (демо) ═══════════ */
 
+function chatStockAnswer() {
+  const live = LOTS.filter(l => l.status === 'live');
+  const names = live.map(l => l.name.toLowerCase()).join(', ');
+  return `Сейчас открыто партий: ${live.length}. ${names ? names.charAt(0).toUpperCase() + names.slice(1) + '.' : ''} Полный список с ценами — в разделе «Каталог».`;
+}
+
 const CHAT_QA = [
-  { q: 'Что есть в наличии?', a: 'Сейчас открыто шесть партий: лисичка свежая, сушёная и замороженная, белый гриб свежий и сушёный, груздь солёный. Из ягод есть клюква и брусника в заморозке. Открыть каталог целиком: раздел «Каталог».' },
+  { q: 'Что есть в наличии?', get a() { return chatStockAnswer(); } },
   { q: 'Чем сушёное лучше замороженного?', a: 'Сушёное хранится полтора года и едет обычной транспортной компанией без холода. Замороженное ближе к свежему по вкусу, но требует рефрижератора и морозильной камеры у вас. Для регионов почти всегда выгоднее сушёное.' },
   { q: 'Какой объём брать для ресторана?', a: 'Ресторану обычно хватает 20-50 кг свежего в неделю в сезон. Начните с пробной партии 20 кг: посмотрите отход и как гриб ведёт себя на кухне, потом зафиксируем регулярный объём.' },
   { q: 'Как оформляем сделку?', a: 'Работаем по счёту и договору поставки, оплата безналичная. Реквизиты есть в разделе «Контакты», счёт выставим в день заявки. Отгружаем после поступления оплаты или по согласованной отсрочке.' },
@@ -679,7 +847,8 @@ function chatSay(text, who) {
   div.className = 'chat__msg chat__msg--' + who;
   div.textContent = text;
   body.appendChild(div);
-  body.scrollTop = body.scrollHeight;
+  // длинный ответ читается с начала: прокручиваем к его верху, а не к низу
+  body.scrollTop = who === 'bot' ? Math.max(0, div.offsetTop - body.offsetTop - 8) : body.scrollHeight;
 }
 
 function chatAnswer(question) {
@@ -689,7 +858,7 @@ function chatAnswer(question) {
     || CHAT_QA.find(x => (q.includes('налич') && x.q.includes('наличии')) || ((q.includes('счёт') || q.includes('счет') || q.includes('договор') || q.includes('оплат')) && x.q.includes('сделку'))
       || (q.includes('достав') && x.q.includes('Доставите')) || (q.includes('объ') && x.q.includes('объём')));
   setTimeout(() => {
-    chatSay(hit ? hit.a : 'В прототипе я отвечаю на подготовленные вопросы. В рабочей версии здесь будет живой помощник с базой знаний по товарам и ценам. Пока могу позвать Илью: он ответит на что угодно.', 'bot');
+    chatSay(hit ? hit.a : 'В прототипе я отвечаю на подготовленные вопросы. В рабочей версии здесь будет живой помощник с базой знаний по товарам и ценам. Пока могу передать вопрос менеджеру: ' + sitePhone() + '.', 'bot');
   }, 400);
 }
 
@@ -716,7 +885,12 @@ function route() {
     s.classList.toggle('is-active', on);
     if (on) hit = s;
   });
-  if (!hit) document.querySelector('[data-route="/"]').classList.add('is-active');
+  // неизвестный адрес: честная страница «не нашлось», а не молчаливая главная
+  if (!hit) {
+    const nf = document.querySelector('[data-route="/404"]');
+    if (nf) nf.classList.add('is-active');
+    else document.querySelector('[data-route="/"]').classList.add('is-active');
+  }
 
   document.querySelectorAll('.mast__nav a').forEach(a => {
     if (a.getAttribute('href') === '#' + path) a.setAttribute('aria-current', 'page');
@@ -739,6 +913,7 @@ document.addEventListener('click', e => {
   const modeBtn = e.target.closest('[data-mode]');
   if (modeBtn) {
     mode = modeBtn.dataset.mode;
+    persistUI();
     document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
     renderAll();
     return;
@@ -813,10 +988,13 @@ document.addEventListener('click', e => {
   if (add) {
     const id = add.dataset.add;
     cart.set(id, (cart.get(id) || 0) + 1);
+    persistUI();
     add.textContent = 'В корзине';
     add.dataset.state = 'ok';
     setTimeout(() => { add.textContent = 'В корзину'; delete add.dataset.state; }, 1400);
     renderCart();
+    const added = LOTS.find(l => l.id === id);
+    toast(`${added ? added.name : 'Товар'} в корзине, всего позиций: ${cart.size}`);
     return;
   }
   const qty = e.target.closest('[data-qty]');
@@ -824,6 +1002,7 @@ document.addEventListener('click', e => {
     const id = qty.dataset.id;
     const next = (cart.get(id) || 0) + Number(qty.dataset.qty);
     if (next <= 0) cart.delete(id); else cart.set(id, next);
+    persistUI();
     renderCart();
     return;
   }
@@ -879,7 +1058,7 @@ document.addEventListener('click', e => {
   }
   if (e.target.closest('#chatClose')) { document.getElementById('chat').hidden = true; return; }
   if (e.target.closest('#chatHuman')) {
-    chatSay('Передал вопрос Илье. Он ответит в Telegram или перезвонит: 8 932 474-83-83.', 'bot');
+    chatSay('Передал вопрос менеджеру. Ответ придёт в Telegram, или мы перезвоним: ' + sitePhone() + '.', 'bot');
     return;
   }
   const chatQ = e.target.closest('[data-chatq]');
@@ -985,7 +1164,10 @@ document.addEventListener('submit', e => {
 
   const btn = form.querySelector('button[type="submit"]');
   const was = btn.textContent;
-  btn.textContent = 'Отправлено, перезвоним сегодня';
+  const kind = form.dataset.form;
+  btn.textContent = kind === 'sub'
+    ? 'Готово, прайс будет приходить раз в неделю'
+    : 'Отправлено, перезвоним сегодня';
   btn.dataset.state = 'ok';
   btn.disabled = true;
   form.reset();
@@ -1062,12 +1244,14 @@ measureMast();
    встречаются в десятке. Подставляем их по разметке, а не копированием. */
 
 function applyTexts() {
-  const t = Store.load('texts') || {};
+  const t = TEXTS;
   document.querySelectorAll('[data-text]').forEach(el => {
-    const v = t[el.dataset.text];
-    if (v === undefined || v === null || v === '') return;
-    el.textContent = v;
-    if (el.dataset.text === 'heroPromo') el.hidden = false;
+    const key = el.dataset.text;
+    if (!(key in t)) return;
+    const v = t[key];
+    // очищенное в админке поле реально очищается: плашка акции прячется, реквизит показывает прочерк
+    if (key === 'heroPromo') { el.hidden = !v; if (v) el.textContent = v; return; }
+    el.textContent = v === '' ? '—' : v;
   });
   if (t.phone) {
     const digits = '+7' + t.phone.replace(/\D/g, '').replace(/^[78]/, '');
@@ -1081,7 +1265,16 @@ function applyTexts() {
   }
 }
 
+/* правка в соседней вкладке админки: перечитываем данные и перерисовываем сайт */
+Store.subscribe(() => {
+  loadData(true);
+  applyTexts();
+  renderAll();
+});
+
 window.addEventListener('hashchange', route);
+// восстановленный из localStorage режим цен должен отразиться и на переключателе
+document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
 applyTexts();
 renderAll();
 route();

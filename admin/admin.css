@@ -258,6 +258,9 @@ details.group[open] > summary { margin-bottom: 16px; }
   background: var(--accent-soft); color: var(--accent-ink);
 }
 .pill--off { background: var(--paper-3); color: var(--muted); }
+.pill--new { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
+.row__num--call { text-decoration: none; color: inherit; display: block; }
+.row__num--call b { color: var(--accent-ink); }
 .pill i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
 .empty { padding: 28px 16px; text-align: center; color: var(--muted); }

@@ -24,6 +24,10 @@
   --color-accent-soft: oklch(93%  0.030 148);
   --color-on-accent:  oklch(98%   0.010 110);
   --color-focus:      oklch(52%   0.120 150);
+  /* янтарь: закреплён за акцией, срочностью и «партия заканчивается» */
+  --color-amber:      oklch(55%   0.125 65);
+  --color-amber-ink:  oklch(42%   0.105 60);
+  --color-amber-soft: oklch(93%   0.055 80);
   --color-live:       oklch(40%   0.095 150);
   --color-live-bg:    oklch(92%   0.035 148);
   --color-closed-bg:  oklch(93%   0.008 100);
@@ -31,13 +35,14 @@
   --shadow-2: 0 14px 40px oklch(30% 0.03 145 / 0.14);
 
   /* ── type ── */
-  --font-display: "Golos Text", ui-sans-serif, system-ui, sans-serif;
+  /* слэб на заголовках: характер бирки и ярлыка, контраст к нейтральному Golos в тексте */
+  --font-display: "Bitter", "Golos Text", ui-serif, Georgia, serif;
   --font-body:    "Golos Text", ui-sans-serif, system-ui, sans-serif;
   --font-label:   "Golos Text", ui-sans-serif, system-ui, sans-serif;
   --font-mono:    "IBM Plex Mono", ui-monospace, monospace;
 
-  --display-weight: 600;
-  --tracking-display: -0.015em;
+  --display-weight: 700;
+  --tracking-display: -0.005em;   /* слэбу не нужен сильный минус: засечки сцепляют сами */
   --tracking-label:    0.06em;
 
   --text-xs:   0.75rem;
@@ -109,6 +114,9 @@
     --color-accent-soft: oklch(30%  0.045 148);
     --color-on-accent:  oklch(18%   0.030 150);
     --color-focus:      oklch(75%   0.120 148);
+    --color-amber:      oklch(75%   0.115 75);
+    --color-amber-ink:  oklch(82%   0.105 80);
+    --color-amber-soft: oklch(32%   0.060 70);
     --color-live:       oklch(78%   0.100 148);
     --color-live-bg:    oklch(30%   0.045 150);
     --color-closed-bg:  oklch(27%   0.010 140);

@@ -7,7 +7,7 @@
 <meta name="description" content="Прототип интернет-магазина дикоросов: витрина партий, живой прайс, опт и розница.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Bitter:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
 <script src="seed.js"></script>
 <script src="store.js"></script>
@@ -30,7 +30,7 @@
         <span class="search__ico" aria-hidden="true">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
         </span>
-        <input type="search" id="searchInput" placeholder="Поиск по каталогу"
+        <input type="search" id="searchInput" placeholder="Поиск"
                data-ph-open="Например: лисичка сушёная в мешках или ягода в заморозке"
                aria-label="Поиск по каталогу" autocomplete="off">
         <button class="search__go" type="submit">Найти</button>
@@ -53,6 +53,9 @@
           <a href="#/pickers">Сборщикам<small>Заработок от 120 000 ₽ в месяц</small></a>
         </div>
       </details>
+      <a class="navm" href="#/about">О компании</a>
+      <a class="navm" href="#/mission">Миссия</a>
+      <a class="navm" href="#/pickers">Сборщикам</a>
       <a href="#/blog">Блог</a>
       <a href="#/contacts">Контакты</a>
     </nav>
@@ -63,6 +66,9 @@
         <button type="button" data-mode="retail" aria-pressed="false">Розница</button>
       </div>
       <a class="mast__phone" href="tel:+79324748383">8 932 474-83-83</a>
+      <a class="mast__call" href="tel:+79324748383" aria-label="Позвонить">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.13.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.25a2 2 0 0 1 2.1-.45c.9.34 1.84.57 2.8.7A2 2 0 0 1 22 16.9z"/></svg>
+      </a>
       <a href="#/cart" class="cartlink" id="cartlink" hidden>Корзина <span id="cartcount" class="num">0</span></a>
     </div>
   </div>
@@ -80,7 +86,7 @@
           <img src="img/hero.jpg" alt="Корзина со свежесобранными лесными грибами" fetchpriority="high">
           <div class="hero__veil"></div>
           <div class="hero__copy">
-            <span class="hero__promo" data-text="heroPromo">Доставка по Москве бесплатно от 300 кг</span>
+            <span class="hero__promo" data-text="heroPromo">Доставка по Москве бесплатно от 300 кг</span>
             <h1 data-text="heroTitle">Грибы и ягоды с Урала, прямо от заготовителя</h1>
             <p>Собираем, сушим, солим и морозим сами. Продаём партиями оптом и в розницу, с открытой ценой и остатком.</p>
             <ul class="hero__facts">
@@ -296,33 +302,8 @@
     <div class="catalog" style="margin-top:var(--space-xl)">
       <aside class="catnav" id="catnav">
         <button class="catnav__toggle" type="button" data-catnav-toggle>Категории</button>
-        <ul class="catnav__list">
-          <li class="catnav__group is-active" data-group="mushroom">
-            <button class="catnav__head" type="button" data-cat="mushroom">Грибы <span class="catnav__count" data-count-cat="mushroom">0</span></button>
-            <ul class="catnav__sub">
-              <li><button type="button" data-state="all" aria-current="true">Все <span class="catnav__count" data-count-state="mushroom:all">0</span></button></li>
-              <li><button type="button" data-state="fresh">Свежие <span class="catnav__count" data-count-state="mushroom:fresh">0</span></button></li>
-              <li><button type="button" data-state="dry">Сушёные <span class="catnav__count" data-count-state="mushroom:dry">0</span></button></li>
-              <li><button type="button" data-state="frozen">Замороженные <span class="catnav__count" data-count-state="mushroom:frozen">0</span></button></li>
-              <li><button type="button" data-state="salted">Солёные <span class="catnav__count" data-count-state="mushroom:salted">0</span></button></li>
-            </ul>
-          </li>
-          <li class="catnav__group" data-group="berry">
-            <button class="catnav__head" type="button" data-cat="berry">Ягоды <span class="catnav__count" data-count-cat="berry">0</span></button>
-            <ul class="catnav__sub" hidden>
-              <li><button type="button" data-state="all">Все <span class="catnav__count" data-count-state="berry:all">0</span></button></li>
-              <li><button type="button" data-state="fresh">Свежие <span class="catnav__count" data-count-state="berry:fresh">0</span></button></li>
-              <li><button type="button" data-state="frozen">Замороженные <span class="catnav__count" data-count-state="berry:frozen">0</span></button></li>
-              <li><button type="button" data-state="pureed">Протёртые <span class="catnav__count" data-count-state="berry:pureed">0</span></button></li>
-            </ul>
-          </li>
-          <li class="catnav__group" data-group="herb">
-            <button class="catnav__head" type="button" data-cat="herb">Травы <span class="catnav__count" data-count-cat="herb">0</span></button>
-            <ul class="catnav__sub" hidden>
-              <li><p class="catnav__soon">Категория готовится. Оставьте заявку, сообщим когда откроем сбор.</p></li>
-            </ul>
-          </li>
-        </ul>
+        <!-- список строится из данных админки: названия и состав категорий правятся там -->
+        <ul class="catnav__list" id="catnavList"></ul>
       </aside>
 
       <div>
@@ -345,10 +326,7 @@
         </div>
 
         <ul class="lots" id="catGrid"></ul>
-        <div class="empty" id="catEmpty" hidden>
-          <p>По этим фильтрам ничего нет.</p>
-          <p><button class="btn" type="button" data-reset-filters>Сбросить фильтры</button></p>
-        </div>
+        <div class="empty" id="catEmpty" hidden></div>
       </div>
     </div>
   </div>
@@ -436,7 +414,7 @@
 
     <div class="scroller">
       <table class="sheet">
-        <caption>Один источник данных на карточки, прайс и выгрузки. Цена меняется в админке и разъезжается везде.</caption>
+        <caption>Цена за кг на минимальном объёме, дальше дешевле лесенкой — шаг виден в карточке партии. Цены в прототипе демонстрационные. Один источник данных на карточки, прайс и выгрузки.</caption>
         <thead><tr><th>Позиция</th><th>Состояние</th><th>В наличии</th><th>Цена за кг</th><th>Статус</th></tr></thead>
         <tbody id="priceRows"></tbody>
       </table>
@@ -575,7 +553,7 @@
         <p>И хотим, чтобы российский дикорос перестал уезжать за границу безымянным сырьём и возвращаться к нам под чужой этикеткой втридорога.</p>
       </div>
       <div class="stack">
-        <figure class="figure"><img src="img/doroga.jpg" alt="Дорога через осенний лес" loading="lazy"><figcaption>Сезон идёт по стране, и мы идём вместе с ним</figcaption></figure>
+        <figure class="figure"><img src="img/sborshiki.jpg" alt="Сборщики в лесу" loading="lazy"><figcaption>Сезон делают люди: сборщики и приёмщики в регионах</figcaption></figure>
         <div class="formcard">
           <h3>Разделяете подход</h3>
           <p style="font-size:var(--text-sm)">Мы всегда ищем людей: сборщиков, приёмщиков, партнёров в регионах.</p>
@@ -912,7 +890,7 @@
 
     <div class="split" style="margin-top:var(--space-xl)">
       <div id="cartBody"></div>
-      <div class="formcard">
+      <div class="formcard" id="cartCheckout">
         <h2 class="formcard__h">Оформление</h2>
         <form data-form="order" novalidate>
           <label class="field"><span>Имя</span><input name="name" placeholder="Как к вам обращаться" required><em class="err">Укажите имя</em></label>
@@ -938,10 +916,10 @@
     <div class="split" style="margin-top:var(--space-xl)">
       <div class="stack">
         <dl class="dl">
-          <dt>Телефон и WhatsApp</dt><dd>8 932 474-83-83</dd>
-          <dt>Telegram</dt><dd>канал «Свежие грибы здесь»</dd>
-          <dt>MAX</dt><dd>подключим, когда клиент даст профиль</dd>
-          <dt>Instagram</dt><dd>lesnik_rf</dd>
+          <dt>Телефон и WhatsApp</dt><dd><a class="dl__link" href="tel:+79324748383">8 932 474-83-83</a> · <a class="dl__link" href="https://wa.me/79324748383" target="_blank" rel="noopener">написать в WhatsApp</a></dd>
+          <dt>Telegram</dt><dd><a class="dl__link" href="https://t.me/lesnik_rf" target="_blank" rel="noopener">канал «Свежие грибы здесь»</a> <small>(ссылка тестовая, подставим точную)</small></dd>
+          <dt>MAX</dt><dd>подключим, когда появится профиль</dd>
+          <dt>Instagram</dt><dd><a class="dl__link" href="https://www.instagram.com/lesnik_rf" target="_blank" rel="noopener">@lesnik_rf</a></dd>
           <dt>Склад и самовывоз</dt><dd>Москва, адрес уточняется</dd>
           <dt>ИНН</dt><dd data-text="inn">подставим</dd>
           <dt>ОГРНИП</dt><dd data-text="ogrnip">подставим</dd>
@@ -958,6 +936,22 @@
         </form>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ══════════════════ 404 ══════════════════ -->
+<section class="screen" data-route="/404" aria-label="Страница не найдена">
+  <div class="wrap">
+    <div class="inv">
+      <h1>Такой страницы нет</h1>
+      <div class="inv__meta"><span>Адрес устарел или в нём опечатка</span></div>
+    </div>
+    <p style="max-width:52ch;margin-top:var(--space-lg)">Каталог, прайс и контакты на месте — начните с них, или найдите товар через поиск в шапке.</p>
+    <p style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-md)">
+      <a class="btn btn--solid" href="#/catalog">Каталог</a>
+      <a class="btn" href="#/">На главную</a>
+      <a class="btn" href="#/contacts">Контакты</a>
+    </p>
   </div>
 </section>
 
@@ -1007,10 +1001,10 @@
         <p class="colophon__slogan">Лесной супермаркет дикоросов</p>
         <p class="colophon__about">Собираем, сушим, солим и отгружаем сами. Партиями, с открытой ценой и остатком по каждой позиции. Работаем с ресторанами, переработчиками, магазинами и частными покупателями.</p>
         <div class="colophon__soc">
-          <a href="#/contacts"><svg viewBox="0 0 24 24"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.2 13.2 1.4 11.7c-1-.3-1-1 .2-1.5l19-7.3c.9-.3 1.6.2 1.3 1.4z"/></svg>Telegram</a>
-          <a href="#/contacts"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.4-1.8-.7-3-1.3-5-4.4-5.2-4.6-.1-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.3.4-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.4 2.5 1.5.3.1.5.1.6-.1l.9-1c.2-.2.4-.2.6-.1l2 1c.2.1.4.2.4.3.1.1.1.6-.1 1.4z"/></svg>WhatsApp</a>
-          <a href="#/contacts"><svg viewBox="0 0 24 24"><path d="M4 4h4l4 8 4-8h4v16h-3.5V9.8L12.5 17h-1L7.5 9.8V20H4z"/></svg>MAX</a>
-          <a href="#/contacts"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c0 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2 0-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c0-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2zm0 3.3a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zm0 10.7a4.2 4.2 0 1 1 0-8.4 4.2 4.2 0 0 1 0 8.4zm6.8-10.9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>Instagram</a>
+          <a href="https://t.me/lesnik_rf" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.2 13.2 1.4 11.7c-1-.3-1-1 .2-1.5l19-7.3c.9-.3 1.6.2 1.3 1.4z"/></svg>Telegram</a>
+          <a href="https://wa.me/79324748383" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.4-1.8-.7-3-1.3-5-4.4-5.2-4.6-.1-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.3.4-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.4 2.5 1.5.3.1.5.1.6-.1l.9-1c.2-.2.4-.2.6-.1l2 1c.2.1.4.2.4.3.1.1.1.6-.1 1.4z"/></svg>WhatsApp</a>
+          <span class="colophon__soon" title="Профиль MAX в работе"><svg viewBox="0 0 24 24"><path d="M4 4h4l4 8 4-8h4v16h-3.5V9.8L12.5 17h-1L7.5 9.8V20H4z"/></svg>MAX · скоро</span>
+          <a href="https://www.instagram.com/lesnik_rf" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c0 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2 0-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c0-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2zm0 3.3a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zm0 10.7a4.2 4.2 0 1 1 0-8.4 4.2 4.2 0 0 1 0 8.4zm6.8-10.9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>Instagram</a>
         </div>
       </div>
 
@@ -1061,8 +1055,9 @@
     <div class="wrap">
       <span>Прототип для согласования</span>
       <a href="admin/">админка</a>
-      <a href="#/lot">карточка партии</a>
+      <a href="#/lot/lisichka-dry">карточка партии</a>
       <span>фото временные, из открытых источников</span>
+      <span>цены демонстрационные, заменим на прайс клиента</span>
     </div>
   </div>
 </footer>
@@ -1070,18 +1065,22 @@
 <!-- ══════════════════ МУЛЬТИКНОПКА СВЯЗИ ══════════════════ -->
 <div class="fab" id="fab">
   <div class="fab__list" id="fabList" hidden>
-    <a class="fab__item" href="#/contacts" data-fab-link>
+    <a class="fab__item" href="tel:+79324748383" data-fab-link>
+      <span class="fab__ico fab__ico--tel"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.13.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.25a2 2 0 0 1 2.1-.45c.9.34 1.84.57 2.8.7A2 2 0 0 1 22 16.9z"/></svg></span>
+      <span><b>Позвонить</b><small>8 932 474-83-83, до 20:00</small></span>
+    </a>
+    <a class="fab__item" href="https://t.me/lesnik_rf" target="_blank" rel="noopener" data-fab-link>
       <span class="fab__ico fab__ico--tg"><svg viewBox="0 0 24 24"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.2 13.2 1.4 11.7c-1-.3-1-1 .2-1.5l19-7.3c.9-.3 1.6.2 1.3 1.4z"/></svg></span>
       <span><b>Telegram</b><small>отвечаем в течение часа</small></span>
     </a>
-    <a class="fab__item" href="#/contacts" data-fab-link>
+    <a class="fab__item" href="https://wa.me/79324748383" target="_blank" rel="noopener" data-fab-link>
       <span class="fab__ico fab__ico--wa"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.4-1.8-.7-3-1.3-5-4.4-5.2-4.6-.1-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.3.4-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.4 2.5 1.5.3.1.5.1.6-.1l.9-1c.2-.2.4-.2.6-.1l2 1c.2.1.4.2.4.3.1.1.1.6-.1 1.4z"/></svg></span>
       <span><b>WhatsApp</b><small>отвечаем в течение часа</small></span>
     </a>
-    <a class="fab__item" href="#/contacts" data-fab-link>
+    <span class="fab__item fab__item--soon" aria-disabled="true">
       <span class="fab__ico fab__ico--max"><svg viewBox="0 0 24 24"><path d="M4 4h4l4 8 4-8h4v16h-3.5V9.8L12.5 17h-1L7.5 9.8V20H4z"/></svg></span>
-      <span><b>MAX</b><small>ссылку подставим позже</small></span>
-    </a>
+      <span><b>MAX</b><small>скоро, профиль в работе</small></span>
+    </span>
     <button class="fab__item" type="button" id="chatOpen">
       <span class="fab__ico fab__ico--chat"><svg viewBox="0 0 24 24"><path d="M12 3c5 0 9 3.4 9 7.5S17 18 12 18c-.9 0-1.8-.1-2.6-.3L4 20l1.3-3.4C3.9 15.2 3 13 3 10.5 3 6.4 7 3 12 3z"/></svg></span>
       <span><b>Чат с консультантом</b><small>отвечает сразу</small></span>
@@ -1098,7 +1097,7 @@
 <div class="chat" id="chat" hidden role="dialog" aria-label="Чат с консультантом">
   <div class="chat__head" style="position:relative">
     <b>Консультант Лесника</b>
-    <small>Отвечает цифровой помощник. Сложные вопросы передаём Илье.</small>
+    <small>Отвечает цифровой помощник. Сложные вопросы передаём менеджеру.</small>
     <button class="chat__close" type="button" id="chatClose" aria-label="Закрыть чат">×</button>
   </div>
   <div class="chat__body" id="chatBody"></div>
