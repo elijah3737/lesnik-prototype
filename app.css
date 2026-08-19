@@ -1321,6 +1321,7 @@ a:hover { color: var(--color-accent-ink); }
   border-top: 1px solid oklch(100% 0 0 / 0.1);
 }
 .colophon__legal a { color: var(--color-block-mute); display: inline-block; padding-block: 12px; }
+.colophon__credit { flex: 1 1 100%; color: oklch(78% 0.020 130); font-size: var(--text-xs); }
 
 
 /* ═════════════  responsive  ═════════════ */
