@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Лесник · выбор зелёного</title>
+<title>Лесник · зелёный с градиентом</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -19,81 +19,88 @@
     --mono: "IBM Plex Mono", ui-monospace, monospace;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--paper); color: var(--ink);
-    font-family: var(--font); font-size: 17px; line-height: 1.55;
-  }
-  .wrap { max-width: 68rem; margin-inline: auto; padding: 40px 20px 80px; }
-  h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -0.03em; margin: 0 0 10px; }
-  .lede { color: var(--muted); max-width: 60ch; margin: 0 0 8px; }
-  .now { font-size: 0.95rem; color: var(--muted); margin: 0 0 36px; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.55; }
+  .wrap { max-width: 72rem; margin-inline: auto; padding: 40px 20px 90px; }
+  h1 { font-size: clamp(1.9rem, 4vw, 2.7rem); font-weight: 800; letter-spacing: -0.03em; margin: 0 0 12px; }
+  .lede { color: var(--muted); max-width: 64ch; margin: 0 0 10px; }
+  .howto { background: var(--paper-2); border-radius: 16px; padding: 18px 22px; margin: 24px 0 40px; font-size: 0.93rem; }
+  .howto b { display: block; margin-bottom: 6px; }
+  .howto ul { margin: 0; padding-left: 20px; color: var(--muted); }
+  .howto li + li { margin-top: 4px; }
 
-  .opt { margin-bottom: 44px; border: 1px solid var(--rule); border-radius: 20px; overflow: hidden; background: var(--paper); }
-  .opt__head {
-    display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px;
-    padding: 18px 22px; border-bottom: 1px solid var(--rule);
-  }
-  .opt__n {
-    width: 30px; height: 30px; border-radius: 50%; flex: none;
-    display: inline-grid; place-items: center;
-    background: var(--a); color: var(--on); font-size: 0.85rem; font-weight: 700;
-  }
-  .opt__name { font-size: 1.15rem; font-weight: 700; }
-  .opt__why { flex: 1 1 22rem; font-size: 0.9rem; color: var(--muted); }
-  .opt__code { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
+  .opt { margin-bottom: 48px; border: 1px solid var(--rule); border-radius: 22px; overflow: hidden; background: var(--paper); }
+  .opt__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; padding: 20px 24px; border-bottom: 1px solid var(--rule); }
+  .opt__n { width: 32px; height: 32px; border-radius: 50%; flex: none; display: inline-grid; place-items: center;
+            background: var(--g-btn); color: var(--on); font-size: 0.9rem; font-weight: 700; }
+  .opt__name { font-size: 1.2rem; font-weight: 700; }
+  .opt__why { flex: 1 1 24rem; font-size: 0.9rem; color: var(--muted); }
 
   .demo { display: grid; grid-template-columns: 1fr; }
-  @media (min-width: 54rem) { .demo { grid-template-columns: 1.25fr 1fr; } }
+  @media (min-width: 56rem) { .demo { grid-template-columns: 1.3fr 1fr; } }
 
-  /* баннер */
-  .banner { position: relative; min-height: 260px; display: flex; align-items: center; }
+  .banner { position: relative; min-height: 300px; display: flex; align-items: center; }
   .banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .banner__veil { position: absolute; inset: 0; background: linear-gradient(90deg, var(--dark) 0%, color-mix(in oklab, var(--dark) 70%, transparent) 55%, transparent 100%); }
-  .banner__copy { position: relative; padding: 28px; color: oklch(97% 0.01 110); max-width: 30rem; }
-  .banner__promo {
-    display: inline-block; background: var(--warm); color: oklch(99% 0.005 90);
-    font-size: 0.78rem; font-weight: 600; padding: 5px 13px; border-radius: 999px; margin-bottom: 12px;
-  }
-  .banner h2 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 8px; line-height: 1.12; }
-  .banner p { margin: 0 0 18px; font-size: 0.95rem; opacity: 0.9; }
-  .b { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 20px; border-radius: 999px;
-       font-weight: 600; font-size: 0.92rem; text-decoration: none; border: 1px solid transparent; cursor: pointer; }
-  .b--solid { background: var(--a); color: var(--on); }
-  .b--ghost { border-color: oklch(97% 0.01 110); color: oklch(97% 0.01 110); margin-left: 8px; }
+  .banner__veil { position: absolute; inset: 0; background: var(--g-veil); }
+  .banner__copy { position: relative; padding: 30px; color: oklch(97% 0.012 110); max-width: 32rem; }
+  .banner__promo { display: inline-block; background: var(--g-warm); color: oklch(99% 0.006 90);
+                   font-size: 0.78rem; font-weight: 600; padding: 6px 14px; border-radius: 999px; margin-bottom: 14px; }
+  .banner h2 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 8px; line-height: 1.12; }
+  .banner p { margin: 0 0 20px; font-size: 0.95rem; opacity: 0.92; }
 
-  /* правая колонка: карточка и элементы */
-  .side { padding: 24px; display: grid; gap: 18px; align-content: start; background: var(--paper-2); }
+  .b { display: inline-flex; align-items: center; min-height: 46px; padding-inline: 22px; border-radius: 999px;
+       font-weight: 600; font-size: 0.93rem; text-decoration: none; border: 1px solid transparent; cursor: pointer; }
+  .b--solid { background: var(--g-btn); color: var(--on); box-shadow: var(--btn-shadow); }
+  .b--ghost { border-color: oklch(97% 0.012 110); color: oklch(97% 0.012 110); margin-left: 8px; }
+
+  .side { padding: 26px; display: grid; gap: 18px; align-content: start; background: var(--paper-2); }
   .card { background: var(--paper); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
   .card img { width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block; }
   .card__b { padding: 14px 16px; }
   .tag { display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 600;
-         background: var(--soft); color: var(--ink2); padding: 3px 10px; border-radius: 999px; }
+         background: var(--g-soft); color: var(--ink2); padding: 4px 11px; border-radius: 999px; }
   .tag i { width: 6px; height: 6px; border-radius: 50%; background: var(--a); }
-  .card__n { font-weight: 600; margin: 8px 0 2px; }
-  .card__p { font-family: var(--mono); font-size: 1.1rem; color: var(--ink2); }
+  .card__n { font-weight: 600; margin: 9px 0 2px; }
+  .card__p { font-family: var(--mono); font-size: 1.15rem; color: var(--ink2); }
   .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .chip { font-size: 0.85rem; padding: 7px 14px; border-radius: 999px; background: var(--soft); color: var(--ink2); }
-  .bar { height: 8px; border-radius: 999px; background: oklch(100% 0 0 / 0.7); overflow: hidden; border: 1px solid var(--rule); }
-  .bar i { display: block; height: 100%; width: 62%; background: var(--a); }
-  .strip { border-radius: 14px; background: var(--soft); color: var(--ink2); padding: 14px 16px; font-size: 0.9rem; }
-  .strip b { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; display: block; letter-spacing: -0.02em; }
-  .dark { border-radius: 14px; background: var(--dark); color: oklch(96% 0.015 110); padding: 16px; font-size: 0.9rem; }
-  .dark b { display: block; font-weight: 700; margin-bottom: 4px; }
+  .chip { font-size: 0.85rem; padding: 8px 15px; border-radius: 999px; background: var(--g-soft); color: var(--ink2); }
+  .bar { height: 9px; border-radius: 999px; background: oklch(100% 0 0 / 0.75); overflow: hidden; border: 1px solid var(--rule); }
+  .bar i { display: block; height: 100%; width: 62%; background: var(--g-btn); }
+  .strip { border-radius: 16px; background: var(--g-soft); color: var(--ink2); padding: 16px 18px; font-size: 0.9rem; }
+  .strip b { font-family: var(--mono); font-size: 1.6rem; font-weight: 700; display: block; letter-spacing: -0.02em; }
+  .dark { border-radius: 16px; background: var(--g-dark); color: oklch(96% 0.016 110); padding: 20px; font-size: 0.9rem; }
+  .dark b { display: block; font-weight: 700; font-size: 1.05rem; margin-bottom: 5px; }
+  .fab { width: 56px; height: 56px; border-radius: 50%; background: var(--g-btn); box-shadow: var(--btn-shadow);
+         display: grid; place-items: center; color: var(--on); }
+  .fab svg { width: 24px; height: 24px; fill: currentColor; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Пять оттенков зелёного</h1>
-  <p class="lede">Каждый вариант показан на том, что реально решает: баннер, кнопка, тег «в наличии», цена, полоса остатка и тёмный блок. Смотрите не на квадратики, а на то, как выглядит кнопка и как читается тёмная плашка.</p>
-  <p class="now">Сейчас на сайте вариант 1. Скажите номер, и я переключу весь сайт одной правкой: цвет живёт в токенах.</p>
+  <h1>Зелёный с градиентом</h1>
+  <p class="lede">Плоская заливка на больших поверхностях действительно выглядит дёшево: она не даёт объёма и на фотографиях леса читается как краска. Пять систем ниже строятся не на одном цвете, а на переходе между двумя близкими.</p>
+
+  <div class="howto">
+    <b>Где градиент работает, а где вредит</b>
+    <ul>
+      <li>Крупные поверхности: кнопки, тёмные полосы, панели, мультикнопка. Здесь переход даёт глубину.</li>
+      <li>Мелкие элементы: точки статуса, галочки, тонкие линии. Они остаются плоскими, иначе появляется грязь.</li>
+      <li>Переход всегда короткий по тону: два соседних зелёных, а не зелёный в бирюзу. Иначе выходит спортзал.</li>
+    </ul>
+  </div>
 
   <!-- 1 -->
-  <section class="opt" style="--a:oklch(46% 0.085 145); --on:oklch(98% 0.010 110); --soft:oklch(93% 0.030 148); --ink2:oklch(36% 0.080 148); --dark:oklch(27% 0.045 150); --warm:oklch(58% 0.140 55)">
+  <section class="opt" style="
+    --a: oklch(48% 0.095 148); --on: oklch(99% 0.010 110); --ink2: oklch(36% 0.085 148);
+    --g-btn: linear-gradient(180deg, oklch(56% 0.108 146) 0%, oklch(44% 0.090 152) 100%);
+    --g-dark: linear-gradient(160deg, oklch(31% 0.058 150) 0%, oklch(21% 0.040 155) 100%);
+    --g-soft: linear-gradient(155deg, oklch(96% 0.030 148) 0%, oklch(92% 0.045 146) 100%);
+    --g-veil: linear-gradient(100deg, oklch(22% 0.045 152 / 0.92) 0%, oklch(24% 0.050 148 / 0.55) 55%, transparent 100%);
+    --g-warm: linear-gradient(180deg, oklch(63% 0.150 58) 0%, oklch(55% 0.140 48) 100%);
+    --btn-shadow: 0 6px 16px oklch(40% 0.09 148 / 0.28);">
     <div class="opt__head">
       <span class="opt__n">1</span>
-      <span class="opt__name">Нынешний</span>
-      <span class="opt__why">Глубокий приглушённый. Тот самый, который вы назвали болотным.</span>
-      <span class="opt__code">oklch(46% 0.085 145)</span>
+      <span class="opt__name">Тихий блик</span>
+      <span class="opt__why">Тот же зелёный, но сверху вниз чуть светлее к темнее. Заметно только боковым зрением: кнопка перестаёт быть плашкой и получает объём. Самый безопасный вариант.</span>
     </div>
     <div class="demo">
       <div class="banner">
@@ -107,29 +114,31 @@
         </div>
       </div>
       <div class="side">
-        <div class="card">
-          <img src="img/lisichka.jpg" alt="">
-          <div class="card__b">
-            <span class="tag"><i></i>в наличии</span>
+        <div class="card"><img src="img/lisichka.jpg" alt="">
+          <div class="card__b"><span class="tag"><i></i>в наличии</span>
             <p class="card__n">Лисичка свежая</p>
-            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p>
-          </div>
-        </div>
-        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a></div>
+            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p></div></div>
+        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a><span class="fab"><svg viewBox="0 0 24 24"><path d="M12 3c5 0 9 3.4 9 7.5S17 18 12 18c-.9 0-1.8-.1-2.6-.3L4 20l1.3-3.4C3.9 15.2 3 13 3 10.5 3 6.4 7 3 12 3z"/></svg></span></div>
         <div class="bar"><i></i></div>
         <div class="strip"><b>7 008 кг</b>отгружено за сезон</div>
-        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора.</div>
+        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора, сушим и солим на своём производстве.</div>
       </div>
     </div>
   </section>
 
   <!-- 2 -->
-  <section class="opt" style="--a:oklch(55% 0.115 148); --on:oklch(99% 0.008 110); --soft:oklch(94% 0.042 150); --ink2:oklch(40% 0.100 148); --dark:oklch(30% 0.060 152); --warm:oklch(60% 0.145 58)">
+  <section class="opt" style="
+    --a: oklch(50% 0.110 160); --on: oklch(99% 0.010 110); --ink2: oklch(37% 0.095 162);
+    --g-btn: linear-gradient(165deg, oklch(59% 0.125 152) 0%, oklch(43% 0.105 172) 100%);
+    --g-dark: linear-gradient(145deg, oklch(33% 0.072 156) 0%, oklch(19% 0.048 176) 100%);
+    --g-soft: linear-gradient(150deg, oklch(96% 0.032 152) 0%, oklch(91% 0.052 168) 100%);
+    --g-veil: linear-gradient(100deg, oklch(20% 0.050 168 / 0.92) 0%, oklch(24% 0.055 158 / 0.55) 55%, transparent 100%);
+    --g-warm: linear-gradient(180deg, oklch(64% 0.150 62) 0%, oklch(56% 0.142 50) 100%);
+    --btn-shadow: 0 8px 20px oklch(38% 0.10 165 / 0.32);">
     <div class="opt__head">
       <span class="opt__n">2</span>
-      <span class="opt__name">Светлее и чище</span>
-      <span class="opt__why">Тот же тон, но светлее и насыщеннее. Кнопки перестают выглядеть тускло, тёмный блок остаётся спокойным.</span>
-      <span class="opt__code">oklch(55% 0.115 148)</span>
+      <span class="opt__name">Хвойная глубина</span>
+      <span class="opt__why">Переход из тёплого зелёного в холодный хвойный по диагонали. Даёт ощущение густого леса и выглядит дороже всего на тёмных полосах.</span>
     </div>
     <div class="demo">
       <div class="banner">
@@ -143,29 +152,31 @@
         </div>
       </div>
       <div class="side">
-        <div class="card">
-          <img src="img/lisichka.jpg" alt="">
-          <div class="card__b">
-            <span class="tag"><i></i>в наличии</span>
+        <div class="card"><img src="img/lisichka.jpg" alt="">
+          <div class="card__b"><span class="tag"><i></i>в наличии</span>
             <p class="card__n">Лисичка свежая</p>
-            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p>
-          </div>
-        </div>
-        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a></div>
+            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p></div></div>
+        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a><span class="fab"><svg viewBox="0 0 24 24"><path d="M12 3c5 0 9 3.4 9 7.5S17 18 12 18c-.9 0-1.8-.1-2.6-.3L4 20l1.3-3.4C3.9 15.2 3 13 3 10.5 3 6.4 7 3 12 3z"/></svg></span></div>
         <div class="bar"><i></i></div>
         <div class="strip"><b>7 008 кг</b>отгружено за сезон</div>
-        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора.</div>
+        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора, сушим и солим на своём производстве.</div>
       </div>
     </div>
   </section>
 
   <!-- 3 -->
-  <section class="opt" style="--a:oklch(62% 0.145 142); --on:oklch(17% 0.030 150); --soft:oklch(93% 0.055 145); --ink2:oklch(38% 0.095 145); --dark:oklch(26% 0.055 148); --warm:oklch(62% 0.150 60)">
+  <section class="opt" style="
+    --a: oklch(55% 0.115 132); --on: oklch(99% 0.010 110); --ink2: oklch(38% 0.095 130);
+    --g-btn: linear-gradient(140deg, oklch(63% 0.130 118) 0%, oklch(49% 0.108 142) 100%);
+    --g-dark: linear-gradient(140deg, oklch(32% 0.062 128) 0%, oklch(23% 0.050 148) 100%);
+    --g-soft: linear-gradient(140deg, oklch(96% 0.045 115) 0%, oklch(93% 0.042 140) 100%);
+    --g-veil: linear-gradient(100deg, oklch(23% 0.055 130 / 0.92) 0%, oklch(26% 0.055 122 / 0.55) 55%, transparent 100%);
+    --g-warm: linear-gradient(180deg, oklch(66% 0.155 66) 0%, oklch(58% 0.145 54) 100%);
+    --btn-shadow: 0 8px 20px oklch(44% 0.11 128 / 0.30);">
     <div class="opt__head">
       <span class="opt__n">3</span>
-      <span class="opt__name">Свежий лист</span>
-      <span class="opt__why">Заметно ярче и живее, ближе к молодой зелени. Самый бодрый из пяти, текст на кнопке становится тёмным.</span>
-      <span class="opt__code">oklch(62% 0.145 142)</span>
+      <span class="opt__name">Утро в лесу</span>
+      <span class="opt__why">Тёплый золотисто-зелёный уходит в обычный зелёный. Похоже на солнце сквозь листву. Самый живой и приветливый, хорошо ложится на еду.</span>
     </div>
     <div class="demo">
       <div class="banner">
@@ -179,29 +190,31 @@
         </div>
       </div>
       <div class="side">
-        <div class="card">
-          <img src="img/lisichka.jpg" alt="">
-          <div class="card__b">
-            <span class="tag"><i></i>в наличии</span>
+        <div class="card"><img src="img/lisichka.jpg" alt="">
+          <div class="card__b"><span class="tag"><i></i>в наличии</span>
             <p class="card__n">Лисичка свежая</p>
-            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p>
-          </div>
-        </div>
-        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a></div>
+            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p></div></div>
+        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a><span class="fab"><svg viewBox="0 0 24 24"><path d="M12 3c5 0 9 3.4 9 7.5S17 18 12 18c-.9 0-1.8-.1-2.6-.3L4 20l1.3-3.4C3.9 15.2 3 13 3 10.5 3 6.4 7 3 12 3z"/></svg></span></div>
         <div class="bar"><i></i></div>
         <div class="strip"><b>7 008 кг</b>отгружено за сезон</div>
-        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора.</div>
+        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора, сушим и солим на своём производстве.</div>
       </div>
     </div>
   </section>
 
   <!-- 4 -->
-  <section class="opt" style="--a:oklch(52% 0.105 165); --on:oklch(99% 0.008 110); --soft:oklch(93% 0.038 168); --ink2:oklch(38% 0.090 166); --dark:oklch(27% 0.048 168); --warm:oklch(60% 0.140 52)">
+  <section class="opt" style="
+    --a: oklch(52% 0.130 158); --on: oklch(99% 0.010 110); --ink2: oklch(36% 0.105 160);
+    --g-btn: linear-gradient(170deg, oklch(64% 0.150 156) 0%, oklch(47% 0.130 166) 100%);
+    --g-dark: linear-gradient(150deg, oklch(30% 0.082 158) 0%, oklch(18% 0.055 172) 100%);
+    --g-soft: linear-gradient(150deg, oklch(95% 0.050 156) 0%, oklch(90% 0.062 166) 100%);
+    --g-veil: linear-gradient(100deg, oklch(19% 0.060 164 / 0.92) 0%, oklch(22% 0.065 158 / 0.55) 55%, transparent 100%);
+    --g-warm: linear-gradient(180deg, oklch(65% 0.155 60) 0%, oklch(57% 0.145 48) 100%);
+    --btn-shadow: 0 8px 22px oklch(40% 0.13 160 / 0.35);">
     <div class="opt__head">
       <span class="opt__n">4</span>
-      <span class="opt__name">Хвойный, с прохладой</span>
-      <span class="opt__why">Сдвинут в сторону сине-зелёного. Выглядит дороже и строже, дальше всего от болотного.</span>
-      <span class="opt__code">oklch(52% 0.105 165)</span>
+      <span class="opt__name">Изумруд</span>
+      <span class="opt__why">Самый насыщенный и дорогой на вид. Хорош, если хотите уйти от «фермерского» вида в сторону премиального продукта. Требует аккуратности: яркое пятно на весь экран.</span>
     </div>
     <div class="demo">
       <div class="banner">
@@ -215,29 +228,31 @@
         </div>
       </div>
       <div class="side">
-        <div class="card">
-          <img src="img/lisichka.jpg" alt="">
-          <div class="card__b">
-            <span class="tag"><i></i>в наличии</span>
+        <div class="card"><img src="img/lisichka.jpg" alt="">
+          <div class="card__b"><span class="tag"><i></i>в наличии</span>
             <p class="card__n">Лисичка свежая</p>
-            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p>
-          </div>
-        </div>
-        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a></div>
+            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p></div></div>
+        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a><span class="fab"><svg viewBox="0 0 24 24"><path d="M12 3c5 0 9 3.4 9 7.5S17 18 12 18c-.9 0-1.8-.1-2.6-.3L4 20l1.3-3.4C3.9 15.2 3 13 3 10.5 3 6.4 7 3 12 3z"/></svg></span></div>
         <div class="bar"><i></i></div>
         <div class="strip"><b>7 008 кг</b>отгружено за сезон</div>
-        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора.</div>
+        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора, сушим и солим на своём производстве.</div>
       </div>
     </div>
   </section>
 
   <!-- 5 -->
-  <section class="opt" style="--a:oklch(50% 0.100 128); --on:oklch(99% 0.008 110); --soft:oklch(93% 0.040 130); --ink2:oklch(37% 0.088 130); --dark:oklch(26% 0.045 132); --warm:oklch(60% 0.145 62)">
+  <section class="opt" style="
+    --a: oklch(46% 0.100 145); --on: oklch(99% 0.010 110); --ink2: oklch(34% 0.090 145);
+    --g-btn: linear-gradient(180deg, oklch(52% 0.112 142) 0%, oklch(38% 0.092 152) 100%);
+    --g-dark: linear-gradient(155deg, oklch(28% 0.058 140) 0%, oklch(16% 0.038 152) 100%);
+    --g-soft: linear-gradient(155deg, oklch(95% 0.038 140) 0%, oklch(91% 0.040 150) 100%);
+    --g-veil: linear-gradient(100deg, oklch(17% 0.042 148 / 0.94) 0%, oklch(20% 0.048 142 / 0.58) 55%, transparent 100%);
+    --g-warm: linear-gradient(180deg, oklch(62% 0.148 56) 0%, oklch(54% 0.138 46) 100%);
+    --btn-shadow: 0 8px 20px oklch(30% 0.09 148 / 0.38);">
     <div class="opt__head">
       <span class="opt__n">5</span>
-      <span class="opt__name">Тёплый мох</span>
-      <span class="opt__why">Сдвинут в жёлто-зелёный, ближе к траве и лесной подстилке. Теплее нынешнего, но не кричит.</span>
-      <span class="opt__code">oklch(50% 0.100 128)</span>
+      <span class="opt__name">Тёмный бор</span>
+      <span class="opt__why">Глубокий, почти чёрный по нижнему краю. Сдержанный и серьёзный, ближе всего к нынешнему по характеру, но с объёмом. Хорош, если основной клиент — оптовик.</span>
     </div>
     <div class="demo">
       <div class="banner">
@@ -251,23 +266,19 @@
         </div>
       </div>
       <div class="side">
-        <div class="card">
-          <img src="img/lisichka.jpg" alt="">
-          <div class="card__b">
-            <span class="tag"><i></i>в наличии</span>
+        <div class="card"><img src="img/lisichka.jpg" alt="">
+          <div class="card__b"><span class="tag"><i></i>в наличии</span>
             <p class="card__n">Лисичка свежая</p>
-            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p>
-          </div>
-        </div>
-        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a></div>
+            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p></div></div>
+        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a><span class="fab"><svg viewBox="0 0 24 24"><path d="M12 3c5 0 9 3.4 9 7.5S17 18 12 18c-.9 0-1.8-.1-2.6-.3L4 20l1.3-3.4C3.9 15.2 3 13 3 10.5 3 6.4 7 3 12 3z"/></svg></span></div>
         <div class="bar"><i></i></div>
         <div class="strip"><b>7 008 кг</b>отгружено за сезон</div>
-        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора.</div>
+        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора, сушим и солим на своём производстве.</div>
       </div>
     </div>
   </section>
 
-  <p class="lede">Оранжевая плашка акции подстроена под каждый вариант: она должна оставаться тёплым контрастом, а не спорить с зелёным.</p>
+  <p class="lede">Скажите номер, и я переключу весь сайт: градиенты живут в токенах, отдельно для кнопок, тёмных полос, светлых панелей и затемнения на фото. Если понравится идея, но не оттенок, скажите, что менять: теплее, холоднее, светлее, темнее.</p>
 </div>
 </body>
 </html>
