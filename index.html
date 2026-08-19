@@ -1144,24 +1144,11 @@
   <div class="wrap">
     <div class="inv">
       <h1>Корзина</h1>
-      <div class="inv__meta"><span>Розница: сушёное, мороженое и солёное</span><span>Свежее в розницу не отправляем, не доедет</span></div>
+      <div class="inv__meta"><span id="cartMeta">Розница: сушёное, мороженое и солёное</span><span>Свежее в розницу не отправляем, не доедет</span></div>
     </div>
-
-    <div class="split" style="margin-top:var(--space-xl)">
-      <div id="cartBody"></div>
-      <div class="formcard" id="cartCheckout">
-        <h2 class="formcard__h">Оформление</h2>
-        <form data-form="order" novalidate>
-          <label class="field"><span>Имя</span><input name="name" placeholder="Как к вам обращаться" required><em class="err">Укажите имя</em></label>
-          <label class="field"><span>Телефон</span><input name="phone" type="tel" placeholder="+7" required><em class="err">Нужен телефон для связи</em></label>
-          <label class="field"><span>Доставка</span>
-            <select name="ship"><option>СДЭК до пункта выдачи</option><option>Курьером по Москве</option><option>Самовывоз со склада</option></select>
-          </label>
-          <label class="field"><span>Комментарий</span><textarea name="note" placeholder="Не обязательно"></textarea></label>
-          <button class="btn btn--solid btn--full" type="submit">Оформить заказ</button>
-        </form>
-      </div>
-    </div>
+    <!-- и полное, и пустое состояние рисует renderCart: у них разная компоновка,
+         и пустая правая колонка в вёрстке — ошибка, а не «просто скрытый блок» -->
+    <div id="cartBody"></div>
   </div>
 </section>
 

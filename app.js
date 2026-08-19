@@ -442,6 +442,61 @@ function renderAsides(live) {
 
 /* ═══════════ корзина ═══════════ */
 
+/* Единица розничной фасовки: за 100 г продаём упаковками, за 1 кг — килограммами.
+   Считать её в трёх местах по-разному — верный способ разойтись в цифрах. */
+const retailPack = lot => (String(lot.retailUnit).indexOf('100 г') !== -1 ? 'уп.' : 'кг');
+
+const plural = (n, one, few, many) => {
+  const d10 = n % 10, d100 = n % 100;
+  if (d10 === 1 && d100 !== 11) return one;
+  if (d10 >= 2 && d10 <= 4 && (d100 < 10 || d100 >= 20)) return few;
+  return many;
+};
+
+/* Живые строки корзины: битые id (партию удалили в админке) отсеиваем,
+   иначе весь рендер падает на lot.retail у undefined. */
+function cartLines() {
+  return [...cart.entries()]
+    .map(([id, qty]) => ({ lot: LOTS.find(l => l.id === id), qty }))
+    .filter(x => x.lot && x.lot.retail);
+}
+
+/* Что показать в допродаже: розничные партии в наличии, которых ещё нет в корзине.
+   Кадры не повторяем: две «брусники» на одном фото рядом выглядят как ошибка вёрстки. */
+function cartSuggest(limit) {
+  const seen = new Set();
+  return LOTS
+    .filter(l => l.status === 'live' && l.retail && !cart.has(l.id))
+    .filter(l => { if (seen.has(l.img)) return false; seen.add(l.img); return true; })
+    .slice(0, limit);
+}
+
+const CART_OPT_BAND = `
+  <section class="pband cband">
+    <div>
+      <h2>Берёте от 20 кг?</h2>
+      <p class="pband__lede">Это уже опт: цена считается по объёму и заметно ниже розничной. Свежий гриб и ягоду тоже отгружаем только так.</p>
+    </div>
+    <div class="cband__act">
+      <ul class="pband__facts">
+        <li>Цена под ваш объём, лесенкой от 20 кг</li>
+        <li>Открытый остаток по каждой партии</li>
+        <li>Счёт юрлицу и отгрузка транспортной компанией</li>
+      </ul>
+      <div class="btn-row">
+        <a class="btn btn--solid" href="#/opt">Условия опта</a>
+        <a class="btn" href="#/catalog">Оптовые партии</a>
+      </div>
+    </div>
+  </section>`;
+
+const CART_TRUST = `
+  <ul class="csum__trust">
+    <li>Собираем, сушим и солим сами — знаем каждую партию</li>
+    <li>Самовывоз со склада в Москве или доставка по России</li>
+    <li>Оплата после подтверждения: картой, переводом или по счёту</li>
+  </ul>`;
+
 function renderCart() {
   const count = [...cart.values()].reduce((a, b) => a + b, 0);
   const link = document.getElementById('cartlink');
@@ -450,30 +505,119 @@ function renderCart() {
 
   const box = document.getElementById('cartBody');
   if (!box) return;
-  // пустой корзине не нужна форма оформления с активной кнопкой
-  const checkout = document.getElementById('cartCheckout');
-  if (checkout) checkout.hidden = !cart.size;
-  if (!cart.size) {
-    box.innerHTML = `<p>Пока пусто. В розницу продаём то, что переживёт дорогу: сушёное, мороженое и солёное.</p>
-      <p><a class="tlink" href="#/catalog">Открыть каталог →</a></p>`;
+
+  const lines = cartLines();
+  const meta = document.getElementById('cartMeta');
+  if (meta) {
+    meta.textContent = lines.length
+      ? `${lines.length} ${plural(lines.length, 'позиция', 'позиции', 'позиций')} в заказе`
+      : 'Розница: сушёное, мороженое и солёное';
+  }
+
+  // ── пусто: не тупик с одной ссылкой, а витрина того, что вообще берут в розницу ──
+  if (!lines.length) {
+    const picks = cartSuggest(4);
+    box.innerHTML = `
+      <div class="cempty">
+        <div class="cempty__copy">
+          <h2>Пока пусто</h2>
+          <p>В розницу отправляем то, что переживёт дорогу: сушёное, солёное и мороженое.
+             Свежий гриб живёт трое суток, поэтому его отгружаем только оптом и только с холодом.</p>
+          <div class="btn-row">
+            <a class="btn btn--solid" href="#/catalog">Открыть каталог</a>
+            <a class="btn" href="#/price">Прайс на неделю</a>
+          </div>
+        </div>
+        <ul class="cempty__facts">
+          <li><b>Сушёное</b><span>хранится 18 месяцев, едет в любой регион</span></li>
+          <li><b>Солёное</b><span>холодная засолка без уксуса, 9 месяцев при +4</span></li>
+          <li><b>Мороженое</b><span>шоковая заморозка в день сбора, 12 месяцев</span></li>
+        </ul>
+      </div>
+      ${picks.length ? `<section class="crec">
+        <h2 class="crec__h">Что берут в розницу</h2>
+        <ul class="lots">${picks.map(card).join('')}</ul>
+      </section>` : ''}
+      ${CART_OPT_BAND}`;
     return;
   }
+
+  // ── есть товар ──
   let sum = 0;
-  const rows = [...cart.entries()].map(([id, qty]) => {
-    const lot = LOTS.find(l => l.id === id);
-    sum += lot.retail * qty;
-    return `<div class="cartline">
-      <img src="${Store.img(lot.img)}" alt="${lot.alt}">
-      <div><strong>${lot.name}</strong><br><span class="lot__spec">${money(lot.retail)} ${lot.retailUnit} × ${qty} ${lot.retailUnit.indexOf('100 г') !== -1 ? 'уп. по 100 г' : 'кг'}</span></div>
-      <span class="qty">
-        <button type="button" data-qty="-1" data-id="${id}" aria-label="Убрать одну">−</button>
-        <span class="num">${qty}</span>
-        <button type="button" data-qty="1" data-id="${id}" aria-label="Добавить одну">+</button>
-      </span>
-    </div>`;
+  let hasDemo = false;
+  const rows = lines.map(({ lot, qty }) => {
+    const lineSum = lot.retail * qty;
+    sum += lineSum;
+    if (lot.demo) hasDemo = true;
+    const pack = retailPack(lot);
+    return `<li class="cline">
+      <a class="cline__shot" href="#/lot/${lot.id}" tabindex="-1" aria-hidden="true"><img src="${Store.img(lot.img)}" alt="${lot.alt}" loading="lazy"></a>
+      <div class="cline__body">
+        <p class="cline__name"><a href="#/lot/${lot.id}">${lot.name}</a></p>
+        <p class="cline__spec">${lot.spec}</p>
+        <p class="cline__unit"><b>${money(lot.retail)}</b> ${lot.retailUnit}</p>
+      </div>
+      <div class="cline__act">
+        <span class="qty">
+          <button type="button" data-qty="-1" data-id="${lot.id}" aria-label="Убрать одну единицу: ${lot.name}">−</button>
+          <input class="qty__in" type="text" inputmode="numeric" value="${qty}" data-qtyin="${lot.id}"
+                 size="3" aria-label="Количество, ${pack}: ${lot.name}">
+          <button type="button" data-qty="1" data-id="${lot.id}" aria-label="Добавить одну единицу: ${lot.name}">+</button>
+        </span>
+        <p class="cline__sum"><b class="num">${money(lineSum)}</b><small>${qty} ${pack}</small></p>
+        <button class="cline__del" type="button" data-del="${lot.id}" aria-label="Убрать из корзины: ${lot.name}">Убрать</button>
+      </div>
+    </li>`;
   }).join('');
-  box.innerHTML = rows + `<p class="lot__price" style="margin-top:var(--space-lg)">Итого: <strong class="num">${money(sum)}</strong></p>
-    <p style="font-size:var(--text-sm);color:var(--color-muted)">Розничные цены в прототипе демонстрационные, подставим реальные.</p>`;
+
+  const picks = cartSuggest(3);
+
+  box.innerHTML = `
+    <div class="cart">
+      <div class="cart__list">
+        <ul class="clines">${rows}</ul>
+        <p class="cart__back"><a class="tlink" href="#/catalog">← Продолжить покупки</a></p>
+        ${hasDemo ? '<p class="cart__demo">Розничные цены в прототипе демонстрационные: подставим реальные из прайса.</p>' : ''}
+        ${picks.length ? `<section class="crecs">
+          <h2 class="crecs__h">С этим часто берут</h2>
+          <ul class="crecs__list">${picks.map(p => `<li class="crecs__i">
+            <a class="crecs__shot" href="#/lot/${p.id}" tabindex="-1" aria-hidden="true"><img src="${Store.img(p.img)}" alt="${p.alt}" loading="lazy"></a>
+            <div class="crecs__body">
+              <p class="crecs__n"><a href="#/lot/${p.id}">${p.name}</a></p>
+              <p class="crecs__s">${p.spec}</p>
+            </div>
+            <p class="crecs__p"><b class="num">${money(p.retail)}</b><small>${p.retailUnit}</small></p>
+            <button class="btn btn--soft crecs__add" type="button" data-add="${p.id}">В корзину</button>
+          </li>`).join('')}</ul>
+        </section>` : ''}
+      </div>
+
+      <aside class="cart__side">
+        <div class="csum">
+          <h2 class="csum__h">Ваш заказ</h2>
+          <dl class="csum__rows">
+            <div><dt>Товары, ${lines.length} ${plural(lines.length, 'позиция', 'позиции', 'позиций')}</dt><dd class="num">${money(sum)}</dd></div>
+            <div><dt>Доставка</dt><dd class="csum__soft">рассчитаем и подтвердим</dd></div>
+          </dl>
+          <p class="csum__total"><span>Итого за товар</span><b class="num">${money(sum)}</b></p>
+
+          <form class="csum__form" data-form="cart" novalidate>
+            <label class="field"><span>Имя</span><input name="name" placeholder="Как к вам обращаться" required><em class="err">Укажите имя</em></label>
+            <label class="field"><span>Телефон</span><input name="phone" type="tel" placeholder="+7" required><em class="err">Нужен телефон для связи</em></label>
+            <label class="field"><span>Как получить</span>
+              <select name="ship"><option>СДЭК до пункта выдачи</option><option>Курьером по Москве</option><option>Самовывоз со склада</option></select>
+            </label>
+            <label class="field"><span>Комментарий</span><textarea name="note" placeholder="Не обязательно"></textarea></label>
+            <button class="btn btn--solid btn--full btn--lg" type="submit">Оформить заказ</button>
+          </form>
+          <p class="csum__after">Заказ ни к чему не обязывает: сначала перезвоним, подтвердим наличие
+             и назовём стоимость доставки, платить — после этого.</p>
+          ${CART_TRUST}
+        </div>
+      </aside>
+    </div>
+
+    ${CART_OPT_BAND}`;
 }
 
 /* ═══════════ общий рендер ═══════════ */
@@ -749,7 +893,9 @@ const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* ═══════════ тост: короткое подтверждение действия ═══════════ */
 
 let toastTimer = null;
-function toast(msg) {
+/* action = { label, run } — кнопка отмены прямо в тосте: удаление из корзины
+   должно быть обратимым, иначе промах пальцем стоит покупателю позиции */
+function toast(msg, bad, action) {
   let t = document.getElementById('siteToast');
   if (!t) {
     t = document.createElement('div');
@@ -760,9 +906,18 @@ function toast(msg) {
     document.body.appendChild(t);
   }
   t.textContent = msg;
+  t.classList.toggle('toast--bad', !!bad);
+  if (action) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'toast__act';
+    b.textContent = action.label;
+    b.onclick = () => { t.hidden = true; clearTimeout(toastTimer); action.run(); };
+    t.appendChild(b);
+  }
   t.hidden = false;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.hidden = true; }, 2400);
+  toastTimer = setTimeout(() => { t.hidden = true; }, action ? 5200 : 2400);
 }
 
 const figIO = new IntersectionObserver(entries => {
@@ -1389,6 +1544,21 @@ document.addEventListener('click', e => {
     renderCart();
     return;
   }
+  // убрать позицию целиком, а не жать «−» до нуля
+  const del = e.target.closest('[data-del]');
+  if (del) {
+    const id = del.dataset.del;
+    const gone = LOTS.find(l => l.id === id);
+    const wasQty = cart.get(id) || 0;
+    cart.delete(id);
+    persistUI();
+    renderCart();
+    toast(`${gone ? gone.name : 'Позиция'} убрана из корзины`, false, {
+      label: 'Вернуть',
+      run: () => { cart.set(id, wasQty); persistUI(); renderCart(); }
+    });
+    return;
+  }
 
   // hero-слайдер
   // слайдер баннеров: точки и стрелки крутят один и тот же переключатель
@@ -1485,6 +1655,17 @@ document.addEventListener('input', e => {
 
 document.addEventListener('change', e => {
   if (e.target.id === 'showClosed') { filters.avail = e.target.checked ? 'all' : 'live'; renderCatalog(); return; }
+
+  // количество можно вписать руками: набирать «+» двадцать раз никто не станет
+  const qin = e.target.closest('[data-qtyin]');
+  if (qin) {
+    const id = qin.dataset.qtyin;
+    const n = Math.min(999, Math.max(0, parseInt(String(qin.value).replace(/\D/g, ''), 10) || 0));
+    if (n <= 0) cart.delete(id); else cart.set(id, n);
+    persistUI();
+    renderCart();
+    return;
+  }
 });
 
 document.addEventListener('focusin', e => {
@@ -1582,6 +1763,69 @@ document.addEventListener('submit', e => {
     setSession(mail);
     syncMode(); refreshLkLink(); renderLk();
     toast('Заявка отправлена, подтвердим в рабочее время');
+    return;
+  }
+
+  // ── розничный заказ из корзины ──
+  // отдельно от 'order': та форма живёт в попапе, спрашивает объём в кг
+  // и пишет ответ в тело модалки, а здесь ни попапа, ни поля qty нет
+  if (form.dataset.form === 'cart') {
+    let ok = true;
+    form.querySelectorAll('[required]').forEach(inp => {
+      const bad = !inp.value.trim();
+      inp.closest('.field').dataset.invalid = String(bad);
+      if (bad && ok) { inp.focus(); ok = false; }
+    });
+    if (!ok) return;
+
+    const lines = cartLines();
+    if (!lines.length) return;
+    const sum = lines.reduce((a, x) => a + x.lot.retail * x.qty, 0);
+    const num = 'Л-' + String(Date.now()).slice(-5);
+    const ship = form.querySelector('[name="ship"]');
+    const name = form.querySelector('[name="name"]').value.trim();
+    const phone = form.querySelector('[name="phone"]').value.trim();
+
+    // заказ виден в админке: для клиента это и есть доказательство, что цепочка замкнута
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const list = Store.load('leads');
+    if (Array.isArray(list)) {
+      list.unshift({
+        id: 'l-' + Date.now(),
+        date: `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`,
+        name, phone,
+        qty: money(sum),
+        lot: lines.map(x => `${x.lot.name} × ${x.qty} ${retailPack(x.lot)}`).join(', '),
+        who: 'Розничный заказ',
+        status: 'new'
+      });
+      Store.save('leads', list);
+    }
+
+    const rows = lines.map(x =>
+      `<li><span>${esc(x.lot.name)}</span><b class="num">${x.qty} ${retailPack(x.lot)}</b></li>`).join('');
+
+    cart.clear();
+    persistUI();
+    renderCart();
+
+    document.getElementById('cartBody').innerHTML = `
+      <div class="cdone">
+        <p class="cdone__tag">Заказ ${num} принят</p>
+        <h2>Спасибо, ${esc(name)}. Перезвоним и подтвердим.</h2>
+        <p class="cdone__lede">Наберём по номеру ${esc(phone)} в рабочее время, подтвердим наличие
+           и назовём стоимость доставки. Платить — после этого.</p>
+        <ul class="cdone__list">${rows}
+          <li class="cdone__sum"><span>Итого за товар</span><b class="num">${money(sum)}</b></li>
+        </ul>
+        <p class="cdone__ship">Как получить: ${esc(ship ? ship.options[ship.selectedIndex].text : '')}</p>
+        <div class="btn-row">
+          <a class="btn btn--solid" href="${siteTel()}">Позвонить самим: ${sitePhone()}</a>
+          <a class="btn" href="#/catalog">Вернуться в каталог</a>
+        </div>
+      </div>
+      ${CART_OPT_BAND}`;
     return;
   }
 
