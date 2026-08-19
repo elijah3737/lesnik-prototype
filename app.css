@@ -430,10 +430,21 @@ a:hover { color: var(--color-accent-ink); }
 
 /* ═════════════  hero  ═════════════ */
 
-.hero { padding-block: var(--space-lg) 0; }
-.hero__frame { position: relative; border-radius: var(--radius-banner); overflow: hidden; background: var(--color-block); }
-.hero__slide { display: none; position: relative; min-height: clamp(18rem, 42vw, 27rem); }
-.hero__slide.is-on { display: block; }
+.hero { position: relative; padding-block: var(--space-lg) 0; --hero-pager-h: 68px; }
+.hero__frame { position: relative; display: grid; border-radius: var(--radius-banner); overflow: hidden; background: var(--color-block); }
+
+/* Все слайды лежат в одной ячейке сетки, а не показываются по очереди через display.
+   Поэтому рамка получает высоту самого высокого баннера, и все три одинаковые:
+   раньше каждый тянулся по своему тексту и второй с третьим были заметно ниже. */
+.hero__slide {
+  grid-area: 1 / 1; position: relative;
+  min-height: clamp(18rem, 42vw, 27rem);
+  visibility: hidden; opacity: 0;
+}
+.hero__slide.is-on { visibility: visible; opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .hero__slide { transition: opacity var(--dur-short) var(--ease-out); }
+}
 .hero__slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .hero__veil { position: absolute; inset: 0; background: linear-gradient(90deg, oklch(20% 0.035 150 / 0.85) 0%, oklch(20% 0.035 150 / 0.5) 55%, transparent 100%); }
 /* на узком экране текст ложится по центру кадра: затемняем весь кадр, а не левый край */
@@ -445,11 +456,56 @@ a:hover { color: var(--color-accent-ink); }
   padding: clamp(1.5rem, 5vw, 3.5rem); max-width: 34rem;
   color: var(--color-block-ink);
   display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
-  min-height: inherit;
+  min-height: 100%;
 }
 .hero__copy h1, .hero__copy h2 { color: inherit; font-size: var(--text-display-s); max-width: 18ch; margin-bottom: var(--space-sm); }
 .hero__copy p { color: oklch(91% 0.02 120); font-size: var(--text-base); max-width: 38ch; margin-bottom: var(--space-lg); }
-.hero__dots { display: flex; gap: 8px; justify-content: center; padding-block: var(--space-md); }
+/* строка управления: стрелка, точки, стрелка. На широком экране стрелки уезжают
+   на края самого баннера, поэтому высота строки задана явно и служит опорой для них. */
+.hero__pager {
+  display: flex; align-items: center; justify-content: center;
+  gap: var(--space-xs); height: var(--hero-pager-h);
+}
+.hero__dots { display: flex; gap: 8px; justify-content: center; }
+
+.hero__nav {
+  /* выше .hero__copy (z-index: 1), иначе текстовый слой баннера съедает клик по стрелке */
+  position: relative; z-index: 2;
+  flex: none; width: 44px; height: 44px; padding: 0;
+  border: 0; background: transparent; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.hero__nav span {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--color-rule); background: var(--color-paper);
+  color: var(--color-ink); font-size: 1.35rem; line-height: 1;
+  transition: background var(--dur-micro) var(--ease-out),
+              border-color var(--dur-micro) var(--ease-out),
+              color var(--dur-micro) var(--ease-out);
+}
+.hero__nav:hover span { border-color: var(--color-accent); color: var(--color-accent-ink); }
+.hero__nav:focus-visible { outline: none; }
+.hero__nav:focus-visible span { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+@media (min-width: 48rem) {
+  .hero__nav {
+    position: absolute; top: var(--space-lg); bottom: var(--hero-pager-h);
+    width: 52px; height: auto;
+  }
+  .hero__nav--prev { left: 0; }
+  .hero__nav--next { right: 0; }
+  .hero__nav span {
+    width: 46px; height: 46px;
+    background: oklch(18% 0.03 150 / 0.45);
+    border-color: oklch(100% 0 0 / 0.35);
+    color: oklch(99% 0.005 110);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  }
+  .hero__nav:hover span { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-on-accent); }
+  /* освобождаем слева место под стрелку, чтобы она не легла на заголовок и кнопки */
+  .hero__copy { padding-left: max(clamp(1.5rem, 5vw, 3.5rem), 4.5rem); }
+}
 .hero__dots button {
   /* тап-зона 44px при видимой полоске 6px: прозрачные поля, рисуем только контент */
   box-sizing: content-box; width: 34px; height: 6px;

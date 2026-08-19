@@ -119,10 +119,14 @@
           </div>
         </div>
       </div>
-      <div class="hero__dots" role="group" aria-label="Слайды">
-        <button type="button" data-dot="0" aria-pressed="true" aria-label="Слайд 1"></button>
-        <button type="button" data-dot="1" aria-pressed="false" aria-label="Слайд 2"></button>
-        <button type="button" data-dot="2" aria-pressed="false" aria-label="Слайд 3"></button>
+      <div class="hero__pager">
+        <button class="hero__nav hero__nav--prev" type="button" data-hero="-1" aria-label="Предыдущий баннер"><span>‹</span></button>
+        <div class="hero__dots" role="group" aria-label="Слайды">
+          <button type="button" data-dot="0" aria-pressed="true" aria-label="Слайд 1"></button>
+          <button type="button" data-dot="1" aria-pressed="false" aria-label="Слайд 2"></button>
+          <button type="button" data-dot="2" aria-pressed="false" aria-label="Слайд 3"></button>
+        </div>
+        <button class="hero__nav hero__nav--next" type="button" data-hero="1" aria-label="Следующий баннер"><span>›</span></button>
       </div>
     </div>
 

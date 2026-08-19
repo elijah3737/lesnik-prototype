@@ -679,6 +679,11 @@ function observeReveals() {
   setTimeout(() => els.forEach(el => el.classList.add('in')), 2000);
 }
 
+function setHeroSlide(i) {
+  document.querySelectorAll('.hero__slide').forEach(sl => sl.classList.toggle('is-on', Number(sl.dataset.slide) === i));
+  document.querySelectorAll('[data-dot]').forEach(d => d.setAttribute('aria-pressed', String(Number(d.dataset.dot) === i)));
+}
+
 /* ═══════════ поиск ═══════════ */
 
 /* Ищем так, как товар называет клиент: «лисички», «сушеные», «боровик», «ягода».
@@ -1016,11 +1021,14 @@ document.addEventListener('click', e => {
   }
 
   // hero-слайдер
+  // слайдер баннеров: точки и стрелки крутят один и тот же переключатель
   const dot = e.target.closest('[data-dot]');
-  if (dot) {
-    const idx = dot.dataset.dot;
-    document.querySelectorAll('.hero__slide').forEach(s => s.classList.toggle('is-on', s.dataset.slide === idx));
-    document.querySelectorAll('[data-dot]').forEach(d => d.setAttribute('aria-pressed', String(d === dot)));
+  if (dot) { setHeroSlide(Number(dot.dataset.dot)); return; }
+  const heroNav = e.target.closest('[data-hero]');
+  if (heroNav) {
+    const total = document.querySelectorAll('.hero__slide').length;
+    const cur = [...document.querySelectorAll('.hero__slide')].findIndex(sl => sl.classList.contains('is-on'));
+    setHeroSlide((cur + Number(heroNav.dataset.hero) + total) % total);
     return;
   }
 
