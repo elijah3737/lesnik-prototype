@@ -61,12 +61,27 @@
 
   /* ── чтение ───────────────────────────────────────────────── */
 
+  /* Браузер, который уже был на сайте, хранит свою копию и по общему правилу
+     новые записи из seed.js игнорирует — тогда заведённый позже демо-доступ
+     не доедет до него никогда (ровно так он не нашёлся в Safari 19.08.2026).
+     Для accounts это неверно: удалять оптовиков админка не умеет, только
+     открывать и закрывать доступ. Значит, запись, которой нет в хранилище, —
+     новая, а не удалённая, и её можно дописать. Статусы, выставленные
+     в админке, при этом не трогаем: побеждает то, что уже сохранено. */
+  function withNewSeed(file, data) {
+    if (file !== 'accounts' || !Array.isArray(data)) return data;
+    var have = {};
+    data.forEach(function (a) { if (a && a.id) have[a.id] = true; });
+    seed(file).forEach(function (a) { if (a && a.id && !have[a.id]) data.push(a); });
+    return data;
+  }
+
   function load(file) {
     var raw = readRaw(key(file));
     if (raw === null) return seed(file);
     try {
       var data = JSON.parse(raw);
-      return data === null ? seed(file) : data;
+      return data === null ? seed(file) : withNewSeed(file, data);
     } catch (e) {
       // битая запись не должна ронять сайт: отдаём исходные данные
       return seed(file);
