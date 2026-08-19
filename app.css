@@ -1797,3 +1797,14 @@ body.has-modal { overflow: hidden; }
 @media (min-width: 48rem) and (max-width: 61.99rem) {
   .hero__copy { max-width: 40rem; }
 }
+
+/* ═══════════ Telegram Mini App ═══════════
+   Класс вешает tma.js, только когда страница открыта внутри Телеграма.
+   В полноэкранном режиме сверху висит его собственное управление —
+   сдвигаем фиксированную шапку и контент на высоту безопасной зоны,
+   иначе кнопка закрытия ложится поверх логотипа. */
+.is-tma .mast { top: var(--tma-top, 0px); }
+.is-tma body { padding-top: calc(var(--mast-h, 5rem) + var(--tma-top, 0px)); }
+
+/* Высота вьюпорта у мини-аппа своя: 100vh врёт, пока окно разворачивается. */
+.is-tma .screen { min-height: calc(var(--tma-vh, 100vh) - var(--mast-h, 5rem)); }
