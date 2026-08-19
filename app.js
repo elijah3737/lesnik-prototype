@@ -1055,6 +1055,72 @@ function saveOrder(o) {
 
 const orderNum = () => 'Л-' + String(Date.now()).slice(-5);
 
+/* ═══════════ обращения с сайта ═══════════
+   Формы, у которых нет партии и объёма: вопрос, подписка, экотуризм,
+   сборщик, запрос КП. Раньше они показывали «спасибо» и теряли контакт —
+   в админку не попадало ничего, и раздел «Заявки» жил на демо-данных. */
+
+const LEAD_RU = {
+  contact: 'Вопрос с сайта',
+  sub:     'Подписка на прайс',
+  eco:     'Экотуризм',
+  picker:  'Сборщик сырья',
+  kp:      'Запрос КП',
+  'lk-up': 'Заявка на опт'
+};
+
+function saveLead(kind, fields) {
+  const list = Store.load('leads');
+  if (!Array.isArray(list)) return null;
+  const s = stamp();
+  const acc = currentAccount();
+  const lead = Object.assign({
+    id: 'l-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5),
+    date: s.at,
+    name: (acc && acc.company) || '—',
+    phone: '',
+    qty: '—',
+    lot: '—',
+    who: LEAD_RU[kind] || 'Обращение',
+    status: 'new'
+  }, fields || {});
+  list.unshift(lead);
+  Store.save('leads', list);
+  return lead;
+}
+
+/* Что вписать в заявку из конкретной формы: у них разные поля,
+   и подставлять «—» вместо реального вопроса было бы потерей смысла. */
+function leadFromForm(kind, form) {
+  const v = n => { const el = form.querySelector(`[name="${n}"]`); return el ? String(el.value).trim() : ''; };
+  const sel = n => {
+    const el = form.querySelector(`[name="${n}"]`);
+    return el && el.tagName === 'SELECT' ? el.options[el.selectedIndex].text : (el ? el.value.trim() : '');
+  };
+  if (kind === 'sub')     return { name: v('mail') || '—', phone: v('mail'), lot: 'Прайс на почту' };
+  if (kind === 'contact') return { phone: v('phone'), lot: v('msg') || 'Вопрос' };
+  if (kind === 'eco')     return { phone: v('phone'), qty: (sel('people') || '—') + ', ' + (sel('when') || 'срок не указан'), lot: 'Поездка в лес' };
+  if (kind === 'picker')  return { name: v('name') || '—', phone: v('phone'), qty: sel('exp') || '—', lot: 'Сдать сырьё, ' + (v('region') || 'регион не указан') };
+  if (kind === 'kp')      return { phone: v('phone'), qty: v('qty') ? v('qty') + ' кг' : '—', lot: (sel('item') || 'КП') + ', доставка ' + (v('city') || '—') };
+  return { phone: v('phone') };
+}
+
+/* ═══════════ объём заказа ═══════════
+   Сайт сам пишет «минимум по этой партии N кг» — значит, заявку ниже
+   минимума принимать нельзя: цена по лесенке для неё не считается,
+   и заказ уходит без цены. Объём выше остатка не запрещаем (клиент
+   доберёт следующим сбором), но говорим об этом честно. */
+function checkVolume(lot, raw) {
+  const qty = Math.floor(Number(String(raw).replace(',', '.')));
+  if (!isFinite(qty) || qty <= 0) return { ok: false, msg: 'Укажите объём в килограммах, целым числом' };
+  if (lot) {
+    const mk = minKg(lot);
+    if (qty < mk) return { ok: false, msg: `Минимум по этой партии ${fmt(mk)} кг` };
+  }
+  const over = !!(lot && lot.stock && qty > lot.stock);
+  return { ok: true, qty, over, stock: lot ? lot.stock : 0 };
+}
+
 function stamp() {
   const d = new Date(), p = n => String(n).padStart(2, '0');
   return {
@@ -2206,7 +2272,16 @@ document.addEventListener('submit', e => {
     if (!ok) return;
 
     const lot = currentLot || null;
-    const qty = Number(form.querySelector('[name="qty"]').value.trim()) || 0;
+    const vol = checkVolume(lot, form.querySelector('[name="qty"]').value);
+    if (!vol.ok) {
+      const f = form.querySelector('[name="qty"]').closest('.field');
+      f.dataset.invalid = 'true';
+      const err = f.querySelector('.err');
+      if (err) err.textContent = vol.msg;
+      form.querySelector('[name="qty"]').focus();
+      return;
+    }
+    const qty = vol.qty;
     const booking = !!lot && lot.status !== 'live';
     const who = form.querySelector('[name="who"]');
 
@@ -2214,7 +2289,8 @@ document.addEventListener('submit', e => {
       lotId: lot ? lot.id : '', lotName: lot ? lot.name : '',
       qty: qty, unit: 'кг', price: lot ? tierPrice(lot, qty) : null,
       phone: form.querySelector('[name="phone"]').value.trim(),
-      who: who ? who.value : '', note: ''
+      who: who ? who.value : '',
+      note: vol.over ? `Просит больше текущего остатка (${fmt(vol.stock)} кг)` : ''
     }));
 
     const btn = form.querySelector('button[type="submit"]');
@@ -2230,9 +2306,14 @@ document.addEventListener('submit', e => {
       okBox.setAttribute('role', 'status');
       form.appendChild(okBox);
     }
+    // если просят больше, чем лежит на складе, честно говорим об этом сразу,
+    // а не после звонка: у заготовителя это нормальная ситуация, но не сюрприз
+    const overNote = vol.over
+      ? ` В этой партии сейчас ${fmt(vol.stock)} кг — остальное запишем на ближайший сбор.`
+      : '';
     okBox.innerHTML = currentAccount()
-      ? `${booking ? 'Бронь' : 'Заявка'} №${esc(o.num)} принята, она уже в вашем <a href="#/lk/${booking ? 'booking' : 'orders'}">кабинете</a>.`
-      : `${booking ? 'Бронь' : 'Заявка'} №${esc(o.num)} принята. ${booking ? 'Напишем, как только откроется сбор.' : 'Перезвоним сегодня до 20:00.'} Если срочно: <a href="${siteTel()}">${sitePhone()}</a>.`;
+      ? `${booking ? 'Бронь' : 'Заявка'} №${esc(o.num)} принята, она уже в вашем <a href="#/lk/${booking ? 'booking' : 'orders'}">кабинете</a>.${overNote}`
+      : `${booking ? 'Бронь' : 'Заявка'} №${esc(o.num)} принята.${overNote} ${booking ? 'Напишем, как только откроется сбор.' : 'Перезвоним сегодня до 20:00.'} Если срочно: <a href="${siteTel()}">${sitePhone()}</a>.`;
     return;
   }
 
@@ -2248,7 +2329,16 @@ document.addEventListener('submit', e => {
     const sel = form.querySelector('[name="lot"]');
     const lotId = sel ? sel.value : '';
     const lot = LOTS.find(l => l.id === lotId) || null;
-    const qty = Number(form.querySelector('[name="qty"]').value.trim()) || 0;
+    const vol = checkVolume(lot, form.querySelector('[name="qty"]').value);
+    if (!vol.ok) {
+      const f = form.querySelector('[name="qty"]').closest('.field');
+      f.dataset.invalid = 'true';
+      const err = f.querySelector('.err');
+      if (err) err.textContent = vol.msg;
+      form.querySelector('[name="qty"]').focus();
+      return;
+    }
+    const qty = vol.qty;
     const phone = form.querySelector('[name="phone"]').value.trim();
     const booking = !!lot && lot.status !== 'live';
 
@@ -2256,13 +2346,15 @@ document.addEventListener('submit', e => {
     const o = saveOrder(orderDraft(booking ? 'booking' : 'opt', {
       lotId: lotId, lotName: lot ? lot.name : 'Партия по выбору',
       qty: qty, unit: 'кг', price: lot ? tierPrice(lot, qty) : null,
-      phone: phone || (currentAccount() || {}).phone || '', note: ''
+      phone: phone || (currentAccount() || {}).phone || '',
+      note: vol.over ? `Просит больше текущего остатка (${fmt(vol.stock)} кг)` : ''
     }));
 
     const inLk = !!currentAccount();
     document.getElementById('orderBody').innerHTML =
       `<h2 id="orderTitle">${booking ? 'Бронь' : 'Заявка'} №${esc(o.num)} принята</h2>
-       <p class="modal__sub">${esc(o.lotName)}, ${fmt(qty)} кг.
+       <p class="modal__sub">${esc(o.lotName)}, ${fmt(qty)} кг.${vol.over
+         ? ` В этой партии сейчас ${fmt(vol.stock)} кг — остальное запишем на ближайший сбор.` : ''}
        ${booking ? 'Напишем, как только откроется новый сбор.' : 'Перезвоним сегодня до 20:00 и назовём цену под ваш объём.'}</p>
        <div class="btn-row">
          ${inLk ? `<a class="btn btn--solid" href="#/lk/${booking ? 'booking' : 'orders'}" data-modal-close>Смотреть в кабинете</a>` : ''}
@@ -2286,6 +2378,12 @@ document.addEventListener('submit', e => {
   const btn = form.querySelector('button[type="submit"]');
   const was = btn.textContent;
   const kind = form.dataset.form;
+
+  // Обращение сохраняем ДО form.reset(): после сброса читать из полей нечего.
+  // Без этого вопрос, подписка и заявка сборщика показывали «спасибо»
+  // и пропадали — в админку не доезжало ничего.
+  saveLead(kind, leadFromForm(kind, form));
+
   btn.textContent = kind === 'sub' ? 'Готово' : 'Отправлено';
   btn.dataset.state = 'ok';
   btn.disabled = true;
