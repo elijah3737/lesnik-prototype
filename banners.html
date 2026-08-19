@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Лесник · чем заменить фон баннеров</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: oklch(98% 0.006 95);
+    --paper-2: oklch(95.5% 0.010 100);
+    --ink: oklch(20% 0.034 160);
+    --muted: oklch(46% 0.022 158);
+    --rule: oklch(88% 0.010 110);
+    --on: oklch(97% 0.012 110);
+    --mute-on: oklch(89% 0.022 130);
+    --grad-accent: linear-gradient(165deg, oklch(59% 0.125 152) 0%, oklch(43% 0.105 172) 100%);
+    --grad-block: linear-gradient(145deg, oklch(43% 0.082 152) 0%, oklch(32% 0.066 170) 100%);
+    --veil: linear-gradient(100deg, oklch(18% 0.048 168 / 0.95) 0%, oklch(20% 0.052 162 / 0.82) 42%, oklch(24% 0.055 158 / 0.35) 72%, transparent 100%);
+    --font: "Golos Text", ui-sans-serif, system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.55; }
+  .wrap { max-width: 76rem; margin-inline: auto; padding: 40px 20px 90px; }
+  h1 { font-size: clamp(1.9rem, 4vw, 2.7rem); font-weight: 800; letter-spacing: -0.03em; margin: 0 0 12px; }
+  .lede { color: var(--muted); max-width: 66ch; margin: 0 0 12px; }
+  .note { background: var(--paper-2); border-radius: 16px; padding: 18px 22px; margin: 22px 0 40px; font-size: 0.93rem; }
+  .note b { display: block; margin-bottom: 6px; }
+  .note ul { margin: 0; padding-left: 20px; color: var(--muted); }
+  .note li + li { margin-top: 4px; }
+
+  .opt { margin-bottom: 46px; }
+  .opt__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+  .opt__n { width: 30px; height: 30px; border-radius: 50%; flex: none; display: inline-grid; place-items: center;
+            background: var(--grad-accent); color: var(--on); font-size: 0.85rem; font-weight: 700; }
+  .opt__name { font-size: 1.15rem; font-weight: 700; }
+  .opt__why { flex: 1 1 26rem; font-size: 0.9rem; color: var(--muted); }
+
+  /* общая начинка баннера — одинаковая во всех вариантах */
+  .frame { border-radius: 24px; overflow: hidden; position: relative; min-height: 420px; display: flex; }
+  .copy { position: relative; z-index: 2; padding: 44px; max-width: 44rem; color: var(--on);
+          display: flex; flex-direction: column; justify-content: center; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; margin-bottom: 12px;
+          padding: 5px 13px; border-radius: 999px; background: oklch(100% 0 0 / 0.16); font-size: 0.75rem; font-weight: 600;
+          -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  .chip i { width: 7px; height: 7px; border-radius: 50%; background: oklch(80% 0.16 145); }
+  .copy h2 { font-size: clamp(1.7rem, 3vw, 2.4rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.08; margin: 0 0 8px; max-width: 18ch; }
+  .copy p { color: var(--mute-on); font-size: 0.9rem; margin: 0 0 16px; max-width: 48ch; }
+  .proof { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; padding: 0; }
+  .proof li { padding: 7px 13px; border-radius: 10px; background: oklch(100% 0 0 / 0.13);
+              -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  .proof b { display: block; font-family: var(--mono); font-size: 1.05rem; font-weight: 500; }
+  .proof span { font-size: 0.72rem; color: var(--mute-on); }
+  .cta { display: flex; gap: 10px; flex-wrap: wrap; }
+  .b { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 20px; border-radius: 999px;
+       font-weight: 600; font-size: 0.9rem; text-decoration: none; border: 1px solid transparent; }
+  .b--solid { background: var(--grad-accent); color: var(--on); }
+  .b--ghost { border-color: var(--on); color: var(--on); }
+
+  .shot { position: absolute; inset: 0; }
+  .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .veil { position: absolute; inset: 0; background: var(--veil); }
+
+  /* 2 · фото карточкой сбоку */
+  .split { background: var(--grad-block); display: grid; grid-template-columns: 1fr; align-items: center; gap: 0; }
+  @media (min-width: 62rem) { .split { grid-template-columns: minmax(0,1fr) minmax(0,0.85fr); } }
+  .split .copy { max-width: none; }
+  .split__pic { padding: 24px 24px 24px 0; height: 100%; display: flex; }
+  @media (max-width: 61.99rem) { .split__pic { padding: 0 24px 24px; } }
+  .split__pic img { width: 100%; height: 100%; min-height: 320px; object-fit: cover; border-radius: 18px; display: block; }
+
+  /* 3 · без фото */
+  .plain { background: var(--grad-block); position: relative; }
+  .plain::before {
+    content: ""; position: absolute; inset: 0; opacity: 0.5;
+    background-image: radial-gradient(oklch(100% 0 0 / 0.10) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .plain::after {
+    content: ""; position: absolute; right: -8%; top: -30%; width: 60%; height: 160%;
+    background: radial-gradient(closest-side, oklch(70% 0.13 150 / 0.35), transparent);
+  }
+
+  /* 4 · коллаж */
+  .mosaic { background: var(--grad-block); display: grid; grid-template-columns: 1fr; }
+  @media (min-width: 62rem) { .mosaic { grid-template-columns: minmax(0,1fr) minmax(0,0.9fr); } }
+  .mosaic__grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; padding: 22px; }
+  .mosaic__grid img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; display: block; min-height: 130px; }
+  .mosaic__grid img:first-child { grid-row: span 2; }
+
+  .plan { border: 1px solid var(--rule); border-radius: 18px; padding: 22px 24px; margin-top: 34px; }
+  .plan h3 { margin: 0 0 10px; font-size: 1.1rem; }
+  .plan ol { margin: 0; padding-left: 20px; color: var(--muted); font-size: 0.93rem; }
+  .plan li + li { margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Чем заменить фон баннеров</h1>
+  <p class="lede">Нынешние кадры — общая природа: они подошли бы любому грибному сайту и ничего не говорят про заготовку. Плюс светлая трава заставляет затемнять фото почти до черноты, чтобы читался текст.</p>
+
+  <div class="note">
+    <b>Что не так с текущими тремя</b>
+    <ul>
+      <li>Корзина в траве: светлый кадр, текст приходится закрывать плотной вуалью, и фото почти не видно.</li>
+      <li>Сморчок крупным планом: на ширину баннера читается как земля, продукт не узнаётся.</li>
+      <li>Сборщики против света: силуэты далеко, непонятно, что происходит.</li>
+      <li>Ни на одном нет дела: приёмки, весов, ящиков с ценниками, сушки, бочек, погрузки.</li>
+    </ul>
+  </div>
+
+  <!-- 0 -->
+  <section class="opt">
+    <div class="opt__head"><span class="opt__n">0</span><span class="opt__name">Как сейчас</span>
+      <span class="opt__why">Фото на всю ширину, поверх плотное затемнение. Для сравнения.</span></div>
+    <div class="frame">
+      <div class="shot"><img src="img/hero.jpg" alt=""><div class="veil"></div></div>
+      <div class="copy">
+        <span class="chip"><i></i>Доставка по Москве бесплатно от 300 кг</span>
+        <h2>Грибы и ягоды с Урала, прямо от заготовителя</h2>
+        <p>Собираем, сушим, солим и морозим сами. Без перекупов и без «уточню у поставщика».</p>
+        <ul class="proof"><li><b>9</b><span>партий открыто</span></li><li><b>от 420 ₽</b><span>входная цена за кг</span></li><li><b>1-2 дня</b><span>до отгрузки</span></li></ul>
+        <div class="cta"><a class="b b--solid" href="#">Смотреть, что есть сегодня</a><a class="b b--ghost" href="#">Условия опта</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1 -->
+  <section class="opt">
+    <div class="opt__head"><span class="opt__n">1</span><span class="opt__name">Другой сюжет, тот же приём</span>
+      <span class="opt__why">Меняем только кадр: ящики с рукописными ценниками на приёмке. Единственное фото в проекте, где видно дело. Тёмный сам по себе, вуаль почти не нужна.</span></div>
+    <div class="frame">
+      <div class="shot"><img src="img/priemka.jpg" alt=""><div class="veil"></div></div>
+      <div class="copy">
+        <span class="chip"><i></i>Доставка по Москве бесплатно от 300 кг</span>
+        <h2>Грибы и ягоды с Урала, прямо от заготовителя</h2>
+        <p>Собираем, сушим, солим и морозим сами. Без перекупов и без «уточню у поставщика».</p>
+        <ul class="proof"><li><b>9</b><span>партий открыто</span></li><li><b>от 420 ₽</b><span>входная цена за кг</span></li><li><b>1-2 дня</b><span>до отгрузки</span></li></ul>
+        <div class="cta"><a class="b b--solid" href="#">Смотреть, что есть сегодня</a><a class="b b--ghost" href="#">Условия опта</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="opt">
+    <div class="opt__head"><span class="opt__n">2</span><span class="opt__name">Фото карточкой сбоку</span>
+      <span class="opt__why">Текст на зелёном градиенте, фото отдельным кадром справа. Текст всегда читается, фото видно целиком и не нужно душить вуалью. Самый практичный вариант: подойдёт любой снимок, даже светлый.</span></div>
+    <div class="frame split">
+      <div class="copy">
+        <span class="chip"><i></i>Доставка по Москве бесплатно от 300 кг</span>
+        <h2>Грибы и ягоды с Урала, прямо от заготовителя</h2>
+        <p>Собираем, сушим, солим и морозим сами. Без перекупов и без «уточню у поставщика».</p>
+        <ul class="proof"><li><b>9</b><span>партий открыто</span></li><li><b>от 420 ₽</b><span>входная цена за кг</span></li><li><b>1-2 дня</b><span>до отгрузки</span></li></ul>
+        <div class="cta"><a class="b b--solid" href="#">Смотреть, что есть сегодня</a><a class="b b--ghost" href="#">Условия опта</a></div>
+      </div>
+      <div class="split__pic"><img src="img/korzina.jpg" alt=""></div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="opt">
+    <div class="opt__head"><span class="opt__n">3</span><span class="opt__name">Без фото совсем</span>
+      <span class="opt__why">Только цвет, лёгкая фактура и типографика. Читается как заявление, а не как открытка. Ничего не устаревает и не зависит от качества съёмки. Фото при этом остаются ниже, в карточках партий.</span></div>
+    <div class="frame plain">
+      <div class="copy">
+        <span class="chip"><i></i>Доставка по Москве бесплатно от 300 кг</span>
+        <h2>Грибы и ягоды с Урала, прямо от заготовителя</h2>
+        <p>Собираем, сушим, солим и морозим сами. Без перекупов и без «уточню у поставщика».</p>
+        <ul class="proof"><li><b>9</b><span>партий открыто</span></li><li><b>от 420 ₽</b><span>входная цена за кг</span></li><li><b>1-2 дня</b><span>до отгрузки</span></li></ul>
+        <div class="cta"><a class="b b--solid" href="#">Смотреть, что есть сегодня</a><a class="b b--ghost" href="#">Условия опта</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="opt">
+    <div class="opt__head"><span class="opt__n">4</span><span class="opt__name">Коллаж из четырёх кадров</span>
+      <span class="opt__why">Сразу показывает ассортимент и переработку: свежее, сушёное, солёное, приёмка. Ни один кадр не обязан быть идеальным, работает набор. Хорошо, когда есть много средних фото и нет одного отличного.</span></div>
+    <div class="frame mosaic">
+      <div class="copy">
+        <span class="chip"><i></i>Доставка по Москве бесплатно от 300 кг</span>
+        <h2>Грибы и ягоды с Урала, прямо от заготовителя</h2>
+        <p>Собираем, сушим, солим и морозим сами. Без перекупов и без «уточню у поставщика».</p>
+        <ul class="proof"><li><b>9</b><span>партий открыто</span></li><li><b>от 420 ₽</b><span>входная цена за кг</span></li><li><b>1-2 дня</b><span>до отгрузки</span></li></ul>
+        <div class="cta"><a class="b b--solid" href="#">Смотреть, что есть сегодня</a><a class="b b--ghost" href="#">Условия опта</a></div>
+      </div>
+      <div class="mosaic__grid">
+        <img src="img/priemka.jpg" alt="">
+        <img src="img/sushenye.jpg" alt="">
+        <img src="img/solenya.jpg" alt="">
+      </div>
+    </div>
+  </section>
+
+  <div class="plan">
+    <h3>Если снимать своё, то что</h3>
+    <ol>
+      <li>Приёмка: ящики, весы, рукописные ценники, руки приёмщика. Это ваш главный кадр.</li>
+      <li>Сушилка: решёта с грибом, тёплый свет, пар. Показывает переработку, а не только лес.</li>
+      <li>Бочки на засолке: масштаб и серьёзность производства.</li>
+      <li>Погрузка: коробки в машину, паллеты. Говорит оптовику, что объём реальный.</li>
+      <li>Продукт по отдельности на однотонном фоне: для карточек партий, а не для баннера.</li>
+    </ol>
+  </div>
+
+  <p class="lede" style="margin-top:28px">Скажите номер. Второй и третий можно применить хоть сейчас, они не зависят от новых фото. Первый и четвёртый работают на том, что уже есть.</p>
+</div>
+</body>
+</html>
