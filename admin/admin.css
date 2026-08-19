@@ -14,21 +14,21 @@
   --paper:    oklch(98%   0.006 95);
   --paper-2:  oklch(95.5% 0.010 100);
   --paper-3:  oklch(92%   0.014 100);
-  --ink:      oklch(20%   0.030 150);
-  --neutral:  oklch(33%   0.025 145);
-  --muted:    oklch(46%   0.020 140);
+  --ink:      oklch(20%   0.034 160);
+  --neutral:  oklch(33%   0.028 158);
+  --muted:    oklch(46%   0.022 158);
   --rule:     oklch(88%   0.010 110);
-  --accent:   oklch(46%   0.085 145);
-  --accent-ink: oklch(36% 0.080 148);
-  --accent-soft: oklch(93% 0.030 148);
+  --accent:   oklch(50%   0.110 160);
+  --accent-ink: oklch(37% 0.095 162);
+  --accent-soft: oklch(94% 0.036 158);
   --on-accent: oklch(98%  0.010 110);
-  --block:    oklch(27%   0.045 150);
+  --block:    oklch(28%   0.062 158);
   --block-ink: oklch(96%  0.015 110);
   --warn:     oklch(58%   0.140 55);
   --warn-soft: oklch(95%  0.045 75);
   --danger:   oklch(52%   0.170 25);
   --danger-soft: oklch(95% 0.040 25);
-  --focus:    oklch(52%   0.120 150);
+  --focus:    oklch(54%   0.130 160);
 
   --shadow-1: 0 6px 18px oklch(30% 0.03 145 / 0.10);
   --shadow-2: 0 -6px 24px oklch(30% 0.03 145 / 0.10);
@@ -53,9 +53,9 @@
     --neutral: oklch(85%   0.018 120);
     --muted:   oklch(70%   0.020 125);
     --rule:    oklch(32%   0.028 148);
-    --accent:  oklch(62%   0.110 148);
-    --accent-ink: oklch(78% 0.090 148);
-    --accent-soft: oklch(30% 0.050 150);
+    --accent:  oklch(66%   0.120 158);
+    --accent-ink: oklch(80% 0.105 158);
+    --accent-soft: oklch(30% 0.055 160);
     --on-accent: oklch(16%  0.030 150);
     --warn-soft: oklch(32% 0.060 70);
     --danger: oklch(70%    0.150 25);
@@ -321,7 +321,7 @@ details.group[open] > summary { margin-bottom: 16px; }
   font: inherit; font-weight: 500; cursor: pointer; text-decoration: none;
 }
 .btn:hover { border-color: var(--accent); color: var(--accent-ink); }
-.btn--solid { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+.btn--solid { background: linear-gradient(165deg, oklch(59% 0.125 152) 0%, oklch(43% 0.105 172) 100%); border-color: transparent; color: var(--on-accent); font-weight: 600; }
 .btn--solid:hover { background: var(--accent-ink); border-color: var(--accent-ink); color: var(--on-accent); }
 .btn--soft { background: var(--accent-soft); border-color: transparent; color: var(--accent-ink); }
 .btn--danger { border-color: var(--danger); color: var(--danger); background: transparent; }

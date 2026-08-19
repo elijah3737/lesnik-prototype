@@ -91,12 +91,12 @@ a:hover { color: var(--color-accent-ink); }
   font: inherit; font-family: var(--font-label); font-weight: 600; font-size: var(--text-sm);
   display: inline-flex; align-items: center; gap: 8px;
   min-height: 44px; padding: 9px 18px; flex: none;
-  background: var(--color-accent); color: var(--color-on-accent);
-  border: 0; border-radius: var(--radius-pill);
+  background: var(--grad-accent); color: var(--color-on-accent);
+  border: 0; border-radius: var(--radius-pill); box-shadow: var(--shadow-accent);
   text-decoration: none; cursor: pointer; white-space: nowrap;
   transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
 }
-.catbtn:hover { background: var(--color-accent-ink); color: var(--color-on-accent); }
+.catbtn:hover { background: var(--grad-accent-hover); color: var(--color-on-accent); }
 .catbtn:active { transform: translateY(1px); }
 
 /* поиск */
@@ -139,8 +139,8 @@ a:hover { color: var(--color-accent-ink); }
   position: absolute; right: 3.25rem; top: 50%; transform: translateY(-50%);
   font: inherit; font-family: var(--font-label); font-weight: 600; font-size: var(--text-sm);
   min-height: 38px; padding-inline: var(--space-md);
-  background: var(--color-accent); color: var(--color-on-accent);
-  border: 0; border-radius: var(--radius-pill); cursor: pointer;
+  background: var(--grad-accent); color: var(--color-on-accent);
+  border: 0; border-radius: var(--radius-pill); box-shadow: var(--shadow-accent); cursor: pointer;
 }
 .search.is-open .search__go:hover { background: var(--color-accent-ink); }
 .search.is-open .search__x {
@@ -372,8 +372,8 @@ a:hover { color: var(--color-accent-ink); }
 .fab__main {
   width: 56px; height: 56px; border-radius: 50%;
   border: 0; cursor: pointer; align-self: flex-end;
-  background: var(--color-accent); color: var(--color-on-accent);
-  box-shadow: var(--shadow-2);
+  background: var(--grad-accent); color: var(--color-on-accent);
+  box-shadow: var(--shadow-2), var(--shadow-accent);
   display: inline-flex; align-items: center; justify-content: center;
   transition: transform var(--dur-short) var(--ease-out), background var(--dur-micro) var(--ease-out);
 }
@@ -446,10 +446,10 @@ a:hover { color: var(--color-accent-ink); }
   .hero__slide { transition: opacity var(--dur-short) var(--ease-out); }
 }
 .hero__slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.hero__veil { position: absolute; inset: 0; background: linear-gradient(90deg, oklch(20% 0.035 150 / 0.85) 0%, oklch(20% 0.035 150 / 0.5) 55%, transparent 100%); }
+.hero__veil { position: absolute; inset: 0; background: var(--grad-veil); }
 /* на узком экране текст ложится по центру кадра: затемняем весь кадр, а не левый край */
 @media (max-width: 40rem) {
-  .hero__veil { background: linear-gradient(180deg, oklch(20% 0.035 150 / 0.88) 0%, oklch(20% 0.035 150 / 0.72) 70%, oklch(20% 0.035 150 / 0.45) 100%); }
+  .hero__veil { background: var(--grad-veil-v); }
 }
 .hero__copy {
   position: relative; z-index: 1;
@@ -642,8 +642,8 @@ a:hover { color: var(--color-accent-ink); }
 }
 .btn:hover { background: var(--color-ink); color: var(--color-paper); }
 .btn:active { transform: translateY(1px); }
-.btn--solid { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-on-accent); }
-.btn--solid:hover { background: var(--color-accent-ink); border-color: var(--color-accent-ink); color: var(--color-on-accent); }
+.btn--solid { background: var(--grad-accent); border-color: transparent; color: var(--color-on-accent); box-shadow: var(--shadow-accent); }
+.btn--solid:hover { background: var(--grad-accent-hover); border-color: transparent; color: var(--color-on-accent); }
 .btn--soft { background: var(--color-accent-soft); border-color: transparent; color: var(--color-accent-ink); }
 .btn--soft:hover { background: var(--color-accent); color: var(--color-on-accent); border-color: var(--color-accent); }
 .btn--full { width: 100%; }
@@ -659,7 +659,7 @@ a:hover { color: var(--color-accent-ink); }
 
 /* ═════════════  блок «о заготовителе»  ═════════════ */
 
-.statement { background: var(--color-block); color: var(--color-block-ink); margin-top: var(--section-gap); }
+.statement { background: var(--grad-block); color: var(--color-block-ink); margin-top: var(--section-gap); }
 .statement__in {
   display: grid; grid-template-columns: 1fr; gap: var(--space-xl);
   padding-block: var(--space-3xl); align-items: center;
@@ -715,7 +715,7 @@ a:hover { color: var(--color-accent-ink); }
 
 /* ═════════════  3.4 плитки «почему возвращаются»  ═════════════ */
 
-.darkpanel { background: var(--color-block-2); color: var(--color-block-ink); margin-top: var(--section-gap); }
+.darkpanel { background: var(--grad-block); color: var(--color-block-ink); margin-top: var(--section-gap); }
 .darkpanel__in { padding-block: var(--space-3xl); }
 .darkpanel__head { max-width: 40rem; margin-bottom: var(--space-xl); }
 .darkpanel h2 { color: var(--color-block-ink); font-size: var(--text-2xl); margin-bottom: var(--space-xs); }
@@ -1019,7 +1019,7 @@ a:hover { color: var(--color-accent-ink); }
 /* заявка отдельной горизонтальной полосой: тёмный блок разбивает белую страницу надвое */
 .pband {
   margin-top: var(--section-gap);
-  background: var(--color-block); color: var(--color-block-ink);
+  background: var(--grad-block); color: var(--color-block-ink);
   border-radius: var(--radius-banner);
   padding: clamp(1.5rem, 4vw, 2.75rem);
   display: grid; grid-template-columns: 1fr; gap: var(--space-xl); align-items: start;
@@ -1177,7 +1177,7 @@ a:hover { color: var(--color-accent-ink); }
   min-height: clamp(16rem, 34vw, 24rem); display: flex; align-items: center;
 }
 .pagehero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.pagehero__veil { position: absolute; inset: 0; background: linear-gradient(90deg, oklch(20% 0.035 150 / 0.88) 0%, oklch(20% 0.035 150 / 0.55) 60%, oklch(20% 0.035 150 / 0.25) 100%); }
+.pagehero__veil { position: absolute; inset: 0; background: var(--grad-veil); }
 .pagehero__copy { position: relative; z-index: 1; padding: clamp(1.5rem, 5vw, 3.5rem); max-width: 40rem; }
 .pagehero h1 { color: var(--color-block-ink); font-size: var(--text-display-s); margin-bottom: var(--space-sm); }
 .pagehero p { color: var(--color-block-mute); max-width: 42ch; }
@@ -1276,7 +1276,7 @@ a:hover { color: var(--color-accent-ink); }
 .colophon {
   position: relative; margin-top: var(--section-gap);
   color: var(--color-block-mute); overflow: hidden;
-  background: var(--color-block-2);
+  background: var(--grad-block);
 }
 .colophon__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.16; }
 .colophon__scrim { position: absolute; inset: 0; background: linear-gradient(180deg, oklch(22% 0.038 150 / 0.94) 0%, oklch(16% 0.03 150 / 0.99) 100%); }
@@ -1319,9 +1319,6 @@ a:hover { color: var(--color-accent-ink); }
 }
 .colophon__legal a { color: var(--color-block-mute); display: inline-block; padding-block: 12px; }
 
-.protobar { position: relative; z-index: 1; background: oklch(14% 0.025 150); color: oklch(80% 0.02 125); font-family: var(--font-mono); font-size: var(--text-xs); padding-block: 10px; }
-.protobar .wrap { display: flex; flex-wrap: wrap; gap: var(--space-md); }
-.protobar a { color: oklch(88% 0.02 120); }
 
 /* ═════════════  responsive  ═════════════ */
 
@@ -1429,7 +1426,7 @@ body.has-modal { overflow: hidden; }
 
 .summary {
   display: grid; grid-template-columns: 1fr;
-  background: var(--color-accent-soft); color: var(--color-accent-ink);
+  background: var(--grad-soft); color: var(--color-accent-ink);
   border-radius: var(--radius-banner);
   overflow: hidden;
 }

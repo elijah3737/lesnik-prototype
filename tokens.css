@@ -1,4 +1,4 @@
-/* v4 · studied-DNA (source: fungiline.ru) + правки клиента 11.08.2026
+/* v5 · «хвойная глубина» (выбор клиента 19.08.2026) · базис studied-DNA (fungiline.ru)
  * shape: buttons pill · cards 16px · inputs 10px · banner 24px
  */
 
@@ -9,30 +9,41 @@
   --color-paper:      oklch(98%   0.006 95);
   --color-paper-2:    oklch(95.5% 0.010 100);
   --color-paper-3:    oklch(92%   0.014 100);
-  --color-block:      oklch(27%   0.045 150);
-  --color-block-2:    oklch(22%   0.038 150);
-  --color-block-3:    oklch(32%   0.048 150);
+  --color-block:      oklch(28%   0.062 158);
+  --color-block-2:    oklch(21%   0.050 172);
+  --color-block-3:    oklch(33%   0.070 156);
   --color-block-ink:  oklch(96%   0.015 110);
   --color-block-mute: oklch(84%   0.020 125);
   --color-rule:       oklch(88%   0.010 110);
-  --color-rule-2:     oklch(32%   0.030 145);
-  --color-muted:      oklch(46%   0.020 140);
-  --color-neutral:    oklch(33%   0.025 145);
-  --color-ink:        oklch(20%   0.030 150);
-  --color-accent:     var(--accent, oklch(46% 0.085 145));
-  --color-accent-ink: oklch(36%   0.080 148);
-  --color-accent-soft: oklch(93%  0.030 148);
+  --color-rule-2:     oklch(33%   0.045 160);
+  --color-muted:      oklch(46%   0.022 158);
+  --color-neutral:    oklch(33%   0.028 158);
+  --color-ink:        oklch(20%   0.034 160);
+  --color-accent:     var(--accent, oklch(50% 0.110 160));
+  --color-accent-ink: oklch(37%   0.095 162);
+  --color-accent-soft: oklch(94%  0.036 158);
   --color-on-accent:  oklch(98%   0.010 110);
-  --color-focus:      oklch(52%   0.120 150);
+  --color-focus:      oklch(54%   0.130 160);
   /* янтарь: закреплён за акцией, срочностью и «партия заканчивается» */
   --color-amber:      oklch(55%   0.125 65);
   --color-amber-ink:  oklch(42%   0.105 60);
   --color-amber-soft: oklch(93%   0.055 80);
-  --color-live:       oklch(40%   0.095 150);
-  --color-live-bg:    oklch(92%   0.035 148);
+  --color-live:       oklch(43%   0.110 158);
+  --color-live-bg:    oklch(93%   0.042 158);
   --color-closed-bg:  oklch(93%   0.008 100);
-  --shadow-1: 0 6px 18px oklch(30% 0.03 145 / 0.08);
-  --shadow-2: 0 14px 40px oklch(30% 0.03 145 / 0.14);
+
+  /* ── градиенты «хвойная глубина» ──
+     Переход между двумя соседними зелёными: тёплый лист → холодная хвоя.
+     Ставим только на крупные поверхности; мелочь (точки, галочки) остаётся плоской. */
+  --grad-accent: linear-gradient(165deg, oklch(59% 0.125 152) 0%, oklch(43% 0.105 172) 100%);
+  --grad-accent-hover: linear-gradient(165deg, oklch(53% 0.120 152) 0%, oklch(38% 0.100 172) 100%);
+  --grad-block:  linear-gradient(145deg, oklch(33% 0.072 156) 0%, oklch(19% 0.048 176) 100%);
+  --grad-soft:   linear-gradient(150deg, oklch(96% 0.032 152) 0%, oklch(91% 0.052 168) 100%);
+  --grad-veil:   linear-gradient(100deg, oklch(20% 0.050 168 / 0.92) 0%, oklch(24% 0.055 158 / 0.55) 55%, transparent 100%);
+  --grad-veil-v: linear-gradient(180deg, oklch(20% 0.050 168 / 0.90) 0%, oklch(22% 0.055 160 / 0.74) 70%, oklch(24% 0.055 158 / 0.46) 100%);
+  --shadow-accent: 0 8px 20px oklch(38% 0.10 165 / 0.32);
+  --shadow-1: 0 6px 18px oklch(30% 0.04 160 / 0.09);
+  --shadow-2: 0 14px 40px oklch(30% 0.04 160 / 0.15);
 
   /* ── type ── */
   /* слэб на заголовках: характер бирки и ярлыка, контраст к нейтральному Golos в тексте */
@@ -97,31 +108,37 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-paper:      oklch(18%   0.020 150);
-    --color-paper-2:    oklch(22%   0.022 150);
-    --color-paper-3:    oklch(27%   0.024 150);
-    --color-block:      oklch(23%   0.040 150);
-    --color-block-2:    oklch(19%   0.034 150);
-    --color-block-3:    oklch(28%   0.042 150);
+    --color-paper:      oklch(18%   0.024 162);
+    --color-paper-2:    oklch(22%   0.026 162);
+    --color-paper-3:    oklch(27%   0.028 162);
+    --color-block:      oklch(24%   0.055 158);
+    --color-block-2:    oklch(18%   0.046 174);
+    --color-block-3:    oklch(29%   0.058 156);
     --color-block-ink:  oklch(94%   0.020 110);
     --color-block-mute: oklch(80%   0.020 125);
-    --color-rule:       oklch(32%   0.020 148);
+    --color-rule:       oklch(32%   0.024 162);
     --color-rule-2:     oklch(80%   0.030 130);
     --color-muted:      oklch(70%   0.020 130);
     --color-neutral:    oklch(80%   0.020 125);
     --color-ink:        oklch(94%   0.012 110);
-    --color-accent:     var(--accent-dark, oklch(70% 0.095 145));
-    --color-accent-ink: oklch(80%   0.090 145);
-    --color-accent-soft: oklch(30%  0.045 148);
-    --color-on-accent:  oklch(18%   0.030 150);
-    --color-focus:      oklch(75%   0.120 148);
+    --color-accent:     var(--accent-dark, oklch(72% 0.115 158));
+    --color-accent-ink: oklch(82%   0.105 158);
+    --color-accent-soft: oklch(30%  0.055 160);
+    --color-on-accent:  oklch(17%   0.034 165);
+    --color-focus:      oklch(76%   0.130 158);
     --color-amber:      oklch(75%   0.115 75);
     --color-amber-ink:  oklch(82%   0.105 80);
     --color-amber-soft: oklch(32%   0.060 70);
-    --color-live:       oklch(78%   0.100 148);
-    --color-live-bg:    oklch(30%   0.045 150);
+    --color-live:       oklch(80%   0.115 158);
+    --color-live-bg:    oklch(30%   0.055 158);
     --color-closed-bg:  oklch(27%   0.010 140);
     --shadow-1: 0 6px 18px oklch(0% 0 0 / 0.35);
     --shadow-2: 0 14px 40px oklch(0% 0 0 / 0.5);
+
+    --grad-accent: linear-gradient(165deg, oklch(76% 0.120 152) 0%, oklch(62% 0.110 172) 100%);
+    --grad-accent-hover: linear-gradient(165deg, oklch(82% 0.115 152) 0%, oklch(68% 0.108 172) 100%);
+    --grad-block:  linear-gradient(145deg, oklch(26% 0.060 156) 0%, oklch(16% 0.042 176) 100%);
+    --grad-soft:   linear-gradient(150deg, oklch(30% 0.052 152) 0%, oklch(26% 0.058 168) 100%);
+    --shadow-accent: 0 8px 20px oklch(10% 0.05 165 / 0.45);
   }
 }
