@@ -118,14 +118,18 @@ const fill = (id, list) => {
 
 /* ═══════════ каталог: категории и фильтры ═══════════ */
 
-const filters = { cat: 'mushroom', state: 'all', avail: 'live', vol: null, sort: 'default', q: '' };
+const filters = { cat: 'mushroom', state: 'all', avail: 'live', vol: null, region: null, retail: null, sort: 'default', q: '' };
 
 function catalogList() {
   // поиск идёт поверх категорий: клиент ищет «морошку», а не «ягоды → морошка»
-  let list = filters.q ? searchLots(filters.q) : LOTS.filter(l => l.kind === filters.cat);
-  if (filters.state !== 'all') list = list.filter(l => l.state === filters.state);
+  let list = filters.q ? searchLots(filters.q)
+    : (filters.cat === 'all' ? LOTS.slice() : LOTS.filter(l => l.kind === filters.cat));
+  if (filters.state === 'keep') list = list.filter(l => ['dry', 'salted', 'frozen'].includes(l.state));
+  else if (filters.state !== 'all') list = list.filter(l => l.state === filters.state);
   if (filters.avail === 'live') list = list.filter(l => l.status === 'live');
   if (filters.vol) list = list.filter(l => l.minVol === filters.vol);
+  if (filters.region) list = list.filter(l => l.region === filters.region);
+  if (filters.retail) list = list.filter(l => !!l.retail);
   // сортируем по той цене, которую человек видит: в опте по входной ступени, в рознице по розничной
   if (filters.sort === 'price') list = [...list].sort((a, b) => mode === 'retail'
     ? (b.retail || 0) - (a.retail || 0)
@@ -143,18 +147,40 @@ const statePlural = s => STATE_PLURAL[s.name] || (s.name.charAt(0).toUpperCase()
 function renderCatnav() {
   const box = document.getElementById('catnavList');
   if (!box) return;
-  box.innerHTML = CATS.kinds.map(k => {
+
+  const allCount = LOTS.length;
+  let html = `<li class="catnav__all">
+    <button class="catnav__head catnav__head--all" type="button" data-cat="all">
+      <span>Все категории</span><span class="catnav__count">${allCount}</span>
+    </button>
+  </li>`;
+
+  html += CATS.kinds.map(k => {
     const inKind = LOTS.filter(l => l.kind === k.id);
     const states = CATS.states.filter(s => inKind.some(l => l.state === s.id));
-    const sub = inKind.length
-      ? `<li><button type="button" data-state="all">Все <span class="catnav__count">${inKind.length}</span></button></li>` +
-        states.map(s => `<li><button type="button" data-state="${s.id}">${statePlural(s)} <span class="catnav__count">${inKind.filter(l => l.state === s.id).length}</span></button></li>`).join('')
-      : `<li><p class="catnav__soon">Категория готовится. Оставьте заявку, сообщим когда откроем сбор.</p></li>`;
+
+    // пустая категория не кликается: вести человека в пустоту нечестно
+    if (!inKind.length) {
+      return `<li class="catnav__group catnav__group--off" data-group="${k.id}">
+        <span class="catnav__head catnav__head--off">
+          <span>${k.name}</span><span class="catnav__soonpill">скоро</span>
+        </span>
+      </li>`;
+    }
+
+    const sub = `<li><button type="button" data-state="all"><span>Все</span><span class="catnav__count">${inKind.length}</span></button></li>` +
+      states.map(s => `<li><button type="button" data-state="${s.id}"><span>${statePlural(s)}</span><span class="catnav__count">${inKind.filter(l => l.state === s.id).length}</span></button></li>`).join('');
+
     return `<li class="catnav__group" data-group="${k.id}">
-      <button class="catnav__head" type="button" data-cat="${k.id}">${k.name} <span class="catnav__count">${inKind.length}</span></button>
+      <button class="catnav__head" type="button" data-cat="${k.id}">
+        <span>${k.name}</span><span class="catnav__count">${inKind.length}</span>
+        <span class="catnav__chev" aria-hidden="true"></span>
+      </button>
       <ul class="catnav__sub" hidden>${sub}</ul>
     </li>`;
   }).join('');
+
+  box.innerHTML = html;
 }
 
 function renderCatalog() {
@@ -184,7 +210,7 @@ function renderCatalog() {
     }
   }
 
-  const inKind = LOTS.filter(l => l.kind === filters.cat);
+  const inKind = filters.cat === 'all' ? LOTS.slice() : LOTS.filter(l => l.kind === filters.cat);
   const total = filters.q ? searchLots(filters.q).length : inKind.length;
   const hiddenClosed = !filters.q && filters.avail === 'live' ? inKind.filter(l => l.status === 'closed').length : 0;
   const counter = document.getElementById('catCounter');
@@ -194,17 +220,34 @@ function renderCatalog() {
       ? `Показано ${list.length}, в розницу из них ${list.filter(l => l.retail).length}`
       : `Показано ${list.length} из ${total}${hiddenClosed ? `, ${hiddenClosed} в архиве закрытых` : ''}`;
 
-  // активная группа и подпункт
+  // активная ветка; раскрытой может быть и не активная — её помнит openKinds
   document.querySelectorAll('.catnav__group').forEach(g => {
-    const on = !filters.q && g.dataset.group === filters.cat;
+    const kind = g.dataset.group;
+    const on = !filters.q && kind === filters.cat;
     g.classList.toggle('is-active', on);
-    const sub = g.querySelector('.catnav__sub');
-    if (sub) sub.hidden = !on;
+    const sub = g.querySelector('.catnav__sub');   // у незапущенной категории его нет
+    if (sub) sub.hidden = !(on || openKinds.has(kind));
+    g.classList.toggle('is-open', !!sub && !sub.hidden);
     g.querySelectorAll('[data-state]').forEach(b => {
       if (on && b.dataset.state === filters.state) b.setAttribute('aria-current', 'true');
       else b.removeAttribute('aria-current');
     });
   });
+  const allBtn = document.querySelector('[data-cat="all"]');
+  if (allBtn) allBtn.setAttribute('aria-current', String(!filters.q && filters.cat === 'all'));
+
+  // пресеты, переключатель закрытых и сортировка
+  document.querySelectorAll('[data-preset]').forEach(b => b.setAttribute('aria-pressed', String(presetOn(b.dataset.preset))));
+  const closedBox = document.getElementById('showClosed');
+  if (closedBox) closedBox.checked = filters.avail === 'all';
+  const sortLabel = document.getElementById('sortLabel');
+  if (sortLabel) sortLabel.textContent = SORT_RU[filters.sort] || SORT_RU.default;
+  const fN = document.getElementById('filtersN');
+  if (fN) {
+    const n = (filters.vol ? 1 : 0) + (filters.region ? 1 : 0) + (filters.retail ? 1 : 0) + (filters.avail === 'all' ? 1 : 0);
+    fN.textContent = n; fN.hidden = n === 0;
+  }
+  renderRegionOpts();
 
   // кнопки фильтров
   document.querySelectorAll('[data-filter]').forEach(b => {
@@ -217,9 +260,11 @@ function renderCatalog() {
   if (chips) {
     const active = [];
     if (filters.q) active.push({ k: 'q', label: `Поиск: ${filters.q}` });
-    if (filters.state !== 'all') active.push({ k: 'state', label: STATE_RU[filters.state] || filters.state });
+    if (filters.state !== 'all') active.push({ k: 'state', label: filters.state === 'keep' ? 'долгого хранения' : (STATE_RU[filters.state] || filters.state) });
     if (filters.avail === 'all' && !filters.q) active.push({ k: 'avail', label: 'включая закрытые' });
-    if (filters.vol) active.push({ k: 'vol', label: filters.vol === 'mini' ? 'мини-опт от 20 кг' : 'опт от 500 кг' });
+    if (filters.vol) active.push({ k: 'vol', label: filters.vol === 'mini' ? 'от 20 кг' : 'от 500 кг' });
+    if (filters.region) active.push({ k: 'region', label: filters.region });
+    if (filters.retail) active.push({ k: 'retail', label: 'есть в рознице' });
     chips.innerHTML = active.length
       ? active.map(a => `<button class="chip" type="button" data-chip="${a.k}">${a.label}<span aria-hidden="true">×</span><span class="sr-only">убрать фильтр</span></button>`).join('') +
         `<button class="chips__reset" type="button" data-reset-filters>Сбросить всё</button>`
@@ -228,10 +273,43 @@ function renderCatalog() {
 }
 
 function resetFilters() {
-  filters.state = 'all'; filters.avail = 'live'; filters.vol = null; filters.sort = 'default'; filters.q = '';
-  const sel = document.getElementById('sortSel');
-  if (sel) sel.value = 'default';
+  filters.state = 'all'; filters.avail = 'live'; filters.vol = null;
+  filters.region = null; filters.retail = null; filters.sort = 'default'; filters.q = '';
   renderCatalog();
+}
+
+const SORT_RU = { default: 'По наличию', price: 'По цене', date: 'По дате сбора' };
+const openKinds = new Set();
+
+// пресет считается включённым, только если стоит ровно его набор
+function presetOn(name) {
+  if (name === 'fresh')  return filters.state === 'fresh';
+  if (name === 'keep')   return filters.state === 'keep';
+  if (name === 'retail') return filters.retail === 'yes';
+  if (name === 'mini')   return filters.vol === 'mini';
+  return false;
+}
+
+function applyPreset(name) {
+  const was = presetOn(name);
+  filters.state = 'all'; filters.vol = null; filters.retail = null;
+  if (!was) {
+    if (name === 'fresh')  filters.state = 'fresh';
+    if (name === 'keep')   filters.state = 'keep';
+    if (name === 'retail') filters.retail = 'yes';
+    if (name === 'mini')   filters.vol = 'mini';
+  }
+  renderCatalog();
+}
+
+// регионы берём из данных, а не из списка руками
+function renderRegionOpts() {
+  const box = document.getElementById('fRegions');
+  if (!box) return;
+  const src = filters.cat === 'all' ? LOTS : LOTS.filter(l => l.kind === filters.cat);
+  const regions = [...new Set(src.map(l => l.region).filter(Boolean))];
+  box.innerHTML = regions.map(r =>
+    `<button type="button" data-filter="region" data-value="${r}" aria-pressed="${filters.region === r}">${r}</button>`).join('');
 }
 
 /* ═══════════ прайс ═══════════ */
@@ -1173,6 +1251,51 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-search-hit]')) { closeSearch(true); return; }
   if (e.target.closest('#searchClose')) { closeSearch(true); return; }
 
+  // каталог: быстрые наборы
+  const preset = e.target.closest('[data-preset]');
+  if (preset) { applyPreset(preset.dataset.preset); return; }
+
+  // каталог: шторка фильтров
+  if (e.target.closest('#filtersOpen')) {
+    document.getElementById('fsheet').hidden = false;
+    document.body.classList.add('has-modal');
+    return;
+  }
+  if (e.target.closest('[data-fsheet-close]') || e.target === document.getElementById('fsheet')) {
+    document.getElementById('fsheet').hidden = true;
+    document.body.classList.remove('has-modal');
+    return;
+  }
+
+  // каталог: сортировка своим списком вместо системного
+  if (e.target.closest('#sortBtn')) {
+    const m = document.getElementById('sortMenu');
+    m.hidden = !m.hidden;
+    document.getElementById('sortBtn').setAttribute('aria-expanded', String(!m.hidden));
+    return;
+  }
+  const sortPick = e.target.closest('[data-sort]');
+  if (sortPick) {
+    filters.sort = sortPick.dataset.sort;
+    document.getElementById('sortMenu').hidden = true;
+    document.getElementById('sortBtn').setAttribute('aria-expanded', 'false');
+    renderCatalog();
+    return;
+  }
+  if (!e.target.closest('#sortDrop')) {
+    const m = document.getElementById('sortMenu');
+    if (m && !m.hidden) { m.hidden = true; document.getElementById('sortBtn').setAttribute('aria-expanded', 'false'); }
+  }
+
+  // каталог: раскрыть ветку, не переключая категорию
+  const chev = e.target.closest('.catnav__chev');
+  if (chev) {
+    const kind = chev.closest('.catnav__group').dataset.group;
+    openKinds.has(kind) ? openKinds.delete(kind) : openKinds.add(kind);
+    renderCatalog();
+    return;
+  }
+
   // каталог: категория
   const catBtn = e.target.closest('[data-cat]');
   if (catBtn) { filters.cat = catBtn.dataset.cat; filters.state = 'all'; filters.q = ''; renderCatalog(); return; }
@@ -1185,7 +1308,8 @@ document.addEventListener('click', e => {
   const fBtn = e.target.closest('[data-filter]');
   if (fBtn) {
     const key = fBtn.dataset.filter, val = fBtn.dataset.value;
-    filters[key] = (key === 'vol' && filters.vol === val) ? null : val;
+    if (key === 'avail') filters.avail = filters.avail === 'all' ? 'live' : 'all';
+    else filters[key] = filters[key] === val ? null : val;   // повторный тап снимает
     renderCatalog();
     return;
   }
@@ -1196,6 +1320,8 @@ document.addEventListener('click', e => {
     if (k === 'state') filters.state = 'all';
     if (k === 'avail') filters.avail = 'live';
     if (k === 'vol') filters.vol = null;
+    if (k === 'region') filters.region = null;
+    if (k === 'retail') filters.retail = null;
     renderCatalog();
     return;
   }
@@ -1325,7 +1451,7 @@ document.addEventListener('input', e => {
 });
 
 document.addEventListener('change', e => {
-  if (e.target.id === 'sortSel') { filters.sort = e.target.value; renderCatalog(); }
+  if (e.target.id === 'showClosed') { filters.avail = e.target.checked ? 'all' : 'live'; renderCatalog(); return; }
 });
 
 document.addEventListener('focusin', e => {

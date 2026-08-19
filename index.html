@@ -302,20 +302,78 @@
 
       <div>
         <div class="filterbar">
-          <div class="filters" role="group" aria-label="Фильтры">
-            <span class="filters__label">Наличие</span>
-            <button type="button" data-filter="avail" data-value="live" aria-pressed="true">В наличии</button>
-            <button type="button" data-filter="avail" data-value="all" aria-pressed="false">Все, включая закрытые</button>
-            <!-- фильтр по объёму убран: минимум партии виден на каждой карточке,
-                 а тринадцати позициям хватает категорий и наличия -->
-            <select id="sortSel" aria-label="Сортировка">
-              <option value="default">Сортировка: по наличию</option>
-              <option value="price">По цене</option>
-              <option value="date">По дате сбора</option>
-            </select>
+          <!-- быстрые наборы: один тап вместо трёх переключений -->
+          <div class="presets" role="group" aria-label="Быстрый выбор">
+            <button type="button" data-preset="fresh">Свежее</button>
+            <button type="button" data-preset="keep">Долгого хранения</button>
+            <button type="button" data-preset="retail">Есть в рознице</button>
+            <button type="button" data-preset="mini">Мини-опт от 20 кг</button>
           </div>
+
+          <div class="filterbar__row">
+            <button class="fbtn" type="button" id="filtersOpen">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+              Фильтры<span class="fbtn__n" id="filtersN" hidden>0</span>
+            </button>
+
+            <div class="filters" role="group" aria-label="Фильтры">
+              <label class="switchpill">
+                <input type="checkbox" id="showClosed">
+                <span>Показывать закрытые</span>
+              </label>
+              <div class="drop drop--sort" id="sortDrop">
+                <button class="drop__btn" type="button" id="sortBtn" aria-expanded="false">
+                  <span id="sortLabel">По наличию</span>
+                </button>
+                <div class="drop__menu" id="sortMenu" hidden>
+                  <button type="button" data-sort="default">По наличию</button>
+                  <button type="button" data-sort="price">По цене</button>
+                  <button type="button" data-sort="date">По дате сбора</button>
+                </div>
+              </div>
+            </div>
+
+            <p class="counter" id="catCounter"></p>
+          </div>
+
           <div class="chips" id="chips"></div>
-          <p class="counter" id="catCounter"></p>
+        </div>
+
+        <!-- шторка фильтров: на телефоне всё уходит сюда -->
+        <div class="fsheet" id="fsheet" hidden>
+          <div class="fsheet__box" role="dialog" aria-modal="true" aria-label="Фильтры">
+            <div class="fsheet__grip"></div>
+            <div class="fsheet__head">
+              <h2>Фильтры</h2>
+              <button class="btn btn--sm" type="button" data-fsheet-close>Закрыть</button>
+            </div>
+
+            <div class="fgroup">
+              <p class="fgroup__t">Минимальный объём</p>
+              <div class="fopts">
+                <button type="button" data-filter="vol" data-value="mini">От 20 кг</button>
+                <button type="button" data-filter="vol" data-value="big">От 500 кг</button>
+              </div>
+            </div>
+
+            <div class="fgroup">
+              <p class="fgroup__t">Регион сбора</p>
+              <div class="fopts" id="fRegions"></div>
+            </div>
+
+            <div class="fgroup">
+              <p class="fgroup__t">Ещё</p>
+              <div class="fopts">
+                <button type="button" data-filter="retail" data-value="yes">Есть в рознице</button>
+                <button type="button" data-filter="avail" data-value="all">Показывать закрытые</button>
+              </div>
+            </div>
+
+            <div class="fsheet__foot">
+              <button class="btn" type="button" data-reset-filters>Сбросить</button>
+              <button class="btn btn--solid" type="button" data-fsheet-close id="fsheetApply">Показать</button>
+            </div>
+          </div>
         </div>
 
         <ul class="lots" id="catGrid"></ul>
