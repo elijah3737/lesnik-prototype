@@ -20,7 +20,7 @@
   'use strict';
 
   var PREFIX = 'lesnik.';
-  var FILES = ['lots', 'categories', 'texts', 'leads', 'photos'];
+  var FILES = ['lots', 'categories', 'texts', 'leads', 'photos', 'accounts'];
   var KEEP_BACKUPS = 30;
 
   function seed(file) {

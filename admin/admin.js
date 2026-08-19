@@ -188,6 +188,7 @@
     cats:     ['Категории', 'Виды и состояния'],
     photos:   ['Фото', 'Загрузка и замена'],
     leads:    ['Заявки', 'Кто написал с сайта'],
+    buyers:   ['Оптовики', 'Доступ к оптовым ценам'],
     texts:    ['Тексты и контакты', 'Телефон, реквизиты, баннер'],
     history:  ['История изменений', 'Откат к прошлой версии']
   };
@@ -216,6 +217,7 @@
     if (route.name === 'cats')    renderCats();
     if (route.name === 'photos')  renderPhotos();
     if (route.name === 'leads')   renderLeads();
+    if (route.name === 'buyers')  renderBuyers();
     if (route.name === 'texts')   renderTexts();
     if (route.name === 'history') renderHistory();
   }
@@ -238,6 +240,7 @@
       tile('cats', 'Категории', 'Виды и состояния', db.categories.kinds.length + ' вида'),
       tile('photos', 'Фото', 'Загрузить и заменить', Store.images().length + ' шт'),
       tile('leads', 'Заявки', 'Кто написал с сайта', newLeads ? newLeads + ' новых' : 'новых нет', newLeads > 0),
+      tile('buyers', 'Оптовики', 'Доступ к оптовым ценам', waitingBuyers() ? waitingBuyers() + ' ждут' : 'все открыты', waitingBuyers() > 0),
       tile('texts', 'Тексты', 'Телефон и реквизиты', TEXT_FIELDS.length + ' строк'),
       tile('history', 'История', 'Откатить изменения', histCount() ? histCount() + ' версий' : 'пока пусто')
     ].join('');
@@ -1024,6 +1027,73 @@
       lead.status = lead.status === 'new' ? 'done' : 'new';
       if (commit('leads', db.leads, lead.status === 'done' ? 'Отметили как обработанную' : 'Вернули в новые')) renderLeads();
     });
+  }
+
+  /* ═══════════ оптовики: доступ к оптовым ценам ═══════════ */
+
+  function buyers() { var a = db.accounts; return Array.isArray(a) ? a : []; }
+  function waitingBuyers() { return buyers().filter(function (a) { return a.status === 'pending'; }).length; }
+
+  var buyerFilter = 'pending';
+
+  function renderBuyers() {
+    var list = buyers().filter(function (a) {
+      return buyerFilter === 'all' ? true : a.status === buyerFilter;
+    });
+
+    $('#buyersBox').innerHTML =
+      '<p class="lede">Оптовые цены и прайс видят только подтверждённые. Пока заявка на рассмотрении, ' +
+      'человек видит каталог и наличие, но не цены.</p>' +
+      '<div class="filters" id="buyerFilters" style="margin-top:16px">' +
+        ['pending:Ждут', 'approved:Открыт доступ', 'all:Все'].map(function (x) {
+          var p = x.split(':');
+          return '<button type="button" data-bf="' + p[0] + '" aria-pressed="' + (buyerFilter === p[0]) + '">' + p[1] + '</button>';
+        }).join('') +
+      '</div>' +
+      (list.length
+        ? '<div class="rows">' + list.map(buyerRow).join('') + '</div>'
+        : '<div class="empty">' + (buyerFilter === 'pending' ? 'Новых заявок нет.' : 'Здесь пусто.') + '</div>');
+
+    bind($('#buyersBox'), 'click', function (e) {
+      var f = e.target.closest('[data-bf]');
+      if (f) { buyerFilter = f.dataset.bf; renderBuyers(); return; }
+
+      var ok = e.target.closest('[data-approve]');
+      if (ok) { setBuyer(ok.dataset.approve, 'approved', 'Доступ открыт'); return; }
+
+      var no = e.target.closest('[data-revoke]');
+      if (no) {
+        var acc = buyers().filter(function (a) { return a.id === no.dataset.revoke; })[0];
+        confirmDanger('Закрыть доступ?', '«' + (acc ? acc.company : '') + '» перестанет видеть оптовые цены и прайс. Заявка останется, открыть можно снова.',
+          'Закрыть доступ', function () { setBuyer(no.dataset.revoke, 'pending', 'Доступ закрыт'); });
+        return;
+      }
+    });
+  }
+
+  function buyerRow(a) {
+    var open = a.status === 'approved';
+    return '<article class="row" style="grid-template-columns:1fr">' +
+      '<div class="row__main">' +
+        '<b>' + esc(a.company || 'Без названия') + '</b>' +
+        '<div class="row__meta"><span class="pill' + (open ? '' : ' pill--off') + '"><i></i>' +
+          (open ? 'доступ открыт' : 'ждёт подтверждения') + '</span> заявка от ' + esc(a.at || '') + '</div>' +
+        '<div class="row__meta">' + esc(a.name || '') + ' · ' + esc(a.email) + '</div>' +
+        '<div class="row__meta"><a href="tel:' + esc(String(a.phone || '').replace(/[^\d+]/g, '')) + '">' + esc(a.phone || '') + '</a></div>' +
+      '</div>' +
+      '<div class="row__nums" style="grid-template-columns:1fr">' +
+        (open
+          ? '<button class="row__num" type="button" data-revoke="' + esc(a.id) + '"><small>Доступ</small><b>Закрыть</b></button>'
+          : '<button class="row__num" type="button" data-approve="' + esc(a.id) + '"><small>Заявка</small><b>Подтвердить</b></button>') +
+      '</div>' +
+    '</article>';
+  }
+
+  function setBuyer(id, status, msg) {
+    var list = buyers().map(function (a) {
+      return a.id === id ? Object.assign({}, a, { status: status }) : a;
+    });
+    if (commit('accounts', list, msg)) renderBuyers();
   }
 
   /* ═══════════ тексты и контакты ═══════════ */

@@ -121,6 +121,12 @@ window.LESNIK_SEED = {
     account: 'подставим из документов'
   },
 
+  // Оптовики: доступ к оптовым ценам выдаётся вручную после подтверждения.
+  accounts: [
+    { id: 'a-1', email: 'zakupki@restoran.ru', company: 'Ресторан «Пихта»', name: 'Игорь', phone: '+7 916 200-14-02', status: 'approved', at: '11.08.2026' },
+    { id: 'a-2', email: 'opt@zagotprom.ru', company: 'Заготпром', name: 'Марина', phone: '+7 495 774-11-90', status: 'pending', at: '18.08.2026' }
+  ],
+
   leads: [
     { id: 'l-1', date: '17.08.2026 09:14', name: 'Ресторан «Пихта»', phone: '+7 916 200-14-02', qty: '40 кг', lot: 'Лисичка свежая', who: 'Ресторан или кафе', status: 'new' },
     { id: 'l-2', date: '16.08.2026 18:40', name: 'Заготпром', phone: '+7 495 774-11-90', qty: '500 кг', lot: 'Лисичка сушёная', who: 'Переработчик', status: 'new' },

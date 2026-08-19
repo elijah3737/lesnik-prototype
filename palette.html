@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Лесник · выбор зелёного</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: oklch(98% 0.006 95);
+    --paper-2: oklch(95.5% 0.010 100);
+    --ink: oklch(20% 0.030 150);
+    --muted: oklch(46% 0.020 140);
+    --rule: oklch(88% 0.010 110);
+    --font: "Golos Text", ui-sans-serif, system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--font); font-size: 17px; line-height: 1.55;
+  }
+  .wrap { max-width: 68rem; margin-inline: auto; padding: 40px 20px 80px; }
+  h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -0.03em; margin: 0 0 10px; }
+  .lede { color: var(--muted); max-width: 60ch; margin: 0 0 8px; }
+  .now { font-size: 0.95rem; color: var(--muted); margin: 0 0 36px; }
+
+  .opt { margin-bottom: 44px; border: 1px solid var(--rule); border-radius: 20px; overflow: hidden; background: var(--paper); }
+  .opt__head {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px;
+    padding: 18px 22px; border-bottom: 1px solid var(--rule);
+  }
+  .opt__n {
+    width: 30px; height: 30px; border-radius: 50%; flex: none;
+    display: inline-grid; place-items: center;
+    background: var(--a); color: var(--on); font-size: 0.85rem; font-weight: 700;
+  }
+  .opt__name { font-size: 1.15rem; font-weight: 700; }
+  .opt__why { flex: 1 1 22rem; font-size: 0.9rem; color: var(--muted); }
+  .opt__code { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
+
+  .demo { display: grid; grid-template-columns: 1fr; }
+  @media (min-width: 54rem) { .demo { grid-template-columns: 1.25fr 1fr; } }
+
+  /* баннер */
+  .banner { position: relative; min-height: 260px; display: flex; align-items: center; }
+  .banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .banner__veil { position: absolute; inset: 0; background: linear-gradient(90deg, var(--dark) 0%, color-mix(in oklab, var(--dark) 70%, transparent) 55%, transparent 100%); }
+  .banner__copy { position: relative; padding: 28px; color: oklch(97% 0.01 110); max-width: 30rem; }
+  .banner__promo {
+    display: inline-block; background: var(--warm); color: oklch(99% 0.005 90);
+    font-size: 0.78rem; font-weight: 600; padding: 5px 13px; border-radius: 999px; margin-bottom: 12px;
+  }
+  .banner h2 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 8px; line-height: 1.12; }
+  .banner p { margin: 0 0 18px; font-size: 0.95rem; opacity: 0.9; }
+  .b { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 20px; border-radius: 999px;
+       font-weight: 600; font-size: 0.92rem; text-decoration: none; border: 1px solid transparent; cursor: pointer; }
+  .b--solid { background: var(--a); color: var(--on); }
+  .b--ghost { border-color: oklch(97% 0.01 110); color: oklch(97% 0.01 110); margin-left: 8px; }
+
+  /* правая колонка: карточка и элементы */
+  .side { padding: 24px; display: grid; gap: 18px; align-content: start; background: var(--paper-2); }
+  .card { background: var(--paper); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
+  .card img { width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block; }
+  .card__b { padding: 14px 16px; }
+  .tag { display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 600;
+         background: var(--soft); color: var(--ink2); padding: 3px 10px; border-radius: 999px; }
+  .tag i { width: 6px; height: 6px; border-radius: 50%; background: var(--a); }
+  .card__n { font-weight: 600; margin: 8px 0 2px; }
+  .card__p { font-family: var(--mono); font-size: 1.1rem; color: var(--ink2); }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .chip { font-size: 0.85rem; padding: 7px 14px; border-radius: 999px; background: var(--soft); color: var(--ink2); }
+  .bar { height: 8px; border-radius: 999px; background: oklch(100% 0 0 / 0.7); overflow: hidden; border: 1px solid var(--rule); }
+  .bar i { display: block; height: 100%; width: 62%; background: var(--a); }
+  .strip { border-radius: 14px; background: var(--soft); color: var(--ink2); padding: 14px 16px; font-size: 0.9rem; }
+  .strip b { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; display: block; letter-spacing: -0.02em; }
+  .dark { border-radius: 14px; background: var(--dark); color: oklch(96% 0.015 110); padding: 16px; font-size: 0.9rem; }
+  .dark b { display: block; font-weight: 700; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Пять оттенков зелёного</h1>
+  <p class="lede">Каждый вариант показан на том, что реально решает: баннер, кнопка, тег «в наличии», цена, полоса остатка и тёмный блок. Смотрите не на квадратики, а на то, как выглядит кнопка и как читается тёмная плашка.</p>
+  <p class="now">Сейчас на сайте вариант 1. Скажите номер, и я переключу весь сайт одной правкой: цвет живёт в токенах.</p>
+
+  <!-- 1 -->
+  <section class="opt" style="--a:oklch(46% 0.085 145); --on:oklch(98% 0.010 110); --soft:oklch(93% 0.030 148); --ink2:oklch(36% 0.080 148); --dark:oklch(27% 0.045 150); --warm:oklch(58% 0.140 55)">
+    <div class="opt__head">
+      <span class="opt__n">1</span>
+      <span class="opt__name">Нынешний</span>
+      <span class="opt__why">Глубокий приглушённый. Тот самый, который вы назвали болотным.</span>
+      <span class="opt__code">oklch(46% 0.085 145)</span>
+    </div>
+    <div class="demo">
+      <div class="banner">
+        <img src="img/hero.jpg" alt="">
+        <div class="banner__veil"></div>
+        <div class="banner__copy">
+          <span class="banner__promo">Доставка по Москве бесплатно от 300 кг</span>
+          <h2>Грибы и ягоды с Урала, прямо от заготовителя</h2>
+          <p>Собираем, сушим, солим и морозим сами.</p>
+          <a class="b b--solid" href="#">Смотреть каталог</a><a class="b b--ghost" href="#">Условия опта</a>
+        </div>
+      </div>
+      <div class="side">
+        <div class="card">
+          <img src="img/lisichka.jpg" alt="">
+          <div class="card__b">
+            <span class="tag"><i></i>в наличии</span>
+            <p class="card__n">Лисичка свежая</p>
+            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p>
+          </div>
+        </div>
+        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a></div>
+        <div class="bar"><i></i></div>
+        <div class="strip"><b>7 008 кг</b>отгружено за сезон</div>
+        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="opt" style="--a:oklch(55% 0.115 148); --on:oklch(99% 0.008 110); --soft:oklch(94% 0.042 150); --ink2:oklch(40% 0.100 148); --dark:oklch(30% 0.060 152); --warm:oklch(60% 0.145 58)">
+    <div class="opt__head">
+      <span class="opt__n">2</span>
+      <span class="opt__name">Светлее и чище</span>
+      <span class="opt__why">Тот же тон, но светлее и насыщеннее. Кнопки перестают выглядеть тускло, тёмный блок остаётся спокойным.</span>
+      <span class="opt__code">oklch(55% 0.115 148)</span>
+    </div>
+    <div class="demo">
+      <div class="banner">
+        <img src="img/hero.jpg" alt="">
+        <div class="banner__veil"></div>
+        <div class="banner__copy">
+          <span class="banner__promo">Доставка по Москве бесплатно от 300 кг</span>
+          <h2>Грибы и ягоды с Урала, прямо от заготовителя</h2>
+          <p>Собираем, сушим, солим и морозим сами.</p>
+          <a class="b b--solid" href="#">Смотреть каталог</a><a class="b b--ghost" href="#">Условия опта</a>
+        </div>
+      </div>
+      <div class="side">
+        <div class="card">
+          <img src="img/lisichka.jpg" alt="">
+          <div class="card__b">
+            <span class="tag"><i></i>в наличии</span>
+            <p class="card__n">Лисичка свежая</p>
+            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p>
+          </div>
+        </div>
+        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a></div>
+        <div class="bar"><i></i></div>
+        <div class="strip"><b>7 008 кг</b>отгружено за сезон</div>
+        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="opt" style="--a:oklch(62% 0.145 142); --on:oklch(17% 0.030 150); --soft:oklch(93% 0.055 145); --ink2:oklch(38% 0.095 145); --dark:oklch(26% 0.055 148); --warm:oklch(62% 0.150 60)">
+    <div class="opt__head">
+      <span class="opt__n">3</span>
+      <span class="opt__name">Свежий лист</span>
+      <span class="opt__why">Заметно ярче и живее, ближе к молодой зелени. Самый бодрый из пяти, текст на кнопке становится тёмным.</span>
+      <span class="opt__code">oklch(62% 0.145 142)</span>
+    </div>
+    <div class="demo">
+      <div class="banner">
+        <img src="img/hero.jpg" alt="">
+        <div class="banner__veil"></div>
+        <div class="banner__copy">
+          <span class="banner__promo">Доставка по Москве бесплатно от 300 кг</span>
+          <h2>Грибы и ягоды с Урала, прямо от заготовителя</h2>
+          <p>Собираем, сушим, солим и морозим сами.</p>
+          <a class="b b--solid" href="#">Смотреть каталог</a><a class="b b--ghost" href="#">Условия опта</a>
+        </div>
+      </div>
+      <div class="side">
+        <div class="card">
+          <img src="img/lisichka.jpg" alt="">
+          <div class="card__b">
+            <span class="tag"><i></i>в наличии</span>
+            <p class="card__n">Лисичка свежая</p>
+            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p>
+          </div>
+        </div>
+        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a></div>
+        <div class="bar"><i></i></div>
+        <div class="strip"><b>7 008 кг</b>отгружено за сезон</div>
+        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="opt" style="--a:oklch(52% 0.105 165); --on:oklch(99% 0.008 110); --soft:oklch(93% 0.038 168); --ink2:oklch(38% 0.090 166); --dark:oklch(27% 0.048 168); --warm:oklch(60% 0.140 52)">
+    <div class="opt__head">
+      <span class="opt__n">4</span>
+      <span class="opt__name">Хвойный, с прохладой</span>
+      <span class="opt__why">Сдвинут в сторону сине-зелёного. Выглядит дороже и строже, дальше всего от болотного.</span>
+      <span class="opt__code">oklch(52% 0.105 165)</span>
+    </div>
+    <div class="demo">
+      <div class="banner">
+        <img src="img/hero.jpg" alt="">
+        <div class="banner__veil"></div>
+        <div class="banner__copy">
+          <span class="banner__promo">Доставка по Москве бесплатно от 300 кг</span>
+          <h2>Грибы и ягоды с Урала, прямо от заготовителя</h2>
+          <p>Собираем, сушим, солим и морозим сами.</p>
+          <a class="b b--solid" href="#">Смотреть каталог</a><a class="b b--ghost" href="#">Условия опта</a>
+        </div>
+      </div>
+      <div class="side">
+        <div class="card">
+          <img src="img/lisichka.jpg" alt="">
+          <div class="card__b">
+            <span class="tag"><i></i>в наличии</span>
+            <p class="card__n">Лисичка свежая</p>
+            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p>
+          </div>
+        </div>
+        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a></div>
+        <div class="bar"><i></i></div>
+        <div class="strip"><b>7 008 кг</b>отгружено за сезон</div>
+        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="opt" style="--a:oklch(50% 0.100 128); --on:oklch(99% 0.008 110); --soft:oklch(93% 0.040 130); --ink2:oklch(37% 0.088 130); --dark:oklch(26% 0.045 132); --warm:oklch(60% 0.145 62)">
+    <div class="opt__head">
+      <span class="opt__n">5</span>
+      <span class="opt__name">Тёплый мох</span>
+      <span class="opt__why">Сдвинут в жёлто-зелёный, ближе к траве и лесной подстилке. Теплее нынешнего, но не кричит.</span>
+      <span class="opt__code">oklch(50% 0.100 128)</span>
+    </div>
+    <div class="demo">
+      <div class="banner">
+        <img src="img/hero.jpg" alt="">
+        <div class="banner__veil"></div>
+        <div class="banner__copy">
+          <span class="banner__promo">Доставка по Москве бесплатно от 300 кг</span>
+          <h2>Грибы и ягоды с Урала, прямо от заготовителя</h2>
+          <p>Собираем, сушим, солим и морозим сами.</p>
+          <a class="b b--solid" href="#">Смотреть каталог</a><a class="b b--ghost" href="#">Условия опта</a>
+        </div>
+      </div>
+      <div class="side">
+        <div class="card">
+          <img src="img/lisichka.jpg" alt="">
+          <div class="card__b">
+            <span class="tag"><i></i>в наличии</span>
+            <p class="card__n">Лисичка свежая</p>
+            <p class="card__p">950 ₽ <span style="font-size:.8rem;color:var(--muted)">от 20 кг</span></p>
+          </div>
+        </div>
+        <div class="row"><span class="chip">Грибы</span><span class="chip">Свежие</span><a class="b b--solid" href="#">Заказать</a></div>
+        <div class="bar"><i></i></div>
+        <div class="strip"><b>7 008 кг</b>отгружено за сезон</div>
+        <div class="dark"><b>Мы не перепродаём чужое</b>Принимаем сырьё у сборщиков в день сбора.</div>
+      </div>
+    </div>
+  </section>
+
+  <p class="lede">Оранжевая плашка акции подстроена под каждый вариант: она должна оставаться тёплым контрастом, а не спорить с зелёным.</p>
+</div>
+</body>
+</html>

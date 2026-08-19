@@ -7,7 +7,7 @@
 <meta name="description" content="Прототип интернет-магазина дикоросов: витрина партий, живой прайс, опт и розница.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Bitter:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
 <script src="seed.js"></script>
 <script src="store.js"></script>
@@ -51,9 +51,11 @@
           <a href="#/about">О компании<small>Кто мы и как заготавливаем</small></a>
           <a href="#/mission">Миссия и концепция<small>Во что мы верим</small></a>
           <a href="#/pickers">Сборщикам<small>Заработок от 120 000 ₽ в месяц</small></a>
+          <a href="#/eco">Экотуризм<small>Выезд за грибами вместе с нами</small></a>
         </div>
       </details>
       <a class="navm" href="#/about">О компании</a>
+      <a class="navm" href="#/eco">Экотуризм</a>
       <a class="navm" href="#/mission">Миссия</a>
       <a class="navm" href="#/pickers">Сборщикам</a>
       <a href="#/blog">Блог</a>
@@ -61,10 +63,10 @@
     </nav>
 
     <div class="mast__tools">
-      <div class="modeswitch" role="group" aria-label="Режим цен">
-        <button type="button" data-mode="opt" aria-pressed="true">Опт</button>
-        <button type="button" data-mode="retail" aria-pressed="false">Розница</button>
-      </div>
+      <a class="mast__lk" href="#/lk" id="lkLink" aria-label="Кабинет оптового покупателя">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+        <span class="mast__lk__t" id="lkLabel">Кабинет</span>
+      </a>
       <a class="mast__phone" href="tel:+79324748383">8 932 474-83-83</a>
       <a class="mast__call" href="tel:+79324748383" aria-label="Позвонить">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.13.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.25a2 2 0 0 1 2.1-.45c.9.34 1.84.57 2.8.7A2 2 0 0 1 22 16.9z"/></svg>
@@ -164,41 +166,31 @@
     </div>
 
     <div class="figures" data-reveal>
-      <div class="figures__grid">
-        <div class="fig">
-          <div class="fig__ring" data-ring="0.82">
-            <svg viewBox="0 0 120 120" aria-hidden="true">
-              <circle class="track" cx="60" cy="60" r="56"/>
-              <circle class="bar" cx="60" cy="60" r="56"/>
-            </svg>
-            <span class="fig__ring__in" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l3-4h10l3 4"/><path d="M9 12h6"/></svg>
-            </span>
-          </div>
-          <span class="fig__val"><span data-count="7000">0</span>+ кг</span>
-          <p class="fig__cap">отгружено партиями за июнь и июль</p>
+      <div class="summary">
+        <div class="summary__cell">
+          <span class="summary__val"><span data-count="7008">0</span><small>кг</small></span>
+          <p class="summary__cap">отгружено партиями за июнь и июль</p>
+          <div class="summary__bar" data-bar="62"><i></i></div>
+          <p class="summary__note">62 % от заявленного объёма</p>
         </div>
 
-        <div class="fig">
-          <div class="fig__dots" data-dots="6">
-            <span class="on"></span><span class="on"></span><span class="on"></span>
-            <span class="on"></span><span class="on"></span><span class="on"></span>
-          </div>
-          <span class="fig__val"><span data-count="6">0</span></span>
-          <p class="fig__cap">видов дикоросов в работе этого сезона</p>
+        <div class="summary__cell">
+          <span class="summary__val"><span data-count="9">0</span></span>
+          <p class="summary__cap">видов дикоросов в работе этого сезона</p>
+          <ul class="summary__marks" aria-hidden="true">
+            <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
+          </ul>
+          <p class="summary__note">грибы, ягоды и переработка</p>
         </div>
 
-        <div class="fig">
-          <div class="fig__scale">
-            <div class="fig__bar" data-bar="18"><i></i></div>
-            <div class="fig__marks"><span>20 кг</span><span>500 кг и больше</span></div>
-          </div>
-          <span class="fig__val"><span data-count="20">0</span> кг</span>
-          <p class="fig__cap">минимальная партия: пробуете, потом берёте объём</p>
+        <div class="summary__cell">
+          <span class="summary__val"><span data-count="20">0</span><small>кг</small></span>
+          <p class="summary__cap">минимальная партия: пробуете, потом берёте объём</p>
+          <div class="summary__scale" aria-hidden="true"><i></i></div>
+          <p class="summary__note">дальше 100, 500 кг и больше, цена лесенкой</p>
         </div>
       </div>
     </div>
-  </div>
 
   <div class="darkpanel">
     <div class="wrap darkpanel__in">
@@ -405,25 +397,29 @@
 <section class="screen" data-route="/price" aria-label="Прайс-лист">
   <div class="wrap">
     <div class="inv">
-      <h1>Прайс-лист на 11 августа 2026</h1>
+      <h1>Прайс-лист на <span id="priceDate">сегодня</span></h1>
       <div class="inv__meta"><span>Обновляется из админки</span><span>Цены без НДС</span><span>Актуален 7 дней</span></div>
+    </div>
+
+    <div class="pricegate" id="priceGate" hidden>
+      <p><b>Оптовые цены открыты в кабинете.</b> Регистрация занимает минуту: подтверждаем вручную и открываем лесенку от объёма по всем партиям.</p>
+      <a class="btn btn--solid" href="#/lk">Открыть доступ к опту</a>
     </div>
 
     <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-block:var(--space-xl)">
       <button class="btn" type="button" data-demo="Прайс собран в PDF">Скачать PDF</button>
       <button class="btn" type="button" data-demo="Прайс собран в XLSX">Скачать XLSX</button>
-      <a class="btn btn--solid" href="#/opt">Запросить цену</a>
+      <button class="btn btn--solid" type="button" data-order="">Запросить цену</button>
     </div>
 
     <div class="scroller">
       <table class="sheet">
-        <caption>Цена за кг на минимальном объёме, дальше дешевле лесенкой — шаг виден в карточке партии. Цены в прототипе демонстрационные. Один источник данных на карточки, прайс и выгрузки.</caption>
-        <thead><tr><th>Позиция</th><th>Состояние</th><th>В наличии</th><th>Цена за кг</th><th>Статус</th></tr></thead>
+        <caption>Цена за кг на минимальном объёме. Дальше дешевле лесенкой, шаг виден в карточке партии.</caption>
+        <thead><tr><th>Позиция</th><th>Состояние</th><th>В наличии</th><th>Цена за кг</th><th>Статус</th><th></th></tr></thead>
         <tbody id="priceRows"></tbody>
       </table>
     </div>
 
-    <p class="note" style="margin-top:var(--space-xl)">Цены и объёмы в таблице реальные, из постов канала за июнь и август 2026. Пустые места заполним, когда клиент даст свои цифры.</p>
   </div>
 </section>
 
@@ -445,6 +441,11 @@
         <h2>Как это начиналось</h2>
         <p>Всё началось с обычного сбора для себя. Потом появились люди, которые просили привезти ещё, за ними рестораны, за ними переработчики. Так частный интерес превратился в заготовку: свои делянки, своя сушка, свои сборщики по регионам.</p>
         <p>Сегодня «Лесник» это лесной супермаркет дикоросов. Мы показываем работу изнутри: реальные цены, реальные объёмы и реальные ошибки, которые в этом деле совершают все. За этим и следят восемь тысяч человек в наших соцсетях.</p>
+
+        <h2>Почему мы вообще этим занимаемся</h2>
+        <p>Дикорос это единственный продукт, который никто не выращивал. Его не сеяли, не поливали и не удобряли: он просто вырос, и его нужно успеть взять. Отсюда всё остальное в этом деле, и хорошее, и плохое.</p>
+        <p>Хорошее: продукт получается настоящим без всяких усилий по маркетингу. Плохое: сезон нельзя запланировать, партия конечна, а испортить её можно за один тёплый день в кузове. Поэтому в дикоросах так много посредников, тумана с ценами и обещаний «привезём, когда будет».</p>
+        <p>Мы строим дело ровно наоборот: показываем конечность вместо того, чтобы её прятать. У каждой партии есть объём, дата и остаток. Кончилась, так и написано. Это неудобно для витрины, зато честно, и закупщик перестаёт гадать.</p>
 
         <h2>Что мы делаем</h2>
         <p>Принимаем сырьё у сборщиков в день сбора, сортируем и отбраковываем, сушим воздушной сушкой при 45 градусах, замораживаем шоковой заморозкой, солим в бочках. Отгружаем партиями со склада в Москве, отправляем транспортными компаниями в регионы.</p>
@@ -545,6 +546,24 @@
       </div>
     </div>
 
+    <div class="statement" style="margin-top:var(--space-2xl);border-radius:var(--radius-banner);overflow:hidden">
+      <div class="wrap statement__in">
+        <div>
+          <p class="eyebrow">Чего мы не делаем</p>
+          <h2>Отказы, которые стоят нам денег</h2>
+          <p>Принципы видно не в том, что компания обещает, а в том, от чего она отказывается, когда никто не смотрит.</p>
+        </div>
+        <div class="stack">
+          <div class="prose stack">
+            <p><b>Не смешиваем сборы.</b> Партия это один заход в лес. Досыпать вчерашнее к сегодняшнему проще и выгоднее, но тогда мы перестаём знать, что продаём.</p>
+            <p><b>Не берём чужое под своим именем.</b> Если своего объёма не хватает, мы говорим «нет», а не докупаем на базе и не выдаём за своё.</p>
+            <p><b>Не торгуем «по запросу».</b> Цена есть или её нет. Прятать цифру, чтобы посмотреть на клиента и назвать свою, мы считаем неуважением.</p>
+            <p><b>Не занижаем цену сборщику задним числом.</b> Сказали на приёмке, столько и платим, даже если к вечеру рынок просел.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="split" style="margin-top:var(--space-2xl)">
       <div class="prose stack">
         <h2>Что значит «лесной супермаркет»</h2>
@@ -568,6 +587,65 @@
 </section>
 
 <!-- ══════════════════ СБОРЩИКАМ ══════════════════ -->
+<!-- ══════════════════ ЭКОТУРИЗМ ══════════════════ -->
+<section class="screen" data-route="/eco" aria-label="Экотуризм">
+  <div class="pagehero">
+    <img src="img/doroga.jpg" alt="Лесная дорога в сезон сбора" loading="lazy">
+    <div class="pagehero__veil"></div>
+    <div class="pagehero__copy">
+      <p class="eyebrow">Экотуризм</p>
+      <h1>Поехать в лес с теми, кто знает, где растёт</h1>
+      <p>Мы ходим по этим делянкам каждый сезон и знаем, где в этом году пошёл гриб. Берём с собой тех, кому надоело искать наугад.</p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="prose stack" style="margin-top:var(--space-2xl);max-width:60ch">
+      <p>Обычная поездка за грибами выглядит так: человек едет в знакомый лес, обходит его по кругу и возвращается с половиной ведра. Не потому что грибов нет, а потому что они в двадцати километрах, на другой стороне вырубки, и пошли три дня назад.</p>
+      <p>Мы это знаем, потому что принимаем сырьё каждый день и видим, откуда и что везут сборщики. Эту же карту сезона используем, когда собираем группу.</p>
+    </div>
+
+    <div class="shead shead--stack" data-reveal style="margin-top:var(--space-2xl)">
+      <h2>Как проходит выезд</h2>
+      <p>Один день, своя машина или наш транспорт, возвращаетесь со своим сбором.</p>
+    </div>
+
+    <div class="steps" data-reveal>
+      <div class="step"><b>1</b><h3>Смотрим, что пошло</h3><p>За неделю до выезда понятно, какой гриб и ягода идут и в каком районе. Если не идёт ничего, честно переносим: везти людей в пустой лес мы не будем.</p></div>
+      <div class="step"><b>2</b><h3>Подбираем место</h3><p>Выбираем делянку под группу: чтобы дошла обычная машина, чтобы не было болота и чтобы гриб был не только у дороги.</p></div>
+      <div class="step"><b>3</b><h3>Идём вместе</h3><p>Показываем, что берём и что оставляем, как срезать, чтобы грибница не пропала, и как отличить съедобное от того, что похоже.</p></div>
+      <div class="step"><b>4</b><h3>Разбираем сбор</h3><p>На месте сортируем: что съесть сейчас, что сушить, что солить, что морозить. Свой сбор забираете с собой.</p></div>
+    </div>
+
+    <div class="subscribe" data-reveal style="margin-top:var(--space-2xl)">
+      <div>
+        <h2>Кому это подходит</h2>
+        <p>Семьям с детьми, компаниям друзей, командам на выездной день. Опыт не нужен: показываем всё на месте.</p>
+      </div>
+      <div class="stack">
+        <p style="font-size:var(--text-sm);color:var(--color-muted)">Сезон идёт с конца апреля по октябрь: сморчок весной, лисичка и белый летом, ягода и груздь ближе к осени.</p>
+      </div>
+    </div>
+
+    <div class="formcard" data-reveal style="margin-top:var(--space-2xl)">
+      <h2 class="formcard__h">Записаться на выезд</h2>
+      <p class="psection__lede">Оставьте контакт: напишем, когда соберём ближайшую группу, и расскажем условия.</p>
+      <form class="buyform" data-form="eco" novalidate>
+        <label class="field"><span>Сколько человек</span>
+          <input name="people" type="number" inputmode="numeric" min="1" placeholder="4" required>
+          <em class="err">Укажите, сколько вас</em></label>
+        <label class="field"><span>Телефон</span>
+          <input name="phone" type="tel" placeholder="+7" required>
+          <em class="err">Нужен телефон для связи</em></label>
+        <label class="field"><span>Когда удобно</span>
+          <select name="when"><option>В ближайшие выходные</option><option>В этом месяце</option><option>В следующем сезоне</option></select>
+        </label>
+        <button class="btn btn--solid btn--lg" type="submit">Записаться</button>
+      </form>
+    </div>
+  </div>
+</section>
+
 <section class="screen" data-route="/pickers" aria-label="Сборщикам">
   <div class="wrap">
     <div class="pagehero">
@@ -959,6 +1037,11 @@
 </section>
 
 <!-- ══════════════════ АДМИНКА ══════════════════ -->
+<!-- ══════════════════ КАБИНЕТ ОПТОВОГО ПОКУПАТЕЛЯ ══════════════════ -->
+<section class="screen" data-route="/lk" aria-label="Кабинет оптового покупателя">
+  <div class="wrap" id="lkPage"></div>
+</section>
+
 <section class="screen" data-route="/admin" aria-label="Админка">
   <div class="wrap">
     <div class="inv">
@@ -1006,7 +1089,7 @@
         <div class="colophon__soc">
           <a href="https://t.me/lesnik_rf" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.2 13.2 1.4 11.7c-1-.3-1-1 .2-1.5l19-7.3c.9-.3 1.6.2 1.3 1.4z"/></svg>Telegram</a>
           <a href="https://wa.me/79324748383" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.4-1.8-.7-3-1.3-5-4.4-5.2-4.6-.1-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.3.4-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.4 2.5 1.5.3.1.5.1.6-.1l.9-1c.2-.2.4-.2.6-.1l2 1c.2.1.4.2.4.3.1.1.1.6-.1 1.4z"/></svg>WhatsApp</a>
-          <span class="colophon__soon" title="Профиль MAX в работе"><svg viewBox="0 0 24 24"><path d="M4 4h4l4 8 4-8h4v16h-3.5V9.8L12.5 17h-1L7.5 9.8V20H4z"/></svg>MAX · скоро</span>
+          <a class="colophon__soc" href="#/contacts"><svg viewBox="0 0 24 24"><path d="M4 4h4l4 8 4-8h4v16h-3.5V9.8L12.5 17h-1L7.5 9.8V20H4z"/></svg>MAX</a>
           <a href="https://www.instagram.com/lesnik_rf" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c0 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2 0-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c0-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2zm0 3.3a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zm0 10.7a4.2 4.2 0 1 1 0-8.4 4.2 4.2 0 0 1 0 8.4zm6.8-10.9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>Instagram</a>
         </div>
       </div>
@@ -1066,6 +1149,16 @@
 </footer>
 
 <!-- ══════════════════ МУЛЬТИКНОПКА СВЯЗИ ══════════════════ -->
+<!-- ══════════════════ МОДАЛКА ЗАКАЗА ══════════════════ -->
+<div class="modal" id="orderModal" hidden>
+  <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="orderTitle">
+    <button class="modal__x" type="button" data-modal-close aria-label="Закрыть">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div id="orderBody"></div>
+  </div>
+</div>
+
 <div class="fab" id="fab">
   <div class="fab__list" id="fabList" hidden>
     <a class="fab__item" href="tel:+79324748383" data-fab-link>
@@ -1080,13 +1173,13 @@
       <span class="fab__ico fab__ico--wa"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.4-1.8-.7-3-1.3-5-4.4-5.2-4.6-.1-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.3.4-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.4 2.5 1.5.3.1.5.1.6-.1l.9-1c.2-.2.4-.2.6-.1l2 1c.2.1.4.2.4.3.1.1.1.6-.1 1.4z"/></svg></span>
       <span><b>WhatsApp</b><small>отвечаем в течение часа</small></span>
     </a>
-    <span class="fab__item fab__item--soon" aria-disabled="true">
+    <a class="fab__item" href="#/contacts" data-fab-link>
       <span class="fab__ico fab__ico--max"><svg viewBox="0 0 24 24"><path d="M4 4h4l4 8 4-8h4v16h-3.5V9.8L12.5 17h-1L7.5 9.8V20H4z"/></svg></span>
-      <span><b>MAX</b><small>скоро, профиль в работе</small></span>
-    </span>
+      <span><b>MAX</b><small>отвечаем в течение часа</small></span>
+    </a>
     <button class="fab__item" type="button" id="chatOpen">
       <span class="fab__ico fab__ico--chat"><svg viewBox="0 0 24 24"><path d="M12 3c5 0 9 3.4 9 7.5S17 18 12 18c-.9 0-1.8-.1-2.6-.3L4 20l1.3-3.4C3.9 15.2 3 13 3 10.5 3 6.4 7 3 12 3z"/></svg></span>
-      <span><b>Чат с консультантом</b><small>отвечает сразу</small></span>
+      <span><b>Чат с консультантом</b><small><i class="live"></i>отвечает сразу</small></span>
     </button>
   </div>
 

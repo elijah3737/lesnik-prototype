@@ -36,12 +36,13 @@
 
   /* ── type ── */
   /* слэб на заголовках: характер бирки и ярлыка, контраст к нейтральному Golos в тексте */
-  --font-display: "Bitter", "Golos Text", ui-serif, Georgia, serif;
+  /* один шрифт на весь сайт: иерархия строится размером и насыщенностью, а не сменой гарнитуры */
+  --font-display: "Golos Text", ui-sans-serif, system-ui, sans-serif;
   --font-body:    "Golos Text", ui-sans-serif, system-ui, sans-serif;
   --font-label:   "Golos Text", ui-sans-serif, system-ui, sans-serif;
   --font-mono:    "IBM Plex Mono", ui-monospace, monospace;
 
-  --display-weight: 700;
+  --display-weight: 800;
   --tracking-display: -0.005em;   /* слэбу не нужен сильный минус: засечки сцепляют сами */
   --tracking-label:    0.06em;
 

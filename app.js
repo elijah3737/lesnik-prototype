@@ -22,21 +22,39 @@ const sitePhone = () => TEXTS.phone || '8 932 474-83-83';
 const siteTel = () => 'tel:+7' + sitePhone().replace(/\D/g, '').replace(/^[78]/, '');
 const fmt = n => Number(n || 0).toLocaleString('ru-RU');
 
-/* корзина и режим цен переживают перезагрузку: покупатель не теряет набранное */
-let mode = 'opt';
+/* ═══════════ кабинет оптового покупателя ═══════════
+   Оптовые цены больше не переключаются тумблером: их видит только подтверждённый
+   оптовик. Гость видит розницу. Учётки лежат в том же Store, что и остальные данные,
+   поэтому на хостинге меняется только слой хранения. */
+
+const SESSION_KEY = 'lesnik.session';
+
+function accounts() { const a = Store.load('accounts'); return Array.isArray(a) ? a : []; }
+function sessionEmail() {
+  try { return localStorage.getItem(SESSION_KEY) || ''; } catch (e) { return ''; }
+}
+function setSession(email) {
+  try { email ? localStorage.setItem(SESSION_KEY, email) : localStorage.removeItem(SESSION_KEY); } catch (e) {}
+}
+function currentAccount() {
+  const mail = sessionEmail().toLowerCase();
+  return mail ? accounts().find(a => String(a.email).toLowerCase() === mail) || null : null;
+}
+const isWholesale = () => { const a = currentAccount(); return !!(a && a.status === 'approved'); };
+
+/* корзина переживает перезагрузку: покупатель не теряет набранное */
+let mode = 'retail';
 const cart = new Map();
 try {
-  const savedMode = localStorage.getItem('lesnik.ui.mode');
-  if (savedMode === 'retail') mode = 'retail';
   const savedCart = JSON.parse(localStorage.getItem('lesnik.ui.cart') || '[]');
   savedCart.forEach(([id, qty]) => { if (typeof id === 'string' && qty > 0) cart.set(id, qty); });
 } catch (e) {}
 
+function syncMode() { mode = isWholesale() ? 'opt' : 'retail'; }
+syncMode();
+
 function persistUI() {
-  try {
-    localStorage.setItem('lesnik.ui.mode', mode);
-    localStorage.setItem('lesnik.ui.cart', JSON.stringify([...cart.entries()]));
-  } catch (e) {}
+  try { localStorage.setItem('lesnik.ui.cart', JSON.stringify([...cart.entries()])); } catch (e) {}
 }
 
 /* лесенка цен: [от кг, ₽/кг]; первая ступень — входная цена и минимум заказа */
@@ -218,16 +236,39 @@ function resetFilters() {
 
 /* ═══════════ прайс ═══════════ */
 
+const MONTHS_RU = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                   'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+
 function renderPrice() {
+  // дата ставится сама: руками её никто не обновит, и прайс протухнет молча
+  const d = new Date();
+  const dateEl = document.getElementById('priceDate');
+  if (dateEl) dateEl.textContent = `${d.getDate()} ${MONTHS_RU[d.getMonth()]} ${d.getFullYear()}`;
+
   const tb = document.getElementById('priceRows');
   if (!tb) return;
-  tb.innerHTML = LOTS.map(l => `<tr>
-    <td>${l.name.replace(/ (свежая|свежий|сушёная|сушёный|замороженная|солёный|протёртая)$/i, '')}</td>
-    <td>${stateLabel(l)}</td>
-    <td class="n">${l.status === 'live' ? fmt(l.stock) + ' кг' : l.volume}</td>
-    <td class="n">${optLabel(l)}${tiersOf(l) ? ` <small>от ${fmt(minKg(l))} кг</small>` : ''}</td>
-    <td>${l.status === 'live' ? 'открыта' : 'закрыта ' + l.closed}</td>
-  </tr>`).join('');
+  const opt = isWholesale();
+
+  tb.innerHTML = LOTS.map(l => {
+    const live = l.status === 'live';
+    const price = opt
+      ? `${optLabel(l)}${tiersOf(l) ? ` <small>от ${fmt(minKg(l))} кг</small>` : ''}`
+      : `<a class="locked" href="#/lk">под кабинетом</a>`;
+    const action = live
+      ? `<button class="btn btn--soft btn--sm" type="button" data-order="${l.id}">Заказать</button>`
+      : `<button class="btn btn--sm" type="button" data-order="${l.id}">Бронь сбора</button>`;
+    return `<tr>
+      <td>${l.name.replace(/ (свежая|свежий|сушёная|сушёный|замороженная|солёный|протёртая)$/i, '')}</td>
+      <td>${stateLabel(l)}</td>
+      <td class="n">${live ? fmt(l.stock) + ' кг' : l.volume}</td>
+      <td class="n">${price}</td>
+      <td>${live ? 'открыта' : 'закрыта ' + l.closed}</td>
+      <td class="act">${action}</td>
+    </tr>`;
+  }).join('');
+
+  const hint = document.getElementById('priceGate');
+  if (hint) hint.hidden = opt;
 }
 
 /* ═══════════ блог ═══════════ */
@@ -371,23 +412,20 @@ function renderFigures() {
 
   const box = document.querySelector('.figures');
   if (!box) return;
-  const figs = box.querySelectorAll('.fig');
-  if (figs.length < 3) return;
+  const cells = box.querySelectorAll('.summary__cell');
+  if (cells.length < 3) return;
 
-  const ring = figs[0].querySelector('[data-ring]');
-  ring.dataset.ring = String(Math.round(share * 100) / 100);
-  figs[0].querySelector('[data-count]').dataset.count = String(closedKg);
-  figs[0].querySelector('.fig__val').innerHTML = `<span data-count="${closedKg}">0</span> кг`;
-  figs[0].querySelector('.fig__cap').textContent = `отгружено за сезон, ${Math.round(share * 100)}% заявленного объёма`;
+  // цифры считаем по реальным партиям, а не вписываем руками
+  cells[0].querySelector('.summary__val').innerHTML = `<span data-count="${closedKg}">0</span><small>кг</small>`;
+  const bar = cells[0].querySelector('[data-bar]');
+  if (bar) bar.dataset.bar = String(Math.round(share * 100));
+  cells[0].querySelector('.summary__note').textContent = `${Math.round(share * 100)} % от заявленного объёма`;
 
-  const dots = figs[1].querySelector('[data-dots]');
-  dots.dataset.dots = String(species);
-  dots.innerHTML = Array.from({ length: species }, () => '<span class="on"></span>').join('');
-  figs[1].querySelector('.fig__val').innerHTML = `<span data-count="${species}">0</span>`;
+  cells[1].querySelector('.summary__val').innerHTML = `<span data-count="${species}">0</span>`;
+  const marks = cells[1].querySelector('.summary__marks');
+  if (marks) marks.innerHTML = Array.from({ length: species }, () => '<li></li>').join('');
 
-  const bar = figs[2].querySelector('[data-bar]');
-  bar.dataset.bar = String(Math.max(4, Math.round(minOrder / 500 * 100)));
-  figs[2].querySelector('.fig__val').innerHTML = `<span data-count="${minOrder}">0</span> кг`;
+  cells[2].querySelector('.summary__val').innerHTML = `<span data-count="${minOrder}">0</span><small>кг</small>`;
 }
 
 function renderAll() {
@@ -684,6 +722,167 @@ function setHeroSlide(i) {
   document.querySelectorAll('[data-dot]').forEach(d => d.setAttribute('aria-pressed', String(Number(d.dataset.dot) === i)));
 }
 
+/* ═══════════ кабинет: вход, регистрация, статус ═══════════ */
+
+function renderLk() {
+  const box = document.getElementById('lkPage');
+  if (!box) return;
+  const acc = currentAccount();
+
+  if (!acc) {
+    box.innerHTML = `
+      <div class="pagehero pagehero--plain">
+        <div class="pagehero__copy">
+          <h1>Кабинет оптового покупателя</h1>
+          <p>Оптовые цены и прайс-лист открыты зарегистрированным закупщикам. Регистрацию подтверждаем вручную, обычно в тот же день.</p>
+        </div>
+      </div>
+      <div class="lk">
+        <section class="lk__card">
+          <h2>Вход</h2>
+          <form data-form="lk-in" novalidate>
+            <label class="field"><span>Почта</span>
+              <input name="email" type="email" placeholder="zakupki@restoran.ru" required autocomplete="email">
+              <em class="err">Проверьте адрес почты</em></label>
+            <button class="btn btn--solid btn--full" type="submit">Войти</button>
+          </form>
+          <p class="lk__hint">В прототипе пароль не спрашиваем. Для примера уже заведён доступ <button class="tlink" type="button" data-fill-email="zakupki@restoran.ru">zakupki@restoran.ru</button>.</p>
+        </section>
+
+        <section class="lk__card">
+          <h2>Регистрация</h2>
+          <form data-form="lk-up" novalidate>
+            <label class="field"><span>Компания</span>
+              <input name="company" type="text" placeholder="Ресторан, переработчик, сеть" required>
+              <em class="err">Впишите название компании</em></label>
+            <label class="field"><span>Как к вам обращаться</span>
+              <input name="name" type="text" placeholder="Имя" required>
+              <em class="err">Впишите имя</em></label>
+            <label class="field"><span>Почта</span>
+              <input name="email" type="email" placeholder="zakupki@company.ru" required autocomplete="email">
+              <em class="err">Проверьте адрес почты</em></label>
+            <label class="field"><span>Телефон</span>
+              <input name="phone" type="tel" placeholder="+7" required>
+              <em class="err">Нужен телефон для связи</em></label>
+            <button class="btn btn--solid btn--full" type="submit">Отправить заявку</button>
+          </form>
+        </section>
+      </div>`;
+    return;
+  }
+
+  if (acc.status !== 'approved') {
+    box.innerHTML = `
+      <div class="pagehero pagehero--plain">
+        <div class="pagehero__copy">
+          <h1>Заявка на рассмотрении</h1>
+          <p>Мы получили заявку от «${esc(acc.company)}» и подтвердим доступ в рабочее время. Как только откроем, оптовые цены и прайс появятся здесь же.</p>
+        </div>
+      </div>
+      <div class="lk">
+        <section class="lk__card">
+          <h2>Пока ждёте</h2>
+          <p>Каталог и наличие открыты и без кабинета: видно, что есть в этом сезоне и в каком объёме.</p>
+          <div class="btn-row"><a class="btn" href="#/catalog">Смотреть каталог</a><a class="btn" href="${siteTel()}">Позвонить</a></div>
+        </section>
+        <section class="lk__card">
+          <h2>Ваша заявка</h2>
+          <dl class="ptable">
+            <div><dt>Компания</dt><dd>${esc(acc.company)}</dd></div>
+            <div><dt>Почта</dt><dd>${esc(acc.email)}</dd></div>
+            <div><dt>Телефон</dt><dd>${esc(acc.phone || '')}</dd></div>
+            <div><dt>Подана</dt><dd>${esc(acc.at || '')}</dd></div>
+          </dl>
+          <p class="lk__hint">В прототипе подтвердить можно самому: админка, раздел «Оптовики».</p>
+          <div class="btn-row"><button class="btn btn--sm" type="button" data-lk-out>Выйти</button></div>
+        </section>
+      </div>`;
+    return;
+  }
+
+  const live = LOTS.filter(l => l.status === 'live');
+  box.innerHTML = `
+    <div class="pagehero pagehero--plain">
+      <div class="pagehero__copy">
+        <h1>${esc(acc.company)}</h1>
+        <p>Доступ к опту открыт. Цены лесенкой от объёма видны в каталоге, в карточках партий и в прайс-листе.</p>
+      </div>
+    </div>
+    <div class="lk">
+      <section class="lk__card">
+        <h2>Что открыто</h2>
+        <ul class="buy__facts">
+          <li>Оптовые цены по ${live.length} открытым партиям</li>
+          <li>Прайс-лист целиком, с выгрузкой в PDF и XLSX</li>
+          <li>Заказ партии в один шаг, без переписки</li>
+        </ul>
+        <div class="btn-row"><a class="btn btn--solid" href="#/price">Открыть прайс</a><a class="btn" href="#/catalog">В каталог</a></div>
+      </section>
+      <section class="lk__card">
+        <h2>Учётная запись</h2>
+        <dl class="ptable">
+          <div><dt>Почта</dt><dd>${esc(acc.email)}</dd></div>
+          <div><dt>Телефон</dt><dd>${esc(acc.phone || '')}</dd></div>
+          <div><dt>Доступ с</dt><dd>${esc(acc.at || '')}</dd></div>
+        </dl>
+        <div class="btn-row"><button class="btn btn--sm" type="button" data-lk-out>Выйти</button></div>
+      </section>
+    </div>`;
+}
+
+function esc(x) {
+  return String(x === undefined || x === null ? '' : x)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function refreshLkLink() {
+  const label = document.getElementById('lkLabel');
+  if (!label) return;
+  const acc = currentAccount();
+  label.textContent = acc ? (acc.status === 'approved' ? 'Кабинет' : 'Заявка') : 'Кабинет';
+  const link = document.getElementById('lkLink');
+  if (link) link.classList.toggle('is-on', !!acc && acc.status === 'approved');
+}
+
+/* ═══════════ модалка заказа ═══════════ */
+
+function openOrder(lotId) {
+  const lot = LOTS.find(l => l.id === lotId) || null;
+  const live = !lot || lot.status === 'live';
+  const box = document.getElementById('orderBody');
+  const opts = LOTS.filter(l => l.status === 'live')
+    .map(l => `<option value="${l.id}"${lot && l.id === lot.id ? ' selected' : ''}>${esc(l.name)}</option>`).join('');
+
+  box.innerHTML = `
+    <h2 id="orderTitle">${lot ? esc(lot.name) : 'Запрос цены на объём'}</h2>
+    <p class="modal__sub">${lot && live
+      ? `${esc(lot.region)}, ${esc(lot.harvest)}. Осталось ${fmt(lot.stock)} кг.`
+      : lot ? `Партия закрыта ${esc(lot.closed || '')}. Запишем вас на следующий сбор.`
+            : 'Назовите объём, посчитаем цену под вас и выставим счёт.'}</p>
+    <form class="orderform" data-form="order" novalidate>
+      ${lot ? `<input type="hidden" name="lot" value="${esc(lot.name)}">`
+            : `<label class="field"><span>Что интересует</span><select name="lot">${opts}</select></label>`}
+      <label class="field"><span>Сколько нужно, кг</span>
+        <input name="qty" type="number" inputmode="numeric" min="1" placeholder="${lot ? fmt(minKg(lot)) : '200'}" required>
+        <em class="err">Укажите объём в килограммах</em></label>
+      <label class="field"><span>Телефон</span>
+        <input name="phone" type="tel" placeholder="+7" required autocomplete="tel">
+        <em class="err">Нужен телефон для связи</em></label>
+      <button class="btn btn--solid btn--full btn--lg" type="submit">${live ? 'Отправить заявку' : 'Записаться на сбор'}</button>
+    </form>`;
+
+  const m = document.getElementById('orderModal');
+  m.hidden = false;
+  document.body.classList.add('has-modal');
+  setTimeout(() => { const f = box.querySelector('input:not([type=hidden]), select'); if (f) f.focus(); }, 80);
+}
+
+function closeOrder() {
+  document.getElementById('orderModal').hidden = true;
+  document.body.classList.remove('has-modal');
+}
+
 /* ═══════════ поиск ═══════════ */
 
 /* Ищем так, как товар называет клиент: «лисички», «сушеные», «боровик», «ягода».
@@ -886,8 +1085,9 @@ function route() {
   const path = location.hash.replace(/^#/, '') || '/';
   if (!path.startsWith('/')) return;  // якорь внутри страницы
 
-  const isLot = path.startsWith('/lot');
+  const isLot = path.startsWith('/lot') && path !== '/lk';
   if (isLot) renderProduct(path.split('/')[2] || 'lisichka-dry');
+  if (path === '/lk') renderLk();
 
   let hit = null;
   document.querySelectorAll('.screen').forEach(s => {
@@ -909,6 +1109,7 @@ function route() {
 
   if (drop) { drop.open = false; dropByHover = false; }
   closeSearch(false);
+  closeOrder();
 
   window.scrollTo({ top: 0, behavior: 'instant' });
   observeReveals();
@@ -919,16 +1120,26 @@ function route() {
 /* ═══════════ события ═══════════ */
 
 document.addEventListener('click', e => {
-  // режим цен
-  const modeBtn = e.target.closest('[data-mode]');
-  if (modeBtn) {
-    mode = modeBtn.dataset.mode;
-    persistUI();
-    document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+
+  // заказ партии: попап вместо ухода на другую страницу
+  const orderBtn = e.target.closest('[data-order]');
+  if (orderBtn) { openOrder(orderBtn.dataset.order); return; }
+  if (e.target.closest('[data-modal-close]') || e.target === document.getElementById('orderModal')) { closeOrder(); return; }
+
+  // кабинет
+  const fill = e.target.closest('[data-fill-email]');
+  if (fill) {
+    const inp = document.querySelector('[data-form="lk-in"] [name="email"]');
+    if (inp) { inp.value = fill.dataset.fillEmail; inp.focus(); }
+    return;
+  }
+  if (e.target.closest('[data-lk-out]')) {
+    setSession('');
+    syncMode();
+    refreshLkLink();
     renderAll();
-    toast(mode === 'retail'
-      ? `Розничные цены: в розницу доступно ${LOTS.filter(l => l.retail && l.status === 'live').length} позиций`
-      : 'Оптовые цены: лесенка от объёма в каждой карточке');
+    renderLk();
+    toast('Вы вышли из кабинета');
     return;
   }
 
@@ -1169,6 +1380,74 @@ document.addEventListener('submit', e => {
   if (!form) return;
   e.preventDefault();
 
+  // ── кабинет: вход ──
+  if (form.dataset.form === 'lk-in') {
+    const field = form.querySelector('.field');
+    const mail = form.querySelector('[name="email"]').value.trim().toLowerCase();
+    const found = accounts().find(a => String(a.email).toLowerCase() === mail);
+    if (!/^\S+@\S+\.\S+$/.test(mail)) { field.dataset.invalid = 'true'; return; }
+    field.dataset.invalid = 'false';
+    if (!found) { toast('Такой почты у нас нет. Зарегистрируйтесь, это займёт минуту.', true); return; }
+    setSession(found.email);
+    syncMode(); refreshLkLink(); renderAll(); renderLk();
+    toast(found.status === 'approved' ? 'Готово, оптовые цены открыты' : 'Заявка ещё на рассмотрении');
+    return;
+  }
+
+  // ── кабинет: регистрация ──
+  if (form.dataset.form === 'lk-up') {
+    let ok = true;
+    form.querySelectorAll('[required]').forEach(inp => {
+      const bad = !inp.value.trim() || (inp.type === 'email' && !/^\S+@\S+\.\S+$/.test(inp.value));
+      inp.closest('.field').dataset.invalid = String(bad);
+      if (bad && ok) { inp.focus(); ok = false; }
+    });
+    if (!ok) return;
+    const mail = form.querySelector('[name="email"]').value.trim();
+    const list = accounts();
+    if (list.some(a => String(a.email).toLowerCase() === mail.toLowerCase())) {
+      toast('На эту почту доступ уже запрашивали. Войдите по ней же.', true);
+      return;
+    }
+    const d = new Date();
+    list.unshift({
+      id: 'a-' + Date.now(),
+      email: mail,
+      company: form.querySelector('[name="company"]').value.trim(),
+      name: form.querySelector('[name="name"]').value.trim(),
+      phone: form.querySelector('[name="phone"]').value.trim(),
+      status: 'pending',
+      at: `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+    });
+    Store.save('accounts', list);
+    setSession(mail);
+    syncMode(); refreshLkLink(); renderLk();
+    toast('Заявка отправлена, подтвердим в рабочее время');
+    return;
+  }
+
+  // ── заказ из попапа ──
+  if (form.dataset.form === 'order') {
+    let ok = true;
+    form.querySelectorAll('[required]').forEach(inp => {
+      const bad = !inp.value.trim();
+      inp.closest('.field').dataset.invalid = String(bad);
+      if (bad && ok) { inp.focus(); ok = false; }
+    });
+    if (!ok) return;
+    const lotName = form.querySelector('[name="lot"]');
+    const qty = form.querySelector('[name="qty"]').value.trim();
+    const num = 'Л-' + String(Date.now()).slice(-5);
+    document.getElementById('orderBody').innerHTML =
+      `<h2 id="orderTitle">Заявка №${num} принята</h2>
+       <p class="modal__sub">${esc(lotName ? (lotName.tagName === 'SELECT' ? lotName.options[lotName.selectedIndex].text : lotName.value) : '')}, ${esc(qty)} кг.
+       Перезвоним сегодня до 20:00 и назовём цену под ваш объём.</p>
+       <div class="btn-row"><a class="btn btn--solid" href="${siteTel()}">Позвонить самому</a>
+       <button class="btn" type="button" data-modal-close>Закрыть</button></div>`;
+    return;
+  }
+
+
   let ok = true;
   form.querySelectorAll('[required]').forEach(input => {
     const field = input.closest('.field');
@@ -1196,7 +1475,9 @@ document.addEventListener('submit', e => {
     form.appendChild(okBox);
   }
   const num = 'Л-' + String(Date.now()).slice(-5);
-  okBox.innerHTML = kind === 'sub'
+  okBox.innerHTML = kind === 'eco'
+    ? `Записали. Напишем, когда соберём ближайшую группу, и расскажем условия. Если хотите обсудить сразу: <a href="${siteTel()}">${sitePhone()}</a>.`
+    : kind === 'sub'
     ? 'Готово. Первый прайс придёт в ближайший понедельник утром. Отписаться можно в одно нажатие из любого письма.'
     : `Заявка №${num} принята. Перезвоним сегодня до 20:00. Если срочно: <a href="${siteTel()}">${sitePhone()}</a>.`;
 });
@@ -1300,8 +1581,7 @@ Store.subscribe(() => {
 });
 
 window.addEventListener('hashchange', route);
-// восстановленный из localStorage режим цен должен отразиться и на переключателе
-document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
 applyTexts();
+refreshLkLink();
 renderAll();
 route();
