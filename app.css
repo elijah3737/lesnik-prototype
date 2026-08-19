@@ -451,7 +451,7 @@ a:hover { color: var(--color-accent-ink); }
 
 /* ═════════════  hero  ═════════════ */
 
-.hero { position: relative; padding-block: var(--space-lg) 0; --hero-pager-h: 68px; }
+.hero { position: relative; padding-block: var(--space-lg) 0; --hero-pager-h: 56px; }
 .hero__frame { position: relative; display: grid; border-radius: var(--radius-banner); overflow: hidden; background: var(--color-block); }
 
 /* Все слайды лежат в одной ячейке сетки, а не показываются по очереди через display.
@@ -587,7 +587,7 @@ a:hover { color: var(--color-accent-ink); }
 @media (min-width: 60rem) { .rail__nav { display: inline-flex; } }
 .rail__nav--prev { left: -14px; }
 .rail__nav--next { right: -14px; }
-.rail__dots { display: flex; gap: 6px; justify-content: center; margin-top: var(--space-sm); }
+.rail__dots { display: flex; gap: 6px; justify-content: center; margin-top: 0; }
 .rail__dots button {
   box-sizing: content-box; width: 28px; height: 5px;
   padding: 20px 4px; background-clip: content-box;
