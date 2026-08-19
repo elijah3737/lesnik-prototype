@@ -188,6 +188,7 @@
     cats:     ['Категории', 'Виды и состояния'],
     photos:   ['Фото', 'Загрузка и замена'],
     leads:    ['Заявки', 'Кто написал с сайта'],
+    orders:   ['Заказы', 'Партии, брони и розница'],
     buyers:   ['Оптовики', 'Доступ к оптовым ценам'],
     texts:    ['Тексты и контакты', 'Телефон, реквизиты, баннер'],
     history:  ['История изменений', 'Откат к прошлой версии']
@@ -217,6 +218,7 @@
     if (route.name === 'cats')    renderCats();
     if (route.name === 'photos')  renderPhotos();
     if (route.name === 'leads')   renderLeads();
+    if (route.name === 'orders')  renderOrders();
     if (route.name === 'buyers')  renderBuyers();
     if (route.name === 'texts')   renderTexts();
     if (route.name === 'history') renderHistory();
@@ -228,6 +230,7 @@
     var lots = db.lots, leads = db.leads;
     var live = lots.filter(function (l) { return l.status === 'live'; });
     var newLeads = leads.filter(function (l) { return l.status === 'new'; }).length;
+    var newOrders = orders().filter(function (o) { return o.status === 'new'; }).length;
     var low = live.filter(function (l) { return l.total && l.stock / l.total < 0.35; });
 
     $('#quick').innerHTML =
@@ -240,6 +243,7 @@
       tile('cats', 'Категории', 'Виды и состояния', db.categories.kinds.length + ' вида'),
       tile('photos', 'Фото', 'Загрузить и заменить', Store.images().length + ' шт'),
       tile('leads', 'Заявки', 'Кто написал с сайта', newLeads ? newLeads + ' новых' : 'новых нет', newLeads > 0),
+      tile('orders', 'Заказы', 'Партии, брони и розница', newOrders ? newOrders + ' новых' : 'новых нет', newOrders > 0),
       tile('buyers', 'Оптовики', 'Доступ к оптовым ценам', waitingBuyers() ? waitingBuyers() + ' ждут' : 'все открыты', waitingBuyers() > 0),
       tile('texts', 'Тексты', 'Телефон и реквизиты', TEXT_FIELDS.length + ' строк'),
       tile('history', 'История', 'Откатить изменения', histCount() ? histCount() + ' версий' : 'пока пусто')
@@ -1029,6 +1033,96 @@
     });
   }
 
+  /* ═══════════ заказы: партии, брони и розница ═══════════
+     Статус, который здесь выставили, покупатель видит у себя в кабинете.
+     Без этого раздела статусы в кабинете были бы нарисованными. */
+
+  var ORDER_RU = {
+    opt:     { new: 'новая заявка',  confirmed: 'подтверждена',     done: 'отгружена',      cancelled: 'отменена' },
+    retail:  { new: 'новый заказ',   confirmed: 'подтверждён',      done: 'отправлен',      cancelled: 'отменён' },
+    booking: { new: 'бронь принята', confirmed: 'сбор подтверждён', done: 'партия открыта', cancelled: 'бронь снята' }
+  };
+  var NEXT_RU = { new: 'Подтвердить', confirmed: 'Закрыть', done: 'Вернуть в работу', cancelled: 'Вернуть в работу' };
+  var NEXT_ST = { new: 'confirmed', confirmed: 'done', done: 'new', cancelled: 'new' };
+  var orderFilter = 'new';
+
+  function orders() { var o = db.orders; return Array.isArray(o) ? o : []; }
+
+  function renderOrders() {
+    var all = orders().slice().sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+    var list = orderFilter === 'all' ? all
+             : orderFilter === 'active' ? all.filter(function (o) { return o.status === 'new' || o.status === 'confirmed'; })
+             : all.filter(function (o) { return o.status === orderFilter; });
+
+    $('#ordersBox').innerHTML =
+      '<p class="lede">Заказы партий, брони следующих сборов и розница. Статус отсюда видит покупатель ' +
+      'в своём кабинете, поэтому меняйте его по факту, а не заранее.</p>' +
+      '<div class="filters" style="margin-top:14px">' +
+        [['new', 'Новые', all.filter(function (o) { return o.status === 'new'; }).length],
+         ['active', 'В работе', all.filter(function (o) { return o.status === 'new' || o.status === 'confirmed'; }).length],
+         ['done', 'Закрытые', all.filter(function (o) { return o.status === 'done'; }).length],
+         ['all', 'Все', all.length]].map(function (f) {
+          return '<button type="button" data-ordf="' + f[0] + '" aria-pressed="' + (orderFilter === f[0]) + '">' + f[1] + ' · ' + f[2] + '</button>';
+        }).join('') +
+      '</div>' +
+      (list.length
+        ? '<div class="rows">' + list.map(orderRow).join('') + '</div>'
+        : '<div class="empty">' + (orderFilter === 'new' ? 'Новых заказов нет.' : 'Здесь пока пусто.') + '</div>');
+
+    bind($('#ordersBox'), 'click', function (e) {
+      var f = e.target.closest('[data-ordf]');
+      if (f) { orderFilter = f.dataset.ordf; renderOrders(); return; }
+
+      var next = e.target.closest('[data-onext]');
+      if (next) { setOrder(next.dataset.onext, NEXT_ST[next.dataset.st] || 'confirmed'); return; }
+
+      var no = e.target.closest('[data-ocancel]');
+      if (no) {
+        var o = orders().filter(function (x) { return x.id === no.dataset.ocancel; })[0];
+        confirmDanger('Отменить заказ?', 'Покупатель увидит отмену у себя в кабинете. Вернуть в работу можно там же.',
+          'Отменить', function () { setOrder(no.dataset.ocancel, 'cancelled'); });
+      }
+    });
+  }
+
+  function setOrder(id, status) {
+    var list = orders().map(function (o) {
+      return o.id === id ? Object.assign({}, o, { status: status }) : o;
+    });
+    if (commit('orders', list, 'Статус изменён, покупатель его уже видит')) renderOrders();
+  }
+
+  function orderRow(o) {
+    var ru = (ORDER_RU[o.kind] || ORDER_RU.opt)[o.status] || o.status;
+    var active = o.status === 'new' || o.status === 'confirmed';
+    var what = o.kind === 'retail'
+      ? (o.items || []).map(function (i) { return i.name + ' × ' + i.qty + ' ' + i.unit; }).join(', ')
+      : esc(o.lotName || '') + ', ' + (o.qty || 0) + ' ' + (o.unit || 'кг');
+    var money = o.kind === 'retail'
+      ? (o.sum || 0).toLocaleString('ru-RU') + ' ₽'
+      : (o.price ? (o.price * (o.qty || 0)).toLocaleString('ru-RU') + ' ₽' : 'цена по объёму');
+
+    return '<article class="row" style="grid-template-columns:1fr">' +
+      '<div class="row__main">' +
+        '<b>№ ' + esc(o.num) + ' · ' + esc(o.company || o.name || 'Без кабинета') + '</b> ' +
+        '<span class="pill' + (o.status === 'new' ? ' pill--new' : (active ? '' : ' pill--off')) + '"><i></i>' + ru + '</span>' +
+        '<div class="row__meta">' + esc(o.at || '') + (o.email ? ' · ' + esc(o.email) : ' · заказ без кабинета') + '</div>' +
+        '<div class="row__meta">' + esc(what) + ' — ' + money + '</div>' +
+        (o.ship ? '<div class="row__meta">' + esc(o.ship) + '</div>' : '') +
+        (o.note ? '<div class="row__meta">« ' + esc(o.note) + ' »</div>' : '') +
+      '</div>' +
+      '<div class="row__nums" style="grid-template-columns:1fr 1fr 1fr">' +
+        '<a class="row__num row__num--call" href="tel:' + esc(String(o.phone || '').replace(/[^\d+]/g, '')) + '">' +
+          '<small>Позвонить</small><b>' + esc(o.phone || '') + '</b></a>' +
+        '<button class="row__num" type="button" data-onext="' + esc(o.id) + '" data-st="' + esc(o.status) + '">' +
+          '<small>Дальше</small><b>' + (NEXT_RU[o.status] || 'Подтвердить') + '</b></button>' +
+        (active
+          ? '<button class="row__num" type="button" data-ocancel="' + esc(o.id) + '"><small>Заказ</small><b>Отменить</b></button>'
+          : '<span class="row__num"><small>Заказ</small><b>' + (o.status === 'cancelled' ? 'отменён' : 'закрыт') + '</b></span>') +
+      '</div>' +
+    '</article>';
+  }
+
   /* ═══════════ оптовики: доступ к оптовым ценам ═══════════ */
 
   function buyers() { var a = db.accounts; return Array.isArray(a) ? a : []; }
@@ -1045,7 +1139,7 @@
       '<p class="lede">Оптовые цены и прайс видят только подтверждённые. Пока заявка на рассмотрении, ' +
       'человек видит каталог и наличие, но не цены.</p>' +
       '<div class="filters" id="buyerFilters" style="margin-top:16px">' +
-        ['pending:Ждут', 'approved:Открыт доступ', 'all:Все'].map(function (x) {
+        ['pending:Ждут', 'approved:Открыт доступ', 'closed:Закрыт', 'all:Все'].map(function (x) {
           var p = x.split(':');
           return '<button type="button" data-bf="' + p[0] + '" aria-pressed="' + (buyerFilter === p[0]) + '">' + p[1] + '</button>';
         }).join('') +
@@ -1064,8 +1158,11 @@
       var no = e.target.closest('[data-revoke]');
       if (no) {
         var acc = buyers().filter(function (a) { return a.id === no.dataset.revoke; })[0];
+        // статус 'closed', а не 'pending': закрытый доступ и неподтверждённая
+        // заявка — разные вещи, и в кабинете человек должен видеть правду,
+        // а не «подтвердим в рабочее время» по уже отозванному доступу
         confirmDanger('Закрыть доступ?', '«' + (acc ? acc.company : '') + '» перестанет видеть оптовые цены и прайс. Заявка останется, открыть можно снова.',
-          'Закрыть доступ', function () { setBuyer(no.dataset.revoke, 'pending', 'Доступ закрыт'); });
+          'Закрыть доступ', function () { setBuyer(no.dataset.revoke, 'closed', 'Доступ закрыт'); });
         return;
       }
     });
@@ -1073,11 +1170,12 @@
 
   function buyerRow(a) {
     var open = a.status === 'approved';
+    var label = open ? 'доступ открыт' : (a.status === 'closed' ? 'доступ закрыт' : 'ждёт подтверждения');
     return '<article class="row" style="grid-template-columns:1fr">' +
       '<div class="row__main">' +
         '<b>' + esc(a.company || 'Без названия') + '</b>' +
         '<div class="row__meta"><span class="pill' + (open ? '' : ' pill--off') + '"><i></i>' +
-          (open ? 'доступ открыт' : 'ждёт подтверждения') + '</span> заявка от ' + esc(a.at || '') + '</div>' +
+          label + '</span> заявка от ' + esc(a.at || '') + '</div>' +
         '<div class="row__meta">' + esc(a.name || '') + ' · ' + esc(a.email) + '</div>' +
         '<div class="row__meta"><a href="tel:' + esc(String(a.phone || '').replace(/[^\d+]/g, '')) + '">' + esc(a.phone || '') + '</a></div>' +
       '</div>' +

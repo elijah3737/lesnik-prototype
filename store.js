@@ -20,12 +20,17 @@
   'use strict';
 
   var PREFIX = 'lesnik.';
-  var FILES = ['lots', 'categories', 'texts', 'leads', 'photos', 'accounts'];
+  /* leads — обращения с сайта (написал, подписался).
+     orders — заказы и брони, привязанные к кабинету оптовика. Это разные
+     сущности: у обращения нет объёма, партии и жизненного цикла, у заказа есть. */
+  var FILES = ['lots', 'categories', 'texts', 'leads', 'photos', 'accounts', 'orders'];
   var KEEP_BACKUPS = 30;
+
+  var LIST_FILES = { leads: 1, orders: 1, accounts: 1 };
 
   function seed(file) {
     var s = global.LESNIK_SEED || {};
-    return clone(s[file] !== undefined ? s[file] : (file === 'leads' ? [] : {}));
+    return clone(s[file] !== undefined ? s[file] : (LIST_FILES[file] ? [] : {}));
   }
 
   function clone(v) {
@@ -171,11 +176,15 @@
 
   var subs = [];
   function subscribe(fn) { subs.push(fn); return function () { subs = subs.filter(function (s) { return s !== fn; }); }; }
-  function notify(file) { subs.forEach(function (fn) { try { fn(file); } catch (e) {} }); }
+  /* Второй аргумент — откуда правка: 'local' (эта же вкладка) или 'remote'
+     (соседняя, обычно админка). Разница существенная: на свою собственную
+     запись перерисовывать всё подряд нельзя — тот, кто писал, уже обновил
+     что нужно, а сплошная перерисовка сотрёт форму вместе с подтверждением. */
+  function notify(file, from) { subs.forEach(function (fn) { try { fn(file, from || 'local'); } catch (e) {} }); }
 
   if (global.addEventListener) {
     global.addEventListener('storage', function (e) {
-      if (e.key && e.key.indexOf(PREFIX) === 0) notify(e.key.slice(PREFIX.length));
+      if (e.key && e.key.indexOf(PREFIX) === 0) notify(e.key.slice(PREFIX.length), 'remote');
     });
   }
 

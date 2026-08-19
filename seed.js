@@ -130,6 +130,31 @@ window.LESNIK_SEED = {
     { id: 'a-2', email: 'opt@zagotprom.ru', company: 'Заготпром', name: 'Марина', phone: '+7 495 774-11-90', status: 'pending', at: '18.08.2026' }
   ],
 
+  /* Заказы и брони кабинета. У демо-доступа они заполнены нарочно так,
+     чтобы на показе были видны все состояния сразу: отгружено, подтверждено,
+     новая заявка и бронь следующего сбора. */
+  orders: [
+    { id: 'o-1', num: 'Л-10241', at: '18.08.2026 11:20', ts: 1755509000000,
+      email: 'opt@lesnik-demo.ru', company: 'Демо-доступ (оптовый покупатель)', name: 'Илья', phone: '+7 932 474-83-83',
+      kind: 'opt', lotId: 'lisichka-dry', lotName: 'Лисичка сушёная', qty: 100, unit: 'кг',
+      price: 4900, ship: 'Самовывоз со склада', note: '', status: 'done' },
+
+    { id: 'o-2', num: 'Л-10307', at: '19.08.2026 09:05', ts: 1755590700000,
+      email: 'opt@lesnik-demo.ru', company: 'Демо-доступ (оптовый покупатель)', name: 'Илья', phone: '+7 932 474-83-83',
+      kind: 'opt', lotId: 'klukva', lotName: 'Клюква замороженная', qty: 500, unit: 'кг',
+      price: 350, ship: 'Транспортной компанией', note: 'Нужен паллет под усадку', status: 'confirmed' },
+
+    { id: 'o-3', num: 'Л-10318', at: '19.08.2026 14:47', ts: 1755611220000,
+      email: 'opt@lesnik-demo.ru', company: 'Демо-доступ (оптовый покупатель)', name: 'Илья', phone: '+7 932 474-83-83',
+      kind: 'opt', lotId: 'gruzd-salted', lotName: 'Груздь солёный', qty: 75, unit: 'кг',
+      price: null, ship: 'Курьером по Москве', note: '', status: 'new' },
+
+    { id: 'o-4', num: 'Л-10290', at: '18.08.2026 17:32', ts: 1755534720000,
+      email: 'opt@lesnik-demo.ru', company: 'Демо-доступ (оптовый покупатель)', name: 'Илья', phone: '+7 932 474-83-83',
+      kind: 'booking', lotId: 'smorchok', lotName: 'Сморчок конический', qty: 8, unit: 'кг',
+      price: null, ship: '', note: 'Как откроется сбор — сразу заберём', status: 'new' }
+  ],
+
   leads: [
     { id: 'l-1', date: '17.08.2026 09:14', name: 'Ресторан «Пихта»', phone: '+7 916 200-14-02', qty: '40 кг', lot: 'Лисичка свежая', who: 'Ресторан или кафе', status: 'new' },
     { id: 'l-2', date: '16.08.2026 18:40', name: 'Заготпром', phone: '+7 495 774-11-90', qty: '500 кг', lot: 'Лисичка сушёная', who: 'Переработчик', status: 'new' },

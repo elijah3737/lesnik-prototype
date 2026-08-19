@@ -62,6 +62,14 @@ const tiersOf = l => (Array.isArray(l.tiers) && l.tiers.length ? l.tiers : null)
 const minKg = l => { const t = tiersOf(l); return t ? t[0][0] : 20; };
 const entryPrice = l => { const t = tiersOf(l); return t ? t[0][1] : null; };
 const optLabel = l => (entryPrice(l) !== null ? money(entryPrice(l)) : l.opt);
+/* цена под конкретный объём: берём самую нижнюю ступень, до которой человек дотянул */
+const tierPrice = (l, kg) => {
+  const t = tiersOf(l);
+  if (!t) return null;
+  let p = null;
+  t.forEach(([from, price]) => { if (kg >= from) p = price; });
+  return p;
+};
 const kindName = id => { const k = CATS.kinds.find(x => x.id === id); return k ? k.name : id; };
 
 /* состояние согласуем с родом товара: «белый гриб сушёный», но «лисичка сушёная» */
@@ -1010,10 +1018,84 @@ function setHeroSlide(i) {
 
 /* ═══════════ кабинет: вход, регистрация, статус ═══════════ */
 
+/* ═══════════ кабинет: заказы и брони ═══════════
+   Заказ и обращение — разные вещи. У обращения нет партии, объёма и
+   жизненного цикла, у заказа есть, поэтому он живёт в отдельном файле
+   и привязан к почте кабинета. Заказы гостей тоже сохраняются (email пустой):
+   так они видны в админке, просто не показываются ни в чьём кабинете. */
+
+const LK_TABS = ['', 'orders', 'booking', 'company'];
+let lkTab = '';
+
+const ORDER_STATUS = {
+  opt:     { new: 'новая заявка',  confirmed: 'подтверждена',    done: 'отгружена',      cancelled: 'отменена' },
+  retail:  { new: 'новый заказ',   confirmed: 'подтверждён',     done: 'отправлен',      cancelled: 'отменён'  },
+  booking: { new: 'бронь принята', confirmed: 'сбор подтверждён', done: 'партия открыта', cancelled: 'бронь снята' }
+};
+const STATUS_TONE = { new: 'wait', confirmed: 'ok', done: 'done', cancelled: 'off' };
+const ACTIVE_STATUS = { new: 1, confirmed: 1 };
+
+function allOrders() { const o = Store.load('orders'); return Array.isArray(o) ? o : []; }
+
+function ordersOf(email, booking) {
+  const mail = String(email || '').toLowerCase();
+  if (!mail) return [];
+  return allOrders()
+    .filter(o => String(o.email || '').toLowerCase() === mail)
+    .filter(o => (o.kind === 'booking') === !!booking)
+    .sort((a, b) => (b.ts || 0) - (a.ts || 0));
+}
+
+function saveOrder(o) {
+  const list = allOrders();
+  list.unshift(o);
+  Store.save('orders', list);
+  return o;
+}
+
+const orderNum = () => 'Л-' + String(Date.now()).slice(-5);
+
+function stamp() {
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  return {
+    at: `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`,
+    ts: d.getTime()
+  };
+}
+
+/* Объём за сезон считаем только по тому, что реально подтверждено или отгружено:
+   висящая заявка ещё не покупка, и показывать её как оборот — враньё. */
+function seasonVolume(email) {
+  return ordersOf(email, false)
+    .filter(o => o.kind === 'opt' && (o.status === 'confirmed' || o.status === 'done'))
+    .reduce((sum, o) => sum + (Number(o.qty) || 0), 0);
+}
+
+/* Заготовка заказа с полями кабинета: одно место, где решается,
+   к какому аккаунту привязать запись и чьи это контакты. */
+function orderDraft(kind, extra) {
+  const acc = currentAccount();
+  const s = stamp();
+  return Object.assign({
+    id: 'o-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+    num: orderNum(),
+    at: s.at, ts: s.ts,
+    email: acc ? acc.email : '',
+    company: acc ? acc.company : '',
+    name: acc ? acc.name : '',
+    phone: acc ? acc.phone : '',
+    kind: kind,
+    status: 'new'
+  }, extra || {});
+}
+
 function renderLk() {
   const box = document.getElementById('lkPage');
   if (!box) return;
   const acc = currentAccount();
+
+  // сессия пережила удаление аккаунта: не держим призрака, гасим вход
+  if (!acc && sessionEmail()) { setSession(''); syncMode(); refreshLkLink(); }
 
   if (!acc) {
     box.innerHTML = `
@@ -1057,14 +1139,34 @@ function renderLk() {
     return;
   }
 
+  // ── доступ закрыли после того, как он был открыт ──
+  // раньше здесь показывалась «заявка на рассмотрении»: сайт врал человеку,
+  // которому доступ отозвали, и обещал подтвердить то, что уже отклонили
+  if (acc.status === 'closed') {
+    box.innerHTML = lkHero('Доступ закрыт', `Оптовые цены по «${esc(acc.company)}» сейчас недоступны.
+      Каталог, наличие и объёмы партий открыты и без кабинета.`) + `
+      <div class="lk">
+        <section class="lk__card">
+          <h2>Что делать</h2>
+          <p>Если это недоразумение, позвоните: откроем доступ обратно за минуту.
+             Заявку заново подавать не нужно, она сохранена.</p>
+          <div class="btn-row"><a class="btn btn--solid" href="${siteTel()}">${sitePhone()}</a><a class="btn" href="#/catalog">В каталог</a></div>
+        </section>
+        <section class="lk__card">
+          <h2>Учётная запись</h2>
+          ${lkAccountTable(acc)}
+          <p class="lk__hint">В прототипе доступ возвращается в админке: раздел «Оптовики».</p>
+          <div class="btn-row"><button class="btn btn--sm" type="button" data-lk-out>Выйти</button></div>
+        </section>
+      </div>`;
+    return;
+  }
+
+  // ── заявка ещё не подтверждена ──
   if (acc.status !== 'approved') {
-    box.innerHTML = `
-      <div class="pagehero pagehero--plain">
-        <div class="pagehero__copy">
-          <h1>Заявка на рассмотрении</h1>
-          <p>Мы получили заявку от «${esc(acc.company)}» и подтвердим доступ в рабочее время. Как только откроем, оптовые цены и прайс появятся здесь же.</p>
-        </div>
-      </div>
+    box.innerHTML = lkHero('Заявка на рассмотрении',
+      `Мы получили заявку от «${esc(acc.company)}» и подтвердим доступ в рабочее время.
+       Как только откроем, оптовые цены и прайс появятся здесь же.`) + `
       <div class="lk">
         <section class="lk__card">
           <h2>Пока ждёте</h2>
@@ -1073,12 +1175,7 @@ function renderLk() {
         </section>
         <section class="lk__card">
           <h2>Ваша заявка</h2>
-          <dl class="ptable">
-            <div><dt>Компания</dt><dd>${esc(acc.company)}</dd></div>
-            <div><dt>Почта</dt><dd>${esc(acc.email)}</dd></div>
-            <div><dt>Телефон</dt><dd>${esc(acc.phone || '')}</dd></div>
-            <div><dt>Подана</dt><dd>${esc(acc.at || '')}</dd></div>
-          </dl>
+          ${lkAccountTable(acc, true)}
           <p class="lk__hint">В прототипе подтвердить можно самому: админка, раздел «Оптовики».</p>
           <div class="btn-row"><button class="btn btn--sm" type="button" data-lk-out>Выйти</button></div>
         </section>
@@ -1086,14 +1183,56 @@ function renderLk() {
     return;
   }
 
+  // ── доступ открыт ──
+  const tab = lkTab;
+  box.innerHTML =
+    lkHero(esc(acc.company), 'Доступ к опту открыт. Цены лесенкой от объёма видны в каталоге, в карточках партий и в прайс-листе.') +
+    `<nav class="lktabs" aria-label="Разделы кабинета">
+      ${[['', 'Обзор'], ['orders', 'Заказы'], ['booking', 'Брони'], ['company', 'Компания']].map(([k, t]) => {
+        const n = k === 'orders' ? ordersOf(acc.email, false).filter(o => ACTIVE_STATUS[o.status]).length
+                : k === 'booking' ? ordersOf(acc.email, true).filter(o => ACTIVE_STATUS[o.status]).length : 0;
+        return `<a href="#/lk${k ? '/' + k : ''}"${tab === k ? ' aria-current="page"' : ''}>${t}${n ? `<b class="lktabs__n">${n}</b>` : ''}</a>`;
+      }).join('')}
+    </nav>
+    <div id="lkBody">${
+      tab === 'orders'  ? lkOrders(acc)
+      : tab === 'booking' ? lkBookings(acc)
+      : tab === 'company' ? lkCompany(acc)
+      : lkOverview(acc)}</div>`;
+}
+
+const lkHero = (h1, lede) => `
+  <div class="pagehero pagehero--plain pagehero--lk">
+    <div class="pagehero__copy"><h1>${h1}</h1><p>${lede}</p></div>
+  </div>`;
+
+const lkAccountTable = (acc, asRequest) => `
+  <dl class="ptable">
+    ${asRequest ? `<div><dt>Компания</dt><dd>${esc(acc.company)}</dd></div>` : ''}
+    <div><dt>Почта</dt><dd>${esc(acc.email)}</dd></div>
+    <div><dt>Телефон</dt><dd>${esc(acc.phone || '')}</dd></div>
+    <div><dt>${asRequest ? 'Подана' : 'Доступ с'}</dt><dd>${esc(acc.at || '')}</dd></div>
+  </dl>`;
+
+/* ── обзор ── */
+function lkOverview(acc) {
   const live = LOTS.filter(l => l.status === 'live');
-  box.innerHTML = `
-    <div class="pagehero pagehero--plain">
-      <div class="pagehero__copy">
-        <h1>${esc(acc.company)}</h1>
-        <p>Доступ к опту открыт. Цены лесенкой от объёма видны в каталоге, в карточках партий и в прайс-листе.</p>
-      </div>
+  const ord = ordersOf(acc.email, false);
+  const book = ordersOf(acc.email, true);
+  const active = ord.filter(o => ACTIVE_STATUS[o.status]);
+  const bookActive = book.filter(o => ACTIVE_STATUS[o.status]).length;
+  const vol = seasonVolume(acc.email);
+  const last = ord.find(o => o.kind === 'opt');
+
+  return `
+    <div class="lkstats">
+      <a class="lkstat" href="#/lk/orders"><b class="num">${active.length}</b><span>${
+        active.length ? plural(active.length, 'заказ', 'заказа', 'заказов') + ' в работе' : 'заказов в работе нет'}</span></a>
+      <a class="lkstat" href="#/lk/booking"><b class="num">${bookActive}</b><span>${
+        plural(bookActive, 'бронь', 'брони', 'броней')} на следующий сбор</span></a>
+      <div class="lkstat lkstat--flat"><b class="num">${fmt(vol)}</b><span>кг выбрано за сезон</span></div>
     </div>
+
     <div class="lk">
       <section class="lk__card">
         <h2>Что открыто</h2>
@@ -1101,17 +1240,122 @@ function renderLk() {
           <li>Оптовые цены по ${live.length} открытым партиям</li>
           <li>Прайс-лист целиком, с выгрузкой в PDF и XLSX</li>
           <li>Заказ партии в один шаг, без переписки</li>
+          <li>История заказов и брони следующих сборов</li>
         </ul>
-        <div class="btn-row"><a class="btn btn--solid" href="#/price">Открыть прайс</a><a class="btn" href="#/catalog">В каталог</a></div>
+        <div class="btn-row">
+          <a class="btn btn--solid" href="#/price">Открыть прайс</a>
+          <a class="btn" href="#/catalog">В каталог</a>
+        </div>
       </section>
+
       <section class="lk__card">
-        <h2>Учётная запись</h2>
-        <dl class="ptable">
-          <div><dt>Почта</dt><dd>${esc(acc.email)}</dd></div>
-          <div><dt>Телефон</dt><dd>${esc(acc.phone || '')}</dd></div>
-          <div><dt>Доступ с</dt><dd>${esc(acc.at || '')}</dd></div>
-        </dl>
-        <div class="btn-row"><button class="btn btn--sm" type="button" data-lk-out>Выйти</button></div>
+        <h2>${last ? 'Последний заказ' : 'Ваш менеджер'}</h2>
+        ${last ? `
+          <p class="lkone"><b>${esc(last.lotName)}</b><span>${fmt(last.qty)} ${esc(last.unit || 'кг')} · ${esc(last.at)}</span></p>
+          <p>${statusPill(last)}</p>
+          <div class="btn-row">
+            <button class="btn btn--soft" type="button" data-repeat="${esc(last.id)}">Повторить заказ</button>
+            <a class="btn" href="#/lk/orders">Все заказы</a>
+          </div>`
+        : `<p>Заказов пока не было. Цены под объём считаем в карточке партии или в прайсе — заявка уходит в один шаг.</p>
+           <div class="btn-row"><a class="btn btn--soft" href="#/catalog">Выбрать партию</a><a class="btn" href="${siteTel()}">${sitePhone()}</a></div>`}
+      </section>
+    </div>`;
+}
+
+/* ── заказы ── */
+function lkOrders(acc) {
+  const list = ordersOf(acc.email, false);
+  if (!list.length) {
+    return lkEmpty('Заказов пока нет',
+      'Выберите партию в каталоге или в прайсе и назовите объём — заявка появится здесь со статусом, и вы будете видеть, на каком она шаге.',
+      '<a class="btn btn--solid" href="#/catalog">В каталог</a><a class="btn" href="#/price">Открыть прайс</a>');
+  }
+  return `<ul class="ords">${list.map(orderRow).join('')}</ul>`;
+}
+
+/* ── брони ── */
+function lkBookings(acc) {
+  const list = ordersOf(acc.email, true);
+  if (!list.length) {
+    return lkEmpty('Броней нет',
+      'Партия закрылась, а товар нужен — оставьте бронь в её карточке. Мы напишем, как только откроется новый сбор, и объём будет отложен под вас.',
+      '<a class="btn btn--solid" href="#/catalog">Смотреть закрытые партии</a>');
+  }
+  return `<ul class="ords">${list.map(orderRow).join('')}</ul>`;
+}
+
+function orderRow(o) {
+  const lot = LOTS.find(l => l.id === o.lotId);
+  const closed = lot && lot.status !== 'live';
+  const sum = o.kind === 'retail'
+    ? money(o.sum || 0)
+    : (o.price ? money(o.price * (Number(o.qty) || 0)) : 'цена по объёму');
+
+  return `<li class="ord${o.status === 'cancelled' ? ' ord--off' : ''}">
+    <div class="ord__head">
+      <p class="ord__num">№ ${esc(o.num)}<small>${esc(o.at)}</small></p>
+      ${statusPill(o)}
+    </div>
+    <div class="ord__body">
+      <p class="ord__what">${o.kind === 'retail'
+        ? esc((o.items || []).map(i => `${i.name} × ${i.qty} ${i.unit}`).join(', ')) || 'розничный заказ'
+        : `<b>${esc(o.lotName)}</b> · ${fmt(o.qty)} ${esc(o.unit || 'кг')}`}</p>
+      <p class="ord__sum">${sum}</p>
+    </div>
+    ${o.note ? `<p class="ord__note">${esc(o.note)}</p>` : ''}
+    ${o.ship ? `<p class="ord__ship">${esc(o.ship)}</p>` : ''}
+    <div class="ord__act">
+      ${o.kind === 'booking'
+        ? (ACTIVE_STATUS[o.status]
+            ? `<button class="btn btn--sm" type="button" data-unbook="${esc(o.id)}">Снять бронь</button>`
+            : '')
+        : `<button class="btn btn--sm btn--soft" type="button" data-repeat="${esc(o.id)}">Повторить</button>`}
+      ${lot ? `<a class="btn btn--sm" href="#/lot/${esc(o.lotId)}">${closed ? 'Партия закрыта' : 'Открыть партию'}</a>` : ''}
+    </div>
+  </li>`;
+}
+
+const statusPill = o => {
+  const map = ORDER_STATUS[o.kind] || ORDER_STATUS.opt;
+  return `<span class="ost ost--${STATUS_TONE[o.status] || 'wait'}">${map[o.status] || o.status}</span>`;
+};
+
+const lkEmpty = (h, p, btns) => `
+  <div class="lkempty">
+    <h2>${h}</h2>
+    <p>${p}</p>
+    <div class="btn-row">${btns}</div>
+  </div>`;
+
+/* ── компания ── */
+function lkCompany(acc) {
+  return `
+    <div class="lk">
+      <section class="lk__card">
+        <h2>Реквизиты</h2>
+        <p class="lk__hint">По этим данным выставляем счёт. Заполнять не обязательно: без них тоже отгружаем, просто счёт придётся уточнять по телефону.</p>
+        <form data-form="lk-co" novalidate>
+          <label class="field"><span>Компания</span><input name="company" value="${esc(acc.company || '')}" required><em class="err">Впишите название</em></label>
+          <label class="field"><span>ИНН</span><input name="inn" inputmode="numeric" value="${esc(acc.inn || '')}" placeholder="10 или 12 цифр"><em class="err">ИНН — это 10 или 12 цифр</em></label>
+          <label class="field"><span>КПП</span><input name="kpp" inputmode="numeric" value="${esc(acc.kpp || '')}" placeholder="9 цифр, у ИП нет"><em class="err">КПП — это 9 цифр</em></label>
+          <label class="field"><span>Юридический адрес</span><input name="addr" value="${esc(acc.addr || '')}" placeholder="Индекс, город, улица"></label>
+          <button class="btn btn--solid" type="submit">Сохранить</button>
+        </form>
+      </section>
+
+      <section class="lk__card">
+        <h2>Контактное лицо</h2>
+        <form data-form="lk-me" novalidate>
+          <label class="field"><span>Как к вам обращаться</span><input name="name" value="${esc(acc.name || '')}" required><em class="err">Впишите имя</em></label>
+          <label class="field"><span>Телефон</span><input name="phone" type="tel" value="${esc(acc.phone || '')}" required><em class="err">Нужен телефон для связи</em></label>
+          <label class="field"><span>Почта</span><input value="${esc(acc.email)}" disabled></label>
+          <p class="lk__hint">Почта — это логин, поменять её можно только через нас: напишите или позвоните.</p>
+          <button class="btn btn--solid" type="submit">Сохранить</button>
+        </form>
+        <div class="btn-row" style="margin-top:var(--space-md)">
+          <button class="btn btn--sm" type="button" data-lk-out>Выйти</button>
+        </div>
       </section>
     </div>`;
 }
@@ -1147,7 +1391,7 @@ function openOrder(lotId) {
       : lot ? `Партия закрыта ${esc(lot.closed || '')}. Запишем вас на следующий сбор.`
             : 'Назовите объём, посчитаем цену под вас и выставим счёт.'}</p>
     <form class="orderform" data-form="order" novalidate>
-      ${lot ? `<input type="hidden" name="lot" value="${esc(lot.name)}">`
+      ${lot ? `<input type="hidden" name="lot" value="${esc(lot.id)}">`
             : `<label class="field"><span>Что интересует</span><select name="lot">${opts}</select></label>`}
       <label class="field"><span>Сколько нужно, кг</span>
         <input name="qty" type="number" inputmode="numeric" min="1" placeholder="${lot ? fmt(minKg(lot)) : '200'}" required>
@@ -1376,13 +1620,28 @@ function route() {
   const path = raw || '/';
   if (!path.startsWith('/')) return;  // якорь внутри страницы
 
+  // Доступ могли открыть или закрыть в админке, пока человек ходил по сайту.
+  // Проверяем на каждом переходе: иначе он до перезагрузки видит оптовые цены,
+  // которых у него уже нет (или не видит те, что ему только что открыли).
+  const wasMode = mode;
+  syncMode();
+  if (mode !== wasMode) { refreshLkLink(); renderAll(); }
+
   const isLot = path.startsWith('/lot') && path !== '/lk';
+  // разделы кабинета — отдельные адреса: работают «назад», «вперёд» и ссылка на вкладку
+  const isLk = path === '/lk' || path.startsWith('/lk/');
   if (isLot) renderProduct(path.split('/')[2] || 'lisichka-dry');
-  if (path === '/lk') renderLk();
+  if (isLk) {
+    const seg = path.split('/')[2] || '';
+    lkTab = LK_TABS.indexOf(seg) !== -1 ? seg : '';
+    renderLk();
+  }
 
   let hit = null;
   document.querySelectorAll('.screen').forEach(s => {
-    const on = isLot ? s.dataset.route === '/lot' : s.dataset.route === path;
+    const on = isLot ? s.dataset.route === '/lot'
+             : isLk  ? s.dataset.route === '/lk'
+             : s.dataset.route === path;
     s.classList.toggle('is-active', on);
     if (on) hit = s;
   });
@@ -1424,6 +1683,47 @@ document.addEventListener('click', e => {
     if (inp) { inp.value = fill.dataset.fillEmail; inp.focus(); }
     return;
   }
+  // повтор заказа: сезонные закупки повторяются, набирать заново незачем
+  const rep = e.target.closest('[data-repeat]');
+  if (rep) {
+    const o = allOrders().find(x => x.id === rep.dataset.repeat);
+    if (!o) return;
+
+    if (o.kind === 'retail') {
+      // позиции могли закрыться или подорожать: молча класть исчезнувшее нельзя
+      let added = 0, gone = 0;
+      (o.items || []).forEach(it => {
+        const lot = LOTS.find(l => l.id === it.id);
+        if (lot && lot.status === 'live' && lot.retail) { cart.set(lot.id, (cart.get(lot.id) || 0) + it.qty); added++; }
+        else gone++;
+      });
+      persistUI(); renderCart();
+      if (!added) { toast('Ни одной позиции из того заказа сейчас нет в продаже', true); return; }
+      toast(gone ? `В корзину добавлено ${added}, ещё ${gone} сейчас нет` : 'Позиции того заказа в корзине');
+      location.hash = '#/cart';
+      return;
+    }
+
+    const lot = LOTS.find(l => l.id === o.lotId);
+    if (!lot) { toast('Этой партии больше нет в каталоге', true); return; }
+    // партия могла закрыться: тогда это уже не заказ, а бронь следующего сбора
+    openOrder(lot.id);
+    const q = document.querySelector('#orderBody [name="qty"]');
+    if (q) q.value = o.qty;
+    if (lot.status !== 'live') toast('Партия закрыта — оформим бронь на следующий сбор');
+    return;
+  }
+
+  // снять бронь
+  const unb = e.target.closest('[data-unbook]');
+  if (unb) {
+    const list = allOrders().map(o => o.id === unb.dataset.unbook ? Object.assign({}, o, { status: 'cancelled' }) : o);
+    Store.save('orders', list);
+    renderLk();
+    toast('Бронь снята. Оформить заново можно в карточке партии.');
+    return;
+  }
+
   if (e.target.closest('[data-lk-out]')) {
     setSession('');
     syncMode();
@@ -1814,27 +2114,20 @@ document.addEventListener('submit', e => {
     const lines = cartLines();
     if (!lines.length) return;
     const sum = lines.reduce((a, x) => a + x.lot.retail * x.qty, 0);
-    const num = 'Л-' + String(Date.now()).slice(-5);
     const ship = form.querySelector('[name="ship"]');
     const name = form.querySelector('[name="name"]').value.trim();
     const phone = form.querySelector('[name="phone"]').value.trim();
 
-    // заказ виден в админке: для клиента это и есть доказательство, что цепочка замкнута
-    const d = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    const list = Store.load('leads');
-    if (Array.isArray(list)) {
-      list.unshift({
-        id: 'l-' + Date.now(),
-        date: `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`,
-        name, phone,
-        qty: money(sum),
-        lot: lines.map(x => `${x.lot.name} × ${x.qty} ${retailPack(x.lot)}`).join(', '),
-        who: 'Розничный заказ',
-        status: 'new'
-      });
-      Store.save('leads', list);
-    }
+    // заказ виден в админке и в кабинете: для клиента это и есть доказательство,
+    // что цепочка замкнута, а не форма ради формы
+    const o = saveOrder(orderDraft('retail', {
+      name: name, phone: phone,
+      items: lines.map(x => ({ id: x.lot.id, name: x.lot.name, qty: x.qty, unit: retailPack(x.lot), price: x.lot.retail })),
+      sum: sum,
+      ship: ship ? ship.options[ship.selectedIndex].text : '',
+      note: (form.querySelector('[name="note"]') || {}).value || ''
+    }));
+    const num = o.num;
 
     const rows = lines.map(x =>
       `<li><span>${esc(x.lot.name)}</span><b class="num">${x.qty} ${retailPack(x.lot)}</b></li>`).join('');
@@ -1854,11 +2147,92 @@ document.addEventListener('submit', e => {
         </ul>
         <p class="cdone__ship">Как получить: ${esc(ship ? ship.options[ship.selectedIndex].text : '')}</p>
         <div class="btn-row">
-          <a class="btn btn--solid" href="${siteTel()}">Позвонить самим: ${sitePhone()}</a>
+          ${currentAccount() ? '<a class="btn btn--solid" href="#/lk/orders">Смотреть в кабинете</a>' : ''}
+          <a class="btn${currentAccount() ? '' : ' btn--solid'}" href="${siteTel()}">Позвонить самим: ${sitePhone()}</a>
           <a class="btn" href="#/catalog">Вернуться в каталог</a>
         </div>
       </div>
       ${CART_OPT_BAND}`;
+    return;
+  }
+
+  // ── кабинет: реквизиты и контактное лицо ──
+  if (form.dataset.form === 'lk-co' || form.dataset.form === 'lk-me') {
+    const acc = currentAccount();
+    if (!acc) return;
+
+    let ok = true;
+    form.querySelectorAll('[required]').forEach(inp => {
+      const bad = !inp.value.trim();
+      inp.closest('.field').dataset.invalid = String(bad);
+      if (bad && ok) { inp.focus(); ok = false; }
+    });
+    // ИНН и КПП необязательны, но если вписали — пусть будут правдоподобны,
+    // иначе счёт всё равно придётся переспрашивать
+    const num = (sel, lens) => {
+      const inp = form.querySelector(sel);
+      if (!inp) return true;
+      const v = inp.value.replace(/\D/g, '');
+      const bad = !!inp.value.trim() && lens.indexOf(v.length) === -1;
+      inp.closest('.field').dataset.invalid = String(bad);
+      if (bad && ok) { inp.focus(); ok = false; }
+      return !bad;
+    };
+    num('[name="inn"]', [10, 12]);
+    num('[name="kpp"]', [9]);
+    if (!ok) return;
+
+    const patch = {};
+    form.querySelectorAll('input[name]').forEach(inp => { if (!inp.disabled) patch[inp.name] = inp.value.trim(); });
+    const list = accounts().map(a => a.id === acc.id ? Object.assign({}, a, patch) : a);
+    if (!Store.save('accounts', list)) { toast('Не удалось сохранить, попробуйте ещё раз', true); return; }
+
+    renderLk();
+    renderAll();
+    toast('Сохранено');
+    return;
+  }
+
+  // ── заявка со страницы партии ──
+  // до этого она просто показывала «спасибо» и исчезала: ни в кабинете,
+  // ни в админке следа не оставалось
+  if (form.dataset.form === 'lot') {
+    let ok = true;
+    form.querySelectorAll('[required]').forEach(inp => {
+      const bad = !inp.value.trim();
+      inp.closest('.field').dataset.invalid = String(bad);
+      if (bad && ok) { inp.focus(); ok = false; }
+    });
+    if (!ok) return;
+
+    const lot = currentLot || null;
+    const qty = Number(form.querySelector('[name="qty"]').value.trim()) || 0;
+    const booking = !!lot && lot.status !== 'live';
+    const who = form.querySelector('[name="who"]');
+
+    const o = saveOrder(orderDraft(booking ? 'booking' : 'opt', {
+      lotId: lot ? lot.id : '', lotName: lot ? lot.name : '',
+      qty: qty, unit: 'кг', price: lot ? tierPrice(lot, qty) : null,
+      phone: form.querySelector('[name="phone"]').value.trim(),
+      who: who ? who.value : '', note: ''
+    }));
+
+    const btn = form.querySelector('button[type="submit"]');
+    const was = btn.textContent;
+    btn.textContent = 'Отправлено'; btn.dataset.state = 'ok'; btn.disabled = true;
+    form.reset();
+    setTimeout(() => { btn.textContent = was; delete btn.dataset.state; btn.disabled = false; }, 2600);
+
+    let okBox = form.querySelector('.form-ok');
+    if (!okBox) {
+      okBox = document.createElement('p');
+      okBox.className = 'form-ok';
+      okBox.setAttribute('role', 'status');
+      form.appendChild(okBox);
+    }
+    okBox.innerHTML = currentAccount()
+      ? `${booking ? 'Бронь' : 'Заявка'} №${esc(o.num)} принята, она уже в вашем <a href="#/lk/${booking ? 'booking' : 'orders'}">кабинете</a>.`
+      : `${booking ? 'Бронь' : 'Заявка'} №${esc(o.num)} принята. ${booking ? 'Напишем, как только откроется сбор.' : 'Перезвоним сегодня до 20:00.'} Если срочно: <a href="${siteTel()}">${sitePhone()}</a>.`;
     return;
   }
 
@@ -1871,15 +2245,31 @@ document.addEventListener('submit', e => {
       if (bad && ok) { inp.focus(); ok = false; }
     });
     if (!ok) return;
-    const lotName = form.querySelector('[name="lot"]');
-    const qty = form.querySelector('[name="qty"]').value.trim();
-    const num = 'Л-' + String(Date.now()).slice(-5);
+    const sel = form.querySelector('[name="lot"]');
+    const lotId = sel ? sel.value : '';
+    const lot = LOTS.find(l => l.id === lotId) || null;
+    const qty = Number(form.querySelector('[name="qty"]').value.trim()) || 0;
+    const phone = form.querySelector('[name="phone"]').value.trim();
+    const booking = !!lot && lot.status !== 'live';
+
+    // заявка теперь не растворяется в воздухе: она попадает в кабинет и в админку
+    const o = saveOrder(orderDraft(booking ? 'booking' : 'opt', {
+      lotId: lotId, lotName: lot ? lot.name : 'Партия по выбору',
+      qty: qty, unit: 'кг', price: lot ? tierPrice(lot, qty) : null,
+      phone: phone || (currentAccount() || {}).phone || '', note: ''
+    }));
+
+    const inLk = !!currentAccount();
     document.getElementById('orderBody').innerHTML =
-      `<h2 id="orderTitle">Заявка №${num} принята</h2>
-       <p class="modal__sub">${esc(lotName ? (lotName.tagName === 'SELECT' ? lotName.options[lotName.selectedIndex].text : lotName.value) : '')}, ${esc(qty)} кг.
-       Перезвоним сегодня до 20:00 и назовём цену под ваш объём.</p>
-       <div class="btn-row"><a class="btn btn--solid" href="${siteTel()}">Позвонить самому</a>
-       <button class="btn" type="button" data-modal-close>Закрыть</button></div>`;
+      `<h2 id="orderTitle">${booking ? 'Бронь' : 'Заявка'} №${esc(o.num)} принята</h2>
+       <p class="modal__sub">${esc(o.lotName)}, ${fmt(qty)} кг.
+       ${booking ? 'Напишем, как только откроется новый сбор.' : 'Перезвоним сегодня до 20:00 и назовём цену под ваш объём.'}</p>
+       <div class="btn-row">
+         ${inLk ? `<a class="btn btn--solid" href="#/lk/${booking ? 'booking' : 'orders'}" data-modal-close>Смотреть в кабинете</a>` : ''}
+         <a class="btn${inLk ? '' : ' btn--solid'}" href="${siteTel()}">Позвонить самому</a>
+         <button class="btn" type="button" data-modal-close>Закрыть</button>
+       </div>`;
+    if (inLk) renderLk();
     return;
   }
 
@@ -2009,11 +2399,15 @@ function applyTexts() {
   }
 }
 
-/* правка в соседней вкладке админки: перечитываем данные и перерисовываем сайт */
-Store.subscribe(() => {
+/* Правка в соседней вкладке админки: перечитываем данные и перерисовываем сайт.
+   На свои же записи (заказ, бронь, реквизиты) не реагируем — обработчик уже
+   обновил что нужно, а сплошная перерисовка сотрёт форму с подтверждением. */
+Store.subscribe((file, from) => {
+  if (from !== 'remote') return;
   loadData(true);
   applyTexts();
   renderAll();
+  if (location.hash.startsWith('#/lk')) renderLk();
 });
 
 window.addEventListener('hashchange', route);

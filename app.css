@@ -1600,6 +1600,93 @@ body:has(.cbar:not([hidden])) .fab { display: none; }
 .lk__hint { font-size: var(--text-sm); color: var(--color-muted); margin-top: var(--space-md); }
 .lk__hint .tlink { background: 0; border: 0; padding: 0; font: inherit; cursor: pointer; }
 
+/* Шапка кабинета ниже обычной: под ней сразу вкладки и плитки,
+   а баннер в пол-экрана оставлял справа пустое поле. */
+.pagehero--lk { min-height: 0; background: var(--grad-block); }
+.pagehero--lk .pagehero__copy { padding: clamp(1.25rem, 3vw, 2rem) clamp(1.5rem, 5vw, 3.5rem); max-width: 52rem; }
+.pagehero--lk p { margin-bottom: 0; }
+
+/* ── вкладки кабинета ── */
+.lktabs {
+  display: flex; gap: var(--space-2xs); margin-top: var(--space-xl);
+  border-bottom: 1px solid var(--color-rule);
+  overflow-x: auto; scrollbar-width: none;   /* на телефоне уезжают вбок, а не ломают строку */
+}
+.lktabs::-webkit-scrollbar { display: none; }
+.lktabs a {
+  position: relative; display: inline-flex; align-items: center; gap: 6px;
+  padding: var(--space-sm) var(--space-md); white-space: nowrap;
+  font-family: var(--font-display); font-weight: 600; font-size: var(--text-sm);
+  color: var(--color-muted); text-decoration: none;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.lktabs a:hover { color: var(--color-ink); }
+.lktabs a[aria-current="page"] { color: var(--color-accent-ink); border-bottom-color: var(--color-accent); }
+.lktabs__n {
+  min-width: 18px; height: 18px; padding-inline: 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-pill); background: var(--color-accent); color: var(--color-on-accent);
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+}
+
+/* ── плитки обзора ── */
+.lkstats { display: grid; gap: var(--space-md); margin-top: var(--space-xl); grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr)); }
+.lkstat {
+  display: grid; gap: 2px; padding: var(--space-lg);
+  background: var(--grad-soft); border-radius: var(--radius-card);
+  text-decoration: none; color: var(--color-ink);
+  transition: transform var(--dur-short) var(--ease-out);
+}
+a.lkstat:hover { transform: translateY(-2px); }
+.lkstat b { font-family: var(--font-mono); font-size: var(--text-2xl); line-height: 1; letter-spacing: -0.02em; }
+.lkstat span { font-size: var(--text-sm); color: var(--color-neutral); }
+.lkstat--flat { background: var(--color-paper-2); border: 1px solid var(--color-rule); }
+
+.lkone { margin: 0 0 var(--space-sm); display: grid; gap: 2px; }
+.lkone b { font-family: var(--font-display); font-size: var(--text-md); }
+.lkone span { font-size: var(--text-sm); color: var(--color-muted); }
+
+/* ── список заказов и броней ── */
+.ords { list-style: none; margin: var(--space-xl) 0 0; padding: 0; display: grid; gap: var(--space-md); }
+.ord {
+  border: 1px solid var(--color-rule); border-radius: var(--radius-card);
+  background: var(--color-paper-2); padding: var(--space-lg);
+}
+.ord--off { opacity: 0.62; }
+.ord__head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); flex-wrap: wrap; }
+.ord__num { margin: 0; display: grid; gap: 1px; font-family: var(--font-mono); font-size: var(--text-sm); }
+.ord__num small { font-size: var(--text-xs); color: var(--color-muted); font-family: var(--font-body); }
+.ord__body {
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-lg);
+  flex-wrap: wrap; margin-top: var(--space-md);
+  padding-top: var(--space-md); border-top: 1px solid var(--color-rule);
+}
+.ord__what { margin: 0; min-width: 0; }
+.ord__what b { font-family: var(--font-display); }
+.ord__sum { margin: 0; font-family: var(--font-mono); font-size: var(--text-md); white-space: nowrap; }
+.ord__note, .ord__ship { margin: var(--space-xs) 0 0; font-size: var(--text-sm); color: var(--color-muted); }
+.ord__act { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-md); }
+
+/* статус заказа */
+.ost {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: var(--radius-pill);
+  font-size: var(--text-xs); font-weight: 600; white-space: nowrap;
+}
+.ost::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.ost--wait { background: var(--color-amber-soft); color: var(--color-amber-ink); }
+.ost--ok   { background: var(--color-live-bg);   color: var(--color-live); }
+.ost--done { background: var(--color-accent-soft); color: var(--color-accent-ink); }
+.ost--off  { background: var(--color-closed-bg); color: var(--color-muted); }
+
+/* ── пусто ── */
+.lkempty {
+  margin-top: var(--space-xl); padding: clamp(1.5rem, 4vw, 2.5rem);
+  background: var(--grad-soft); border-radius: var(--radius-banner); max-width: 46rem;
+}
+.lkempty h2 { font-size: var(--text-xl); margin: 0 0 var(--space-sm); }
+.lkempty p { margin: 0 0 var(--space-lg); max-width: 52ch; color: var(--color-neutral); }
+
 /* прайс под кабинетом */
 .pricegate {
   display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-md);
