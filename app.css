@@ -1313,7 +1313,9 @@ a:hover { color: var(--color-accent-ink); }
 .colophon__grid a:hover { color: var(--color-block-ink); }
 
 .colophon__legal {
-  display: flex; flex-wrap: wrap; gap: var(--space-xs) var(--space-lg);
+  /* у ссылок есть отступ ради тап-зоны, у текста нет: без выравнивания строка едет по верху */
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: var(--space-xs) var(--space-lg);
   padding-block: var(--space-lg); font-size: var(--text-xs);
   border-top: 1px solid oklch(100% 0 0 / 0.1);
 }

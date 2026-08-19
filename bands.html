@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Лесник · светлота тёмных блоков</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: oklch(98% 0.006 95);
+    --paper-2: oklch(95.5% 0.010 100);
+    --ink: oklch(20% 0.034 160);
+    --muted: oklch(46% 0.022 158);
+    --rule: oklch(88% 0.010 110);
+    --ink-on: oklch(96% 0.015 110);
+    --mute-on: oklch(85% 0.024 140);
+    --font: "Golos Text", ui-sans-serif, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.55; }
+  .wrap { max-width: 76rem; margin-inline: auto; padding: 40px 20px 90px; }
+  h1 { font-size: clamp(1.9rem, 4vw, 2.7rem); font-weight: 800; letter-spacing: -0.03em; margin: 0 0 12px; }
+  .lede { color: var(--muted); max-width: 66ch; margin: 0 0 34px; }
+
+  .opt { margin-bottom: 40px; }
+  .opt__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+  .opt__n { width: 30px; height: 30px; border-radius: 50%; flex: none; display: inline-grid; place-items: center;
+            background: var(--band); color: var(--ink-on); font-size: 0.85rem; font-weight: 700; }
+  .opt__name { font-size: 1.15rem; font-weight: 700; }
+  .opt__why { flex: 1 1 24rem; font-size: 0.9rem; color: var(--muted); }
+  .opt__code { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; color: var(--muted); }
+
+  /* реальные блоки сайта */
+  .band { background: var(--band); border-radius: 24px; overflow: hidden; color: var(--ink-on); }
+  .band__in { padding: 42px 44px; }
+  .band h2 { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 6px; }
+  .band__sub { color: var(--mute-on); font-size: 0.9rem; margin: 0 0 26px; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  @media (max-width: 60rem) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+  .tile { background: var(--tile); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 10px; }
+  .tile__i { width: 42px; height: 42px; border-radius: 12px; background: var(--tile-i); display: grid; place-items: center; }
+  .tile__i svg { width: 20px; height: 20px; fill: none; stroke: var(--ink-on); stroke-width: 1.5; }
+  .tile b { font-size: 1.05rem; }
+  .tile p { margin: 0; font-size: 0.9rem; color: var(--mute-on); }
+
+  .split { display: grid; grid-template-columns: 1fr; gap: 34px; align-items: center; padding: 42px 44px; }
+  @media (min-width: 60rem) { .split { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 54px; } }
+  .eyebrow { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mute-on); margin: 0 0 12px; }
+  .split h2 { font-size: 2.1rem; max-width: 20ch; margin: 0 0 18px; }
+  .split p { color: var(--mute-on); max-width: 50ch; margin: 0 0 14px; font-size: 0.97rem; }
+  .split img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 20px; display: block; }
+  .bbtn { display: inline-flex; align-items: center; min-height: 46px; padding-inline: 22px; border-radius: 999px;
+          border: 1px solid var(--ink-on); color: var(--ink-on); text-decoration: none; font-weight: 600; font-size: 0.92rem; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Насколько светлыми делать тёмные блоки</h1>
+  <p class="lede">Сейчас нижняя точка градиента уходит в очень тёмный тон, отсюда ощущение провала. Ниже тот же блок в пяти вариантах: меняется светлота и глубина перехода, хвойный характер остаётся. Плитки внутри и подложка иконки высветляются вместе с фоном, иначе они сливаются.</p>
+
+  <!-- 0 -->
+  <section class="opt" style="--band: linear-gradient(145deg, oklch(33% 0.072 156) 0%, oklch(19% 0.048 176) 100%); --tile: oklch(29% 0.058 160); --tile-i: oklch(36% 0.070 158);">
+    <div class="opt__head"><span class="opt__n">0</span><span class="opt__name">Сейчас на сайте</span>
+      <span class="opt__why">Для сравнения. Перепад большой, нижний край почти чёрный.</span>
+      <span class="opt__code">33% → 19%</span></div>
+    <div class="band">
+      <div class="band__in">
+        <h2>Почему закупщики возвращаются</h2>
+        <p class="band__sub">Четыре вещи, которые оптовик проверяет до того, как назовёт объём.</p>
+        <div class="tiles">
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M12 2v20M12 8a4 4 0 1 0 0-6 4 4 0 0 0 0 6z"/></svg></span><b>Своя заготовка</b><p>Не посредники между вами и другим посредником. Гриб приходит с делянки к нам, от нас к вам.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><b>Объём и цена открыты</b><p>Сколько есть, написано в карточке партии. Если партия кончилась, вы увидите это до звонка.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-6h6v6"/></svg></span><b>Работаем официально</b><p>Счёт для юрлиц, безнал и отсрочка со второй отгрузки. Реквизиты открыты в контактах.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span><b>Один разговор</b><p>Отвечает тот, кто заготавливал. Без менеджера и без «уточню у поставщика».</p></div>
+        </div>
+      </div>
+      <div class="split">
+        <div>
+          <p class="eyebrow">О заготовителе</p>
+          <h2>Мы не перепродаём чужое, мы заготавливаем сами</h2>
+          <p>Принимаем сырьё у сборщиков в день сбора, сортируем, сушим и солим на своём производстве.</p>
+          <a class="bbtn" href="#">О компании</a>
+        </div>
+        <img src="img/priemka.jpg" alt="">
+      </div>
+    </div>
+  </section>
+
+  <!-- 1 -->
+  <section class="opt" style="--band: linear-gradient(145deg, oklch(38% 0.078 154) 0%, oklch(27% 0.060 172) 100%); --tile: oklch(34% 0.066 160); --tile-i: oklch(42% 0.078 156);">
+    <div class="opt__head"><span class="opt__n">1</span><span class="opt__name">На шаг светлее</span>
+      <span class="opt__why">Минимальный сдвиг от нынешнего: провал уходит, характер остаётся прежним. Самый безопасный.</span>
+      <span class="opt__code">38% → 27%</span></div>
+    <div class="band">
+      <div class="band__in">
+        <h2>Почему закупщики возвращаются</h2>
+        <p class="band__sub">Четыре вещи, которые оптовик проверяет до того, как назовёт объём.</p>
+        <div class="tiles">
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M12 2v20M12 8a4 4 0 1 0 0-6 4 4 0 0 0 0 6z"/></svg></span><b>Своя заготовка</b><p>Не посредники между вами и другим посредником. Гриб приходит с делянки к нам, от нас к вам.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><b>Объём и цена открыты</b><p>Сколько есть, написано в карточке партии. Если партия кончилась, вы увидите это до звонка.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-6h6v6"/></svg></span><b>Работаем официально</b><p>Счёт для юрлиц, безнал и отсрочка со второй отгрузки. Реквизиты открыты в контактах.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span><b>Один разговор</b><p>Отвечает тот, кто заготавливал. Без менеджера и без «уточню у поставщика».</p></div>
+        </div>
+      </div>
+      <div class="split">
+        <div>
+          <p class="eyebrow">О заготовителе</p>
+          <h2>Мы не перепродаём чужое, мы заготавливаем сами</h2>
+          <p>Принимаем сырьё у сборщиков в день сбора, сортируем, сушим и солим на своём производстве.</p>
+          <a class="bbtn" href="#">О компании</a>
+        </div>
+        <img src="img/priemka.jpg" alt="">
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="opt" style="--band: linear-gradient(145deg, oklch(43% 0.082 152) 0%, oklch(32% 0.066 170) 100%); --tile: oklch(39% 0.072 158); --tile-i: oklch(47% 0.082 154);">
+    <div class="opt__head"><span class="opt__n">2</span><span class="opt__name">Хвойный днём</span>
+      <span class="opt__why">Заметно светлее, зелень читается как цвет, а не как темнота. Фото на таком фоне перестаёт быть единственным светлым пятном.</span>
+      <span class="opt__code">43% → 32%</span></div>
+    <div class="band">
+      <div class="band__in">
+        <h2>Почему закупщики возвращаются</h2>
+        <p class="band__sub">Четыре вещи, которые оптовик проверяет до того, как назовёт объём.</p>
+        <div class="tiles">
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M12 2v20M12 8a4 4 0 1 0 0-6 4 4 0 0 0 0 6z"/></svg></span><b>Своя заготовка</b><p>Не посредники между вами и другим посредником. Гриб приходит с делянки к нам, от нас к вам.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><b>Объём и цена открыты</b><p>Сколько есть, написано в карточке партии. Если партия кончилась, вы увидите это до звонка.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-6h6v6"/></svg></span><b>Работаем официально</b><p>Счёт для юрлиц, безнал и отсрочка со второй отгрузки. Реквизиты открыты в контактах.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span><b>Один разговор</b><p>Отвечает тот, кто заготавливал. Без менеджера и без «уточню у поставщика».</p></div>
+        </div>
+      </div>
+      <div class="split">
+        <div>
+          <p class="eyebrow">О заготовителе</p>
+          <h2>Мы не перепродаём чужое, мы заготавливаем сами</h2>
+          <p>Принимаем сырьё у сборщиков в день сбора, сортируем, сушим и солим на своём производстве.</p>
+          <a class="bbtn" href="#">О компании</a>
+        </div>
+        <img src="img/priemka.jpg" alt="">
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="opt" style="--band: linear-gradient(145deg, oklch(41% 0.080 156) 0%, oklch(36% 0.072 166) 100%); --tile: oklch(36% 0.070 160); --tile-i: oklch(45% 0.080 156);">
+    <div class="opt__head"><span class="opt__n">3</span><span class="opt__name">Ровный, почти без перепада</span>
+      <span class="opt__why">Светлота держится одинаковой, переход виден только по температуре. Спокойнее всех, блок читается как единая плита.</span>
+      <span class="opt__code">41% → 36%</span></div>
+    <div class="band">
+      <div class="band__in">
+        <h2>Почему закупщики возвращаются</h2>
+        <p class="band__sub">Четыре вещи, которые оптовик проверяет до того, как назовёт объём.</p>
+        <div class="tiles">
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M12 2v20M12 8a4 4 0 1 0 0-6 4 4 0 0 0 0 6z"/></svg></span><b>Своя заготовка</b><p>Не посредники между вами и другим посредником. Гриб приходит с делянки к нам, от нас к вам.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><b>Объём и цена открыты</b><p>Сколько есть, написано в карточке партии. Если партия кончилась, вы увидите это до звонка.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-6h6v6"/></svg></span><b>Работаем официально</b><p>Счёт для юрлиц, безнал и отсрочка со второй отгрузки. Реквизиты открыты в контактах.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span><b>Один разговор</b><p>Отвечает тот, кто заготавливал. Без менеджера и без «уточню у поставщика».</p></div>
+        </div>
+      </div>
+      <div class="split">
+        <div>
+          <p class="eyebrow">О заготовителе</p>
+          <h2>Мы не перепродаём чужое, мы заготавливаем сами</h2>
+          <p>Принимаем сырьё у сборщиков в день сбора, сортируем, сушим и солим на своём производстве.</p>
+          <a class="bbtn" href="#">О компании</a>
+        </div>
+        <img src="img/priemka.jpg" alt="">
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="opt" style="--band: linear-gradient(145deg, oklch(47% 0.086 150) 0%, oklch(35% 0.070 172) 100%); --tile: oklch(42% 0.076 158); --tile-i: oklch(51% 0.086 152);">
+    <div class="opt__head"><span class="opt__n">4</span><span class="opt__name">Бутылочный</span>
+      <span class="opt__why">Самый светлый из разумных. Сочная зелень, но белый текст ещё держится уверенно. Дальше светлить нельзя: текст поплывёт.</span>
+      <span class="opt__code">47% → 35%</span></div>
+    <div class="band">
+      <div class="band__in">
+        <h2>Почему закупщики возвращаются</h2>
+        <p class="band__sub">Четыре вещи, которые оптовик проверяет до того, как назовёт объём.</p>
+        <div class="tiles">
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M12 2v20M12 8a4 4 0 1 0 0-6 4 4 0 0 0 0 6z"/></svg></span><b>Своя заготовка</b><p>Не посредники между вами и другим посредником. Гриб приходит с делянки к нам, от нас к вам.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><b>Объём и цена открыты</b><p>Сколько есть, написано в карточке партии. Если партия кончилась, вы увидите это до звонка.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-6h6v6"/></svg></span><b>Работаем официально</b><p>Счёт для юрлиц, безнал и отсрочка со второй отгрузки. Реквизиты открыты в контактах.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span><b>Один разговор</b><p>Отвечает тот, кто заготавливал. Без менеджера и без «уточню у поставщика».</p></div>
+        </div>
+      </div>
+      <div class="split">
+        <div>
+          <p class="eyebrow">О заготовителе</p>
+          <h2>Мы не перепродаём чужое, мы заготавливаем сами</h2>
+          <p>Принимаем сырьё у сборщиков в день сбора, сортируем, сушим и солим на своём производстве.</p>
+          <a class="bbtn" href="#">О компании</a>
+        </div>
+        <img src="img/priemka.jpg" alt="">
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="opt" style="--band: linear-gradient(145deg, oklch(45% 0.084 150) 0%, oklch(31% 0.064 176) 100%); --tile: oklch(38% 0.072 160); --tile-i: oklch(48% 0.082 152);">
+    <div class="opt__head"><span class="opt__n">5</span><span class="opt__name">Светлый верх, глубокий низ</span>
+      <span class="opt__why">Начинается светло и уходит в глубину. Больше всего объёма, но верх и низ заметно разные — хорошо на широких блоках, спорно на узких.</span>
+      <span class="opt__code">45% → 31%</span></div>
+    <div class="band">
+      <div class="band__in">
+        <h2>Почему закупщики возвращаются</h2>
+        <p class="band__sub">Четыре вещи, которые оптовик проверяет до того, как назовёт объём.</p>
+        <div class="tiles">
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M12 2v20M12 8a4 4 0 1 0 0-6 4 4 0 0 0 0 6z"/></svg></span><b>Своя заготовка</b><p>Не посредники между вами и другим посредником. Гриб приходит с делянки к нам, от нас к вам.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><b>Объём и цена открыты</b><p>Сколько есть, написано в карточке партии. Если партия кончилась, вы увидите это до звонка.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-6h6v6"/></svg></span><b>Работаем официально</b><p>Счёт для юрлиц, безнал и отсрочка со второй отгрузки. Реквизиты открыты в контактах.</p></div>
+          <div class="tile"><span class="tile__i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span><b>Один разговор</b><p>Отвечает тот, кто заготавливал. Без менеджера и без «уточню у поставщика».</p></div>
+        </div>
+      </div>
+      <div class="split">
+        <div>
+          <p class="eyebrow">О заготовителе</p>
+          <h2>Мы не перепродаём чужое, мы заготавливаем сами</h2>
+          <p>Принимаем сырьё у сборщиков в день сбора, сортируем, сушим и солим на своём производстве.</p>
+          <a class="bbtn" href="#">О компании</a>
+        </div>
+        <img src="img/priemka.jpg" alt="">
+      </div>
+    </div>
+  </section>
+
+  <p class="lede">Скажите номер. Вместе с фоном подтянутся плитки внутри, подложки иконок и подвал: они высветляются пропорционально, иначе перестают отделяться от блока.</p>
+</div>
+</body>
+</html>
