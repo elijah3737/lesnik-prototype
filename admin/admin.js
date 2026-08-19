@@ -190,6 +190,7 @@
     leads:    ['Заявки', 'Кто написал с сайта'],
     orders:   ['Заказы', 'Партии, брони и розница'],
     buyers:   ['Оптовики', 'Доступ к оптовым ценам'],
+    client:   ['Клиент', 'Всё об одном покупателе'],
     texts:    ['Тексты и контакты', 'Телефон, реквизиты, баннер'],
     history:  ['История изменений', 'Откат к прошлой версии']
   };
@@ -220,6 +221,7 @@
     if (route.name === 'leads')   renderLeads();
     if (route.name === 'orders')  renderOrders();
     if (route.name === 'buyers')  renderBuyers();
+    if (route.name === 'client')  renderClient(route.arg);
     if (route.name === 'texts')   renderTexts();
     if (route.name === 'history') renderHistory();
   }
@@ -1045,14 +1047,26 @@
   var NEXT_RU = { new: 'Подтвердить', confirmed: 'Закрыть', done: 'Вернуть в работу', cancelled: 'Вернуть в работу' };
   var NEXT_ST = { new: 'confirmed', confirmed: 'done', done: 'new', cancelled: 'new' };
   var orderFilter = 'new';
+  var orderQuery = '';
 
   function orders() { var o = db.orders; return Array.isArray(o) ? o : []; }
 
+  /* Ищем по всему, что человек помнит на слух: номер, компания, телефон,
+     почта, название партии. Один ввод вместо угадывания нужного фильтра. */
+  function orderMatch(o, q) {
+    if (!q) return true;
+    var hay = [o.num, o.company, o.name, o.email, o.phone, o.lotName,
+      (o.items || []).map(function (i) { return i.name; }).join(' ')].join(' ').toLowerCase();
+    return hay.indexOf(q) !== -1 || String(o.phone || '').replace(/\D/g, '').indexOf(q.replace(/\D/g, '')) !== -1 && /\d/.test(q);
+  }
+
   function renderOrders() {
     var all = orders().slice().sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+    var q = orderQuery.trim().toLowerCase();
     var list = orderFilter === 'all' ? all
              : orderFilter === 'active' ? all.filter(function (o) { return o.status === 'new' || o.status === 'confirmed'; })
              : all.filter(function (o) { return o.status === orderFilter; });
+    if (q) list = list.filter(function (o) { return orderMatch(o, q); });
 
     $('#ordersBox').innerHTML =
       '<p class="lede">Заказы партий, брони следующих сборов и розница. Статус отсюда видит покупатель ' +
@@ -1065,9 +1079,19 @@
           return '<button type="button" data-ordf="' + f[0] + '" aria-pressed="' + (orderFilter === f[0]) + '">' + f[1] + ' · ' + f[2] + '</button>';
         }).join('') +
       '</div>' +
+      '<label class="field"><span class="sr-only">Поиск по заказам</span>' +
+        '<input type="search" id="orderSearch" placeholder="Номер, компания, телефон или партия" value="' + esc(orderQuery) + '" autocomplete="off"></label>' +
       (list.length
         ? '<div class="rows">' + list.map(orderRow).join('') + '</div>'
-        : '<div class="empty">' + (orderFilter === 'new' ? 'Новых заказов нет.' : 'Здесь пока пусто.') + '</div>');
+        : '<div class="empty">' + (q ? 'По запросу «' + esc(orderQuery) + '» ничего нет.'
+            : orderFilter === 'new' ? 'Новых заказов нет.' : 'Здесь пока пусто.') + '</div>');
+
+    bind($('#orderSearch'), 'input', function (e) {
+      orderQuery = e.target.value;
+      renderOrders();
+      var i = $('#orderSearch');
+      if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+    });
 
     bind($('#ordersBox'), 'click', function (e) {
       var f = e.target.closest('[data-ordf]');
@@ -1102,9 +1126,14 @@
       ? (o.sum || 0).toLocaleString('ru-RU') + ' ₽'
       : (o.price ? (o.price * (o.qty || 0)).toLocaleString('ru-RU') + ' ₽' : 'цена по объёму');
 
+    // имя покупателя — ссылка в его карточку, если он из кабинета
+    var who = o.email
+      ? '<a href="#client/' + esc(o.email) + '">' + esc(o.company || o.name || o.email) + '</a>'
+      : esc(o.name || 'Без кабинета');
+
     return '<article class="row" style="grid-template-columns:1fr">' +
       '<div class="row__main">' +
-        '<b>№ ' + esc(o.num) + ' · ' + esc(o.company || o.name || 'Без кабинета') + '</b> ' +
+        '<b>№ ' + esc(o.num) + ' · ' + who + '</b> ' +
         '<span class="pill' + (o.status === 'new' ? ' pill--new' : (active ? '' : ' pill--off')) + '"><i></i>' + ru + '</span>' +
         '<div class="row__meta">' + esc(o.at || '') + (o.email ? ' · ' + esc(o.email) : ' · заказ без кабинета') + '</div>' +
         '<div class="row__meta">' + esc(what) + ' — ' + money + '</div>' +
@@ -1121,6 +1150,157 @@
           : '<span class="row__num"><small>Заказ</small><b>' + (o.status === 'cancelled' ? 'отменён' : 'закрыт') + '</b></span>') +
       '</div>' +
     '</article>';
+  }
+
+  /* ═══════════ карточка клиента ═══════════
+     Один покупатель жил в трёх несвязанных списках: «Оптовики», «Заказы»
+     и «Заявки». Чтобы позвонить и понять, с кем говоришь, приходилось
+     держать три экрана в голове. Здесь всё про него на одной странице. */
+
+  function clientBy(id) {
+    var mail = String(id || '').toLowerCase();
+    return buyers().filter(function (a) {
+      return String(a.email).toLowerCase() === mail || a.id === id;
+    })[0] || null;
+  }
+
+  function clientOrders(email) {
+    var mail = String(email || '').toLowerCase();
+    return orders()
+      .filter(function (o) { return String(o.email || '').toLowerCase() === mail; })
+      .sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+  }
+
+  function clientLeads(acc) {
+    // заявки не привязаны к кабинету: связываем по телефону и названию компании,
+    // это единственное, что у них общего с аккаунтом
+    var tel = String(acc.phone || '').replace(/\D/g, '');
+    var co = String(acc.company || '').toLowerCase();
+    return (db.leads || []).filter(function (l) {
+      var lt = String(l.phone || '').replace(/\D/g, '');
+      return (tel && lt && lt === tel) || (co && String(l.name || '').toLowerCase() === co);
+    });
+  }
+
+  function renderClient(id) {
+    var acc = clientBy(id);
+    if (!acc) {
+      $('#clientBox').innerHTML = '<div class="empty">Такого покупателя нет. Возможно, его удалили.<br><br>' +
+        '<button class="btn" type="button" data-go="buyers">К списку оптовиков</button></div>';
+      bar(null);
+      return;
+    }
+
+    $('#topTitle').textContent = acc.company || 'Клиент';
+    $('#topSub').textContent = acc.email;
+
+    var ord = clientOrders(acc.email);
+    var deals = ord.filter(function (o) { return o.kind !== 'booking'; });
+    var books = ord.filter(function (o) { return o.kind === 'booking'; });
+    // считаем от заказов, а не от всех записей: иначе бронь попадает
+    // в «в работе», но не попадает в «заказов всего», и цифры спорят между собой
+    var active = deals.filter(function (o) { return o.status === 'new' || o.status === 'confirmed'; });
+    // в оборот берём только подтверждённое и отгруженное: заявка ещё не сделка
+    var kg = deals.reduce(function (a, o) {
+      return a + (o.kind === 'opt' && (o.status === 'confirmed' || o.status === 'done') ? (+o.qty || 0) : 0);
+    }, 0);
+    var rub = deals.reduce(function (a, o) {
+      if (o.status !== 'confirmed' && o.status !== 'done') return a;
+      return a + (o.kind === 'retail' ? (+o.sum || 0) : (o.price ? o.price * (+o.qty || 0) : 0));
+    }, 0);
+    var leadsOf = clientLeads(acc);
+    var open = acc.status === 'approved';
+
+    $('#clientBox').innerHTML =
+      '<div class="cstat">' +
+        cstat(active.length, 'в работе') +
+        cstat(deals.length, 'заказов всего') +
+        cstat(kg.toLocaleString('ru-RU'), 'кг за сезон') +
+        cstat(rub ? rub.toLocaleString('ru-RU') + ' ₽' : '—', 'на сумму') +
+      '</div>' +
+
+      '<div class="group"><div class="group__head"><h2>Контакты и доступ</h2></div>' +
+        '<div class="ctable">' +
+          crow('Компания', acc.company) +
+          crow('Контакт', acc.name) +
+          crow('Телефон', acc.phone ? '<a href="tel:' + esc(String(acc.phone).replace(/[^\d+]/g, '')) + '">' + esc(acc.phone) + '</a>' : '—', true) +
+          crow('Почта', acc.email) +
+          crow('Заявка от', acc.at) +
+          crow('Доступ', '<span class="pill' + (open ? '' : ' pill--off') + '"><i></i>' +
+            (open ? 'открыт' : acc.status === 'closed' ? 'закрыт' : 'ждёт подтверждения') + '</span>', true) +
+        '</div>' +
+        '<div class="btn-row" style="margin-top:14px">' +
+          (open
+            ? '<button class="btn btn--sm btn--danger" type="button" data-crevoke="' + esc(acc.id) + '">Закрыть доступ</button>'
+            : '<button class="btn btn--sm" type="button" data-capprove="' + esc(acc.id) + '">Открыть доступ</button>') +
+        '</div>' +
+      '</div>' +
+
+      /* реквизиты покупатель заполняет у себя в кабинете — до этой карточки
+         клиент их не видел вообще, хотя счёт выставлять по ним */
+      '<div class="group"><div class="group__head"><h2>Реквизиты для счёта</h2></div>' +
+        (acc.inn || acc.kpp || acc.addr
+          ? '<div class="ctable">' + crow('ИНН', acc.inn) + crow('КПП', acc.kpp) + crow('Юр. адрес', acc.addr) + '</div>'
+          : '<div class="empty">Покупатель их ещё не заполнил. Он вносит их сам в кабинете, раздел «Компания».</div>') +
+      '</div>' +
+
+      '<div class="group"><div class="group__head"><h2>Заметка</h2></div>' +
+        '<label class="field"><textarea id="clientNote" rows="3" placeholder="Что помнить про этого покупателя: как платит, куда возит, о чём договорились">' +
+          esc(acc.note || '') + '</textarea>' +
+        '<span class="field__hint">Видит только вы. Покупателю заметка не показывается.</span></label>' +
+      '</div>' +
+
+      '<div class="group"><div class="group__head"><h2>Заказы</h2>' +
+        '<span class="group__note">' + deals.length + '</span></div>' +
+        (deals.length ? '<div class="rows">' + deals.map(orderRow).join('') + '</div>'
+                      : '<div class="empty">Заказов не было.</div>') +
+      '</div>' +
+
+      (books.length
+        ? '<div class="group"><div class="group__head"><h2>Брони</h2><span class="group__note">' + books.length + '</span></div>' +
+          '<div class="rows">' + books.map(orderRow).join('') + '</div></div>'
+        : '') +
+
+      (leadsOf.length
+        ? '<div class="group"><div class="group__head"><h2>Обращения с сайта</h2>' +
+          '<span class="group__note">' + leadsOf.length + '</span></div><div class="ctable">' +
+          leadsOf.map(function (l) {
+            return crow(esc(l.date), esc(l.lot) + ', ' + esc(l.qty) + ' · ' + esc(l.who));
+          }).join('') + '</div></div>'
+        : '');
+
+    bar([{ label: 'Сохранить заметку', onClick: function () {
+      var v = $('#clientNote').value.trim();
+      var list = buyers().map(function (a) {
+        return a.id === acc.id ? Object.assign({}, a, { note: v }) : a;
+      });
+      if (commit('accounts', list, 'Заметка сохранена')) renderClient(id);
+    } }]);
+
+    bind($('#clientBox'), 'click', function (e) {
+      var ok = e.target.closest('[data-capprove]');
+      if (ok) { setBuyer(ok.dataset.capprove, 'approved', 'Доступ открыт'); renderClient(id); return; }
+      var no = e.target.closest('[data-crevoke]');
+      if (no) {
+        confirmDanger('Закрыть доступ?', '«' + (acc.company || '') + '» перестанет видеть оптовые цены и прайс. Открыть можно снова.',
+          'Закрыть доступ', function () { setBuyer(no.dataset.crevoke, 'closed', 'Доступ закрыт'); renderClient(id); });
+        return;
+      }
+      var next = e.target.closest('[data-onext]');
+      if (next) { setOrder(next.dataset.onext, NEXT_ST[next.dataset.st] || 'confirmed'); renderClient(id); return; }
+      var cancel = e.target.closest('[data-ocancel]');
+      if (cancel) {
+        confirmDanger('Отменить заказ?', 'Покупатель увидит отмену у себя в кабинете.',
+          'Отменить', function () { setOrder(cancel.dataset.ocancel, 'cancelled'); renderClient(id); });
+      }
+    });
+  }
+
+  function cstat(v, label) {
+    return '<div class="cstat__i"><b>' + esc(v) + '</b><span>' + esc(label) + '</span></div>';
+  }
+  function crow(k, v, raw) {
+    return '<div class="ctable__r"><dt>' + esc(k) + '</dt><dd>' + (raw ? v : esc(v || '—')) + '</dd></div>';
   }
 
   /* ═══════════ оптовики: доступ к оптовым ценам ═══════════ */
@@ -1171,15 +1351,25 @@
   function buyerRow(a) {
     var open = a.status === 'approved';
     var label = open ? 'доступ открыт' : (a.status === 'closed' ? 'доступ закрыт' : 'ждёт подтверждения');
+    // сколько он у нас взял — иначе решение «открывать ли доступ» принимается вслепую
+    var ord = clientOrders(a.email).filter(function (o) { return o.kind !== 'booking'; });
+    var live = ord.filter(function (o) { return o.status === 'new' || o.status === 'confirmed'; }).length;
+
     return '<article class="row" style="grid-template-columns:1fr">' +
       '<div class="row__main">' +
-        '<b>' + esc(a.company || 'Без названия') + '</b>' +
+        '<b><a href="#client/' + esc(a.email) + '">' + esc(a.company || 'Без названия') + '</a></b>' +
         '<div class="row__meta"><span class="pill' + (open ? '' : ' pill--off') + '"><i></i>' +
           label + '</span> заявка от ' + esc(a.at || '') + '</div>' +
         '<div class="row__meta">' + esc(a.name || '') + ' · ' + esc(a.email) + '</div>' +
         '<div class="row__meta"><a href="tel:' + esc(String(a.phone || '').replace(/[^\d+]/g, '')) + '">' + esc(a.phone || '') + '</a></div>' +
+        '<div class="row__meta">' +
+          (ord.length ? 'заказов: ' + ord.length + (live ? ', в работе ' + live : '') : 'заказов не было') +
+          (a.inn ? ' · ИНН ' + esc(a.inn) : ' · реквизитов нет') +
+          (a.note ? ' · есть заметка' : '') +
+        '</div>' +
       '</div>' +
-      '<div class="row__nums" style="grid-template-columns:1fr">' +
+      '<div class="row__nums" style="grid-template-columns:1fr 1fr">' +
+        '<a class="row__num" href="#client/' + esc(a.email) + '"><small>Открыть</small><b>Карточку</b></a>' +
         (open
           ? '<button class="row__num" type="button" data-revoke="' + esc(a.id) + '"><small>Доступ</small><b>Закрыть</b></button>'
           : '<button class="row__num" type="button" data-approve="' + esc(a.id) + '"><small>Заявка</small><b>Подтвердить</b></button>') +
@@ -1230,7 +1420,14 @@
 
   /* ═══════════ история версий ═══════════ */
 
-  var FILE_RU = { lots: 'Партии', categories: 'Категории', texts: 'Тексты', leads: 'Заявки', photos: 'Фото' };
+  /* Все разделы Store, иначе история показывает пустой заголовок,
+     а в подтверждении отката вместо названия зияет «Раздел «»».
+     Проверять при добавлении нового файла в Store.FILES. */
+  var FILE_RU = {
+    lots: 'Партии', categories: 'Категории', texts: 'Тексты',
+    leads: 'Заявки', photos: 'Фото', accounts: 'Оптовики', orders: 'Заказы'
+  };
+  var fileRu = function (f) { return FILE_RU[f] || f; };
 
   function histCount() {
     return Store.FILES.reduce(function (a, f) { return a + Store.backups(f).length; }, 0);
@@ -1243,7 +1440,7 @@
       var list = Store.backups(f);
       if (!list.length) return;
       any = true;
-      html += '<div class="group"><div class="group__head"><h2>' + esc(FILE_RU[f]) + '</h2>' +
+      html += '<div class="group"><div class="group__head"><h2>' + esc(fileRu(f)) + '</h2>' +
         (list.length > 10 ? '<span class="group__note">показаны 10 из ' + list.length + '</span>' : '') + '</div><div class="hist">' +
         list.slice(0, 10).map(function (b) {
           return '<div class="hist__row"><time>' + esc(when(b.at)) + '</time>' +
@@ -1259,7 +1456,7 @@
       if (!b) return;
       var parts = b.dataset.restore.split(':');
       var file = parts[0], at = +parts[1];
-      confirmDanger('Вернуть эту версию?', 'Раздел «' + FILE_RU[file] + '» станет таким, каким был ' + when(at) + '. Текущая версия тоже попадёт в историю, откатить обратно можно.',
+      confirmDanger('Вернуть эту версию?', 'Раздел «' + fileRu(file) + '» станет таким, каким был ' + when(at) + '. Текущая версия тоже попадёт в историю, откатить обратно можно.',
         'Вернуть', function () {
           var res = Store.restore(file, at);
           if (!res.ok) { toast(res.error, true); return; }
