@@ -1295,10 +1295,21 @@ a:hover { color: var(--color-accent-ink); }
 }
 .qty__in:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 
-/* ── две колонки: список и липкая сводка ── */
+/* ── две колонки: список и липкая сводка ──
+   Порядок в разметке — товары, оформление, допродажа: на узком экране
+   блоки ложатся стопкой именно так, и кнопка заказа идёт до допродажи,
+   а не после неё. На широком допродажа переезжает под список. */
 .cart { display: grid; grid-template-columns: 1fr; gap: var(--space-xl); margin-top: var(--space-xl); }
 @media (min-width: 62rem) {
-  .cart { grid-template-columns: minmax(0, 1fr) 23rem; gap: var(--space-2xl); align-items: start; }
+  .cart {
+    grid-template-columns: minmax(0, 1fr) 23rem;
+    grid-template-areas: "list side" "recs side";
+    column-gap: var(--space-2xl); row-gap: var(--space-2xl);
+    align-items: start;
+  }
+  .cart__list { grid-area: list; }
+  .cart__side { grid-area: side; }
+  .cart .crecs { grid-area: recs; margin-top: 0; }
   /* сводка не должна уезжать вверх, пока покупатель правит длинный список */
   .cart__side { position: sticky; top: calc(var(--mast-h, 5rem) + var(--space-md)); }
 }
@@ -1351,7 +1362,13 @@ a:hover { color: var(--color-accent-ink); }
 }
 .csum__total span { font-family: var(--font-display); font-weight: 600; }
 .csum__total b { font-family: var(--font-mono); font-size: var(--text-xl); letter-spacing: -0.01em; }
+.csum__form .field { margin-bottom: var(--space-sm); }
 .csum__form .field:last-of-type { margin-bottom: var(--space-md); }
+.csum__extra { margin-top: var(--space-sm); }
+.csum__extra summary { font-size: var(--text-sm); color: var(--color-muted); cursor: pointer; padding-block: 4px; }
+.csum__extra summary:hover { color: var(--color-ink); }
+.csum__extra .field { margin: var(--space-xs) 0 0; }
+.csum__extra textarea { min-height: 72px; }
 .csum__after { margin: var(--space-sm) 0 0; font-size: var(--text-xs); color: var(--color-muted); line-height: var(--lh-normal); }
 .csum__trust { list-style: none; margin: var(--space-md) 0 0; padding: var(--space-md) 0 0; border-top: 1px solid var(--color-rule); display: grid; gap: var(--space-xs); }
 .csum__trust li { position: relative; padding-left: 1.5rem; font-size: var(--text-xs); color: var(--color-neutral); line-height: var(--lh-normal); }
@@ -1413,6 +1430,28 @@ a:hover { color: var(--color-accent-ink); }
 }
 .cempty__facts b { font-family: var(--font-display); font-size: var(--text-sm); }
 .cempty__facts span { font-size: var(--text-xs); color: var(--color-neutral); }
+
+/* ── липкая полоса заказа: видна, пока настоящая кнопка не в кадре ── */
+.cbar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  z-index: calc(var(--z-sticky-nav) + 2);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
+  background: var(--color-paper); border-top: 1px solid var(--color-rule);
+  box-shadow: 0 -8px 24px oklch(30% 0.04 160 / 0.10);
+}
+.cbar[hidden] { display: none; }
+.cbar__sum { margin: 0; display: grid; }
+.cbar__sum small { font-size: var(--text-xs); color: var(--color-muted); }
+.cbar__sum b { font-family: var(--font-mono); font-size: var(--text-md); }
+.cbar .btn { min-height: 48px; padding-inline: var(--space-lg); }
+/* на широком экране сводка и так стоит рядом со списком — полоса лишняя */
+@media (min-width: 62rem) { .cbar { display: none !important; } }
+/* Чат-кнопка перекрывает «Убрать» и саму полосу, куда её ни сдвинь.
+   Пока покупатель в шаге от заказа, приоритет у полосы; связаться
+   можно из шапки и подвала. */
+body:has(.cbar:not([hidden])) .fab { display: none; }
 
 /* ── полоса перехода в опт ── */
 .cband { margin-top: var(--section-gap); }

@@ -497,6 +497,19 @@ const CART_TRUST = `
     <li>Оплата после подтверждения: картой, переводом или по счёту</li>
   </ul>`;
 
+/* Липкая полоса заказа. Пока настоящая кнопка не в кадре, покупатель
+   должен видеть, что делать дальше: без этого на телефоне оформление
+   уезжало на два экрана вниз, за список товаров и допродажу. */
+let cartBarIO = null;
+function watchCartBar() {
+  if (cartBarIO) { cartBarIO.disconnect(); cartBarIO = null; }
+  const bar = document.getElementById('cartBar');
+  const btn = document.getElementById('cartSubmit');
+  if (!bar || !btn) return;
+  cartBarIO = new IntersectionObserver(([en]) => { bar.hidden = en.isIntersecting; }, { threshold: 0.9 });
+  cartBarIO.observe(btn);
+}
+
 function renderCart() {
   const count = [...cart.values()].reduce((a, b) => a + b, 0);
   const link = document.getElementById('cartlink');
@@ -578,18 +591,6 @@ function renderCart() {
         <ul class="clines">${rows}</ul>
         <p class="cart__back"><a class="tlink" href="#/catalog">← Продолжить покупки</a></p>
         ${hasDemo ? '<p class="cart__demo">Розничные цены в прототипе демонстрационные: подставим реальные из прайса.</p>' : ''}
-        ${picks.length ? `<section class="crecs">
-          <h2 class="crecs__h">С этим часто берут</h2>
-          <ul class="crecs__list">${picks.map(p => `<li class="crecs__i">
-            <a class="crecs__shot" href="#/lot/${p.id}" tabindex="-1" aria-hidden="true"><img src="${Store.img(p.img)}" alt="${p.alt}" loading="lazy"></a>
-            <div class="crecs__body">
-              <p class="crecs__n"><a href="#/lot/${p.id}">${p.name}</a></p>
-              <p class="crecs__s">${p.spec}</p>
-            </div>
-            <p class="crecs__p"><b class="num">${money(p.retail)}</b><small>${p.retailUnit}</small></p>
-            <button class="btn btn--soft crecs__add" type="button" data-add="${p.id}">В корзину</button>
-          </li>`).join('')}</ul>
-        </section>` : ''}
       </div>
 
       <aside class="cart__side">
@@ -601,23 +602,47 @@ function renderCart() {
           </dl>
           <p class="csum__total"><span>Итого за товар</span><b class="num">${money(sum)}</b></p>
 
-          <form class="csum__form" data-form="cart" novalidate>
+          <form class="csum__form" id="cartForm" data-form="cart" novalidate>
             <label class="field"><span>Имя</span><input name="name" placeholder="Как к вам обращаться" required><em class="err">Укажите имя</em></label>
             <label class="field"><span>Телефон</span><input name="phone" type="tel" placeholder="+7" required><em class="err">Нужен телефон для связи</em></label>
             <label class="field"><span>Как получить</span>
               <select name="ship"><option>СДЭК до пункта выдачи</option><option>Курьером по Москве</option><option>Самовывоз со склада</option></select>
             </label>
-            <label class="field"><span>Комментарий</span><textarea name="note" placeholder="Не обязательно"></textarea></label>
-            <button class="btn btn--solid btn--full btn--lg" type="submit">Оформить заказ</button>
+            <button class="btn btn--solid btn--full btn--lg" id="cartSubmit" type="submit">Оформить заказ</button>
+            <!-- комментарий убран под кнопку: необязательное поле не должно
+                 отодвигать кнопку заказа за нижний край экрана -->
+            <details class="csum__extra"><summary>Добавить комментарий</summary>
+              <label class="field"><span class="sr-only">Комментарий</span><textarea name="note" placeholder="Что уточнить по заказу"></textarea></label>
+            </details>
           </form>
           <p class="csum__after">Заказ ни к чему не обязывает: сначала перезвоним, подтвердим наличие
              и назовём стоимость доставки, платить — после этого.</p>
           ${CART_TRUST}
         </div>
       </aside>
+
+      ${picks.length ? `<section class="crecs">
+        <h2 class="crecs__h">С этим часто берут</h2>
+        <ul class="crecs__list">${picks.map(p => `<li class="crecs__i">
+          <a class="crecs__shot" href="#/lot/${p.id}" tabindex="-1" aria-hidden="true"><img src="${Store.img(p.img)}" alt="${p.alt}" loading="lazy"></a>
+          <div class="crecs__body">
+            <p class="crecs__n"><a href="#/lot/${p.id}">${p.name}</a></p>
+            <p class="crecs__s">${p.spec}</p>
+          </div>
+          <p class="crecs__p"><b class="num">${money(p.retail)}</b><small>${p.retailUnit}</small></p>
+          <button class="btn btn--soft crecs__add" type="button" data-add="${p.id}">В корзину</button>
+        </li>`).join('')}</ul>
+      </section>` : ''}
     </div>
 
-    ${CART_OPT_BAND}`;
+    ${CART_OPT_BAND}
+
+    <div class="cbar" id="cartBar" hidden>
+      <p class="cbar__sum"><small>Итого за товар</small><b class="num">${money(sum)}</b></p>
+      <button class="btn btn--solid" type="button" id="cartBarBtn">Оформить заказ</button>
+    </div>`;
+
+  watchCartBar();
 }
 
 /* ═══════════ общий рендер ═══════════ */
@@ -1542,6 +1567,14 @@ document.addEventListener('click', e => {
     if (next <= 0) cart.delete(id); else cart.set(id, next);
     persistUI();
     renderCart();
+    return;
+  }
+  // липкая полоса ведёт к форме и ставит курсор в первое поле
+  if (e.target.closest('#cartBarBtn')) {
+    const form = document.getElementById('cartForm');
+    if (!form) return;
+    form.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'center' });
+    setTimeout(() => { const f = form.querySelector('[name="name"]'); if (f) f.focus({ preventScroll: true }); }, reduced() ? 0 : 420);
     return;
   }
   // убрать позицию целиком, а не жать «−» до нуля
