@@ -1,0 +1,41 @@
+{
+  "kinds": [
+    {
+      "id": "mushroom",
+      "name": "Грибы",
+      "plural": "грибов"
+    },
+    {
+      "id": "berry",
+      "name": "Ягоды",
+      "plural": "ягод"
+    },
+    {
+      "id": "herb",
+      "name": "Травы",
+      "plural": "трав"
+    }
+  ],
+  "states": [
+    {
+      "id": "fresh",
+      "name": "свежая"
+    },
+    {
+      "id": "dry",
+      "name": "сушёная"
+    },
+    {
+      "id": "frozen",
+      "name": "замороженная"
+    },
+    {
+      "id": "salted",
+      "name": "солёная"
+    },
+    {
+      "id": "pureed",
+      "name": "протёртая"
+    }
+  ]
+}

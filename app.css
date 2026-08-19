@@ -728,7 +728,7 @@ a:hover { color: var(--color-accent-ink); }
   transition: transform var(--dur-short) var(--ease-out);
 }
 .tile:hover { transform: translateY(-3px); }
-.tile__ico { width: 44px; height: 44px; border-radius: var(--radius-input); background: oklch(45% 0.08 148); display: inline-flex; align-items: center; justify-content: center; color: var(--color-block-ink); }
+.tile__ico { width: 44px; height: 44px; border-radius: var(--radius-input); background: oklch(47% 0.082 154); display: inline-flex; align-items: center; justify-content: center; color: var(--color-block-ink); }
 .tile__ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .tile h3 { color: var(--color-block-ink); font-size: var(--text-md); }
 .tile p { color: var(--color-block-mute); font-size: var(--text-sm); margin: 0; }
