@@ -27,10 +27,17 @@
     var h = tg.viewportStableHeight || tg.viewportHeight;
     if (h) document.documentElement.style.setProperty('--tma-vh', h + 'px');
 
-    var top = 0;
-    if (tg.contentSafeAreaInset) top += tg.contentSafeAreaInset.top || 0;
-    if (tg.safeAreaInset) top += tg.safeAreaInset.top || 0;
+    var top = 0, bottom = 0;
+    if (tg.contentSafeAreaInset) {
+      top += tg.contentSafeAreaInset.top || 0;
+      bottom += tg.contentSafeAreaInset.bottom || 0;
+    }
+    if (tg.safeAreaInset) {
+      top += tg.safeAreaInset.top || 0;
+      bottom += tg.safeAreaInset.bottom || 0;   // полоса home indicator на айфоне
+    }
     document.documentElement.style.setProperty('--tma-top', top + 'px');
+    document.documentElement.style.setProperty('--tma-bottom', bottom + 'px');
   }
   syncViewport();
   tg.onEvent('viewportChanged', syncViewport);

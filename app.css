@@ -1808,3 +1808,30 @@ body.has-modal { overflow: hidden; }
 
 /* Высота вьюпорта у мини-аппа своя: 100vh врёт, пока окно разворачивается. */
 .is-tma .screen { min-height: calc(var(--tma-vh, 100vh) - var(--mast-h, 5rem)); }
+
+/* Снизу у айфона полоса home indicator: без отступа последняя строка
+   и плавающая кнопка ложатся прямо под неё и не нажимаются. */
+.is-tma body { padding-bottom: var(--tma-bottom, 0px); }
+.is-tma .fab { bottom: calc(clamp(1rem, 3vw, 1.75rem) + var(--tma-bottom, 0px)); }
+
+/* «Резинка» прокрутки на iOS: в мини-аппе она тянет всё окно, а не страницу. */
+.is-tma, .is-tma body { overscroll-behavior: none; }
+
+/* ═══════════ мобильная вёрстка: пальцем, а не курсором ═══════════ */
+@media (max-width: 40rem) {
+  /* iOS зумит страницу при фокусе в поле меньше 16px и обратно не отъезжает.
+     В мини-аппе это выглядит как сломанное окно. */
+  /* .search input и .chat__foot input специфичнее голого input — перечисляем явно,
+     иначе правило проигрывает и поле остаётся 14px. */
+  input, textarea, select,
+  .search input, .chat__foot input { font-size: 16px; }
+
+  /* Ссылки в контактах были высотой 19px: телефон — главное действие страницы,
+     в него надо попадать пальцем с первого раза. */
+  .dl__link { display: inline-flex; align-items: center; min-height: 44px; }
+
+  /* Карточка партии кликабельна целиком, а не только строка названия (23px).
+     Кнопка внутри остаётся выше растянутой области. */
+  .lot__name a::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+  .lot .btn { position: relative; z-index: 2; }
+}
