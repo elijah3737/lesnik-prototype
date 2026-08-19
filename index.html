@@ -84,42 +84,60 @@
 
     <div class="hero">
       <div class="hero__frame">
-        <div class="hero__slide is-on" data-slide="0">
+
+        <!-- 1 · предложение: чем мы отличаемся, с живыми цифрами -->
+        <div class="hero__slide hero__slide--offer is-on" data-slide="0">
           <img src="img/hero.jpg" alt="Корзина со свежесобранными лесными грибами" fetchpriority="high">
           <div class="hero__veil"></div>
           <div class="hero__copy">
-            <span class="hero__promo" data-text="heroPromo">Доставка по Москве бесплатно от 300 кг</span>
+            <span class="hero__chip"><i class="live"></i>Сезон 2026 идёт, отгружаем каждый день</span>
             <h1 data-text="heroTitle">Грибы и ягоды с Урала, прямо от заготовителя</h1>
-            <p>Собираем, сушим, солим и морозим сами. Продаём партиями оптом и в розницу, с открытой ценой и остатком.</p>
-            <ul class="hero__facts">
-              <li>Опт от 20 кг</li>
-              <li>Отгрузка 1-2 дня</li>
-              <li>Счёт для юрлиц</li>
+            <p class="hero__lede">Собираем, сушим, солим и морозим сами. Без перекупов и без «уточню у поставщика».</p>
+            <ul class="hero__proof">
+              <li><b id="heroLive">—</b><span>партий открыто сейчас</span></li>
+              <li><b id="heroFrom">—</b><span>входная цена за кг</span></li>
+              <li><b>1-2 дня</b><span>от заявки до отгрузки</span></li>
             </ul>
             <div class="hero__cta">
-              <a class="btn btn--solid" href="#/catalog">Смотреть каталог</a>
-              <a class="btn" href="#/opt">Условия опта</a>
+              <a class="btn btn--solid btn--lg" href="#/catalog">Смотреть, что есть сегодня</a>
+              <a class="btn btn--lg" href="#/opt">Условия опта</a>
             </div>
+            <p class="hero__note" data-text="heroPromo">Доставка по Москве бесплатно от 300 кг</p>
           </div>
         </div>
-        <div class="hero__slide" data-slide="1">
+
+        <!-- 2 · дефицит: доказываем оборотом закрытых партий -->
+        <div class="hero__slide hero__slide--scarce" data-slide="1">
           <img src="img/smorchok.jpg" alt="Сморчок конический в лесу" loading="lazy">
           <div class="hero__veil"></div>
           <div class="hero__copy">
-            <h2>Бронь урожая 2027</h2>
-            <p>Сморчок и морошка уходят в первые дни. Зимой фиксируем объём и цену на весенний сбор.</p>
-            <a class="btn btn--solid" href="#/opt">Бронь следующего сбора</a>
+            <span class="hero__chip hero__chip--warn">Сезонные партии уходят целиком</span>
+            <h2>Сморчок разобрали за два дня</h2>
+            <p class="hero__lede">Редкие сборы не доживают до конца недели. Кто ждал, пока «появится на сайте», в этом году остался без сморчка.</p>
+            <ul class="hero__closed" id="heroClosed"></ul>
+            <div class="hero__cta">
+              <a class="btn btn--solid btn--lg" href="#/opt">Забронировать следующий сбор</a>
+            </div>
+            <p class="hero__note">Бронь фиксирует объём и цену до начала сбора</p>
           </div>
         </div>
-        <div class="hero__slide" data-slide="2">
+
+        <!-- 3 · сборщики: заработок как главный герой -->
+        <div class="hero__slide hero__slide--work" data-slide="2">
           <img src="img/sborshiki.jpg" alt="Сборщики дикоросов в лесу" loading="lazy">
           <div class="hero__veil"></div>
           <div class="hero__copy">
+            <span class="hero__chip">Работа на сезон</span>
+            <p class="hero__big"><b>от 120 000 ₽</b><span>в месяц в сезон сбора</span></p>
             <h2>Ищем сборщиков в команду</h2>
-            <p>Оплачиваем проезд и проживание, платим зарплату. Заработок от 120 000 ₽ в месяц в сезон.</p>
-            <a class="btn btn--solid" href="#/pickers">Стать сборщиком</a>
+            <p class="hero__lede">Оплачиваем проезд и проживание, платим зарплату, принимаем сбор в день сдачи. Опыт не нужен, всему учим на месте.</p>
+            <div class="hero__cta">
+              <a class="btn btn--solid btn--lg" href="#/pickers">Стать сборщиком</a>
+            </div>
+            <p class="hero__note">Сезон идёт с конца апреля по октябрь</p>
           </div>
         </div>
+
       </div>
       <div class="hero__pager">
         <button class="hero__nav hero__nav--prev" type="button" data-hero="-1" aria-label="Предыдущий баннер"><span>‹</span></button>

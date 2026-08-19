@@ -479,6 +479,33 @@ function renderCart() {
 /* ═══════════ общий рендер ═══════════ */
 
 /* «Цифры сезона» считаются из партий, а не живут константами в разметке */
+/* ═══════════ баннеры главной ═══════════
+   Цифры в баннере живые: считаются по тем же партиям, что и каталог,
+   иначе через месяц шапка сайта начнёт врать. */
+
+function renderHero() {
+  const live = LOTS.filter(l => l.status === 'live');
+
+  const liveEl = document.getElementById('heroLive');
+  if (liveEl) liveEl.textContent = live.length;
+
+  const prices = live.map(entryPrice).filter(v => v !== null && v > 0);
+  const fromEl = document.getElementById('heroFrom');
+  if (fromEl) fromEl.textContent = prices.length ? 'от ' + money(Math.min(...prices)) : 'по объёму';
+
+  // три самые крупные закрытые партии: доказательство оборота, а не обещание
+  const box = document.getElementById('heroClosed');
+  if (box) {
+    const closed = LOTS.filter(l => l.status === 'closed' && l.total)
+      .sort((a, b) => b.total - a.total).slice(0, 3);
+    box.innerHTML = closed.map(l => `<li>
+      <b>${esc(l.name)}</b>
+      <span>${fmt(l.total)} кг</span>
+      <i>закрыта ${esc(l.closed || '')}</i>
+    </li>`).join('');
+  }
+}
+
 function renderFigures() {
   const closedKg = LOTS.filter(l => l.status === 'closed').reduce((a, l) => a + (l.total || 0), 0);
   const liveKg = LOTS.filter(l => l.status === 'live').reduce((a, l) => a + (l.stock || 0), 0);
@@ -510,6 +537,7 @@ function renderAll() {
   const live = LOTS.filter(l => l.status === 'live');
   const closed = LOTS.filter(l => l.status === 'closed');
 
+  renderHero();
   fill('homeLive', live);
   fill('homeClosed', closed);
   renderFigures();
@@ -1160,7 +1188,12 @@ function chatInit() {
 /* ═══════════ роутер ═══════════ */
 
 function route() {
-  const path = location.hash.replace(/^#/, '') || '/';
+  let raw = location.hash.replace(/^#/, '');
+  // Telegram отдаёт мини-аппу свои параметры в hash (#tgWebAppData=...).
+  // Для роутера это не маршрут: без сброса ни один экран не станет активным,
+  // и в боте открывается пустая страница с одним подвалом.
+  if (raw.startsWith('tgWebApp')) raw = '';
+  const path = raw || '/';
   if (!path.startsWith('/')) return;  // якорь внутри страницы
 
   const isLot = path.startsWith('/lot') && path !== '/lk';
