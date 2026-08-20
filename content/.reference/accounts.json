@@ -1,14 +1,5 @@
 [
   {
-    "id": "a-0",
-    "email": "opt@lesnik-demo.ru",
-    "company": "Демо-доступ (оптовый покупатель)",
-    "name": "Илья",
-    "phone": "+7 932 474-83-83",
-    "status": "approved",
-    "at": "19.08.2026"
-  },
-  {
     "id": "a-1",
     "email": "zakupki@restoran.ru",
     "company": "Ресторан «Пихта»",
